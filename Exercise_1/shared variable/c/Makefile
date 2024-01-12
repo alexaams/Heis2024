@@ -2,9 +2,9 @@ CC = clang
 
 CFLAGS = -Wall -g -std=gnu99 
 LDFLAGS = -lpthread -g
-SRC = foo.c
+SRC = foo2.c
 
-TARGET = foo
+TARGET = foo2
 
 all: $(TARGET)
 

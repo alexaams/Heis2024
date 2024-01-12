@@ -52,7 +52,7 @@ func main() {
 	// What does GOMAXPROCS do? What happens if you set it to 1?
 
 	// sets number of max threads
-	runtime.GOMAXPROCS(3)
+	runtime.GOMAXPROCS(9)
 	wg.Add(2)
 
 	// TODO: Spawn both functions as goroutines

@@ -8,6 +8,8 @@
 
 #include "ringbuf.h"
 
+#define CAPACITY 5      //  capacity equal to buffer size found in main
+
 struct BoundedBuffer {
     struct RingBuffer*  buf;
     pthread_mutex_t     mtx;
@@ -20,11 +22,15 @@ struct BoundedBuffer {
 struct BoundedBuffer* buf_new(int size){
     struct BoundedBuffer* buf = malloc(sizeof(struct BoundedBuffer));
     buf->buf = rb_new(size);
-    
+
     pthread_mutex_init(&buf->mtx, NULL);
     // TODO: initialize semaphores
     //sem_init(&buf->capacity,      0, /*starting value?*/);
 	//sem_init(&buf->numElements,   0, /*starting value?*/);
+
+    sem_init(&buf->capacity,      0, CAPACITY);
+	sem_init(&buf->numElements,   0, 0);
+
     
     return buf;    
 }
@@ -43,9 +49,17 @@ void buf_destroy(struct BoundedBuffer* buf){
 void buf_push(struct BoundedBuffer* buf, int val){    
     // TODO: wait for there to be room in the buffer
     // TODO: make sure there is no concurrent access to the buffer internals
+
+    //  decrement capacity semaphore
+    sem_wait(&buf->capacity);
     
+    // lock critial part of code with mutex
+    pthread_mutex_lock(&buf->mtx);
     rb_push(buf->buf, val);
-    
+    // unlock critial part of code with mutex
+    pthread_mutex_unlock(&buf->mtx);
+
+    sem_post(&buf->numElements);
     
     // TODO: signal that there are new elements in the buffer    
 }
@@ -53,7 +67,18 @@ void buf_push(struct BoundedBuffer* buf, int val){
 int buf_pop(struct BoundedBuffer* buf){
     // TODO: same, but different?
     
+    // decerement numElements semaphore
+    sem_wait(&buf->numElements);
+
+    // lock critial part of code with mutex
+    pthread_mutex_lock(&buf->mtx);
+
     int val = rb_pop(buf->buf);    
+    // unlock critial part of code with mutex
+    pthread_mutex_unlock(&buf->mtx);
+
+    // increment capacity semaphore
+    sem_post(&buf->capacity);
     
     return val;
 }
