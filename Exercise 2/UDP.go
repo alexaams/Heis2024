@@ -4,46 +4,44 @@ import (
 	//"bufio"
 	"fmt"
 	"net"
+
 	//"os"
 	"time"
 )
 
-
-func main(){
+func main() {
 
 	address := "0.0.0.0:30000"
 
-	udpAddr, err :=  net.ResolveUDPAddr("udp", address)
+	udpAddr, err := net.ResolveUDPAddr("udp", address)
 	if err != nil {
 		fmt.Println("Feil ved å løse opp adresse: ", err)
 		return
 	}
 
-	conn, err := net.ListenUDP("udp",udpAddr)
+	conn, err := net.ListenUDP("udp", udpAddr)
 
-	if err!=nil {
+	if err != nil {
 		fmt.Println("Feil ved å åpne UDP-port: ", err)
 	}
 
 	defer conn.Close()
 
-	fmt.Printf("Lytter på UDP-port %s\n",address)
+	fmt.Printf("Lytter på UDP-port %s\n", address)
 
-	buffer := make([]byte,256)
-	
+	buffer := make([]byte, 1024)
 
 	for {
 		n, addr, err := conn.ReadFromUDP(buffer)
-		if err!=nil{
-			fmt.Println("Feil ved å lese data: ",err)
+		if err != nil {
+			fmt.Println("Feil ved å lese data: ", err)
 			continue
 		}
-		time.Sleep(1000*time.Millisecond)
+		time.Sleep(1000 * time.Millisecond)
 
 		fmt.Printf("Mottatt %d bytes fra %s: %s\n", n, addr, string(buffer))
 	}
 
-	// ip udp server: 10.100.23.129 
+	// ip udp server: 10.100.23.129
 
-	
 }

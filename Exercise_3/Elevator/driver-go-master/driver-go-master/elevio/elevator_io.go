@@ -17,8 +17,6 @@ var _conn net.Conn
 // Our additional types
 var current_floor int = -1
 
-
-
 type Order struct {
 	Active   bool
 	BtnEvent ButtonEvent
@@ -26,7 +24,11 @@ type Order struct {
 
 var CurrentOrder Order
 
-//Our additional types over
+// Our additional types over
+// Additional functions
+
+
+//End additional functions
 
 type MotorDirection int
 

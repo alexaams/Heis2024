@@ -1,15 +1,22 @@
 package main
 
 import (
+	"Driver-go/config"
 	"Driver-go/elevio"
 	"fmt"
 )
+
+// variables
+var amountFloors int = 5
+var botFloor int = 0
+var mapFloors = make(map[int]bool)
 
 func main() {
 
 	numFloors := 4
 
 	elevio.Init("localhost:15657", numFloors)
+	request_list := config.MakeReqList(4,0)
 
 	var d elevio.MotorDirection = elevio.MD_Up
 	//elevio.SetMotorDirection(d)
@@ -35,12 +42,9 @@ func main() {
 
 			//Test
 
-			if (!elevio.CurrentOrder.Active) && (a.Button == elevio.BT_Cab) {
-				println("in second")
-				elevio.CurrentOrder.BtnEvent = a
-				elevio.CurrentOrder.Active = true
-				elevio.ProcessFloorOrder(elevio.CurrentOrder)
-				println("Order active")
+			if (a.Button == elevio.BT_Cab) {
+				elevio.SetDoorOpenLamp(false)
+				request_list.SetFloor(a.Floor)
 			}
 			// if (elevio.CurrentOrder.Active) && (a.Button == elevio.BT_Cab) {
 			// 	var pending_order elevio.Order
@@ -61,6 +65,7 @@ func main() {
 			if elevio.CurrentOrder.BtnEvent.Floor == elevio.GetFloor() {
 				elevio.SetButtonLamp(elevio.CurrentOrder.BtnEvent.Button, elevio.CurrentOrder.BtnEvent.Floor, false)
 				elevio.SetMotorDirection(elevio.MD_Stop)
+				elevio.SetDoorOpenLamp(true)
 				elevio.CurrentOrder.Active = false
 			}
 
@@ -70,6 +75,8 @@ func main() {
 				elevio.SetMotorDirection(elevio.MD_Stop)
 			} else {
 				elevio.SetMotorDirection(d)
+				elevio.SetStopLamp(false)
+				elevio.SetMotorDirection(elevio.MD_Stop)
 			}
 
 		case a := <-drv_stop:
@@ -80,6 +87,7 @@ func main() {
 				}
 			}
 			if a {
+				elevio.SetStopLamp(true)
 				elevio.SetMotorDirection(elevio.MD_Stop)
 			}
 		}
