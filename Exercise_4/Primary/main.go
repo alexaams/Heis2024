@@ -3,117 +3,94 @@ package main
 import (
 	"fmt"
 	"net"
-	"os"
 	"os/exec"
+	"runtime"
+	"strconv"
 	"time"
 )
 
 const address = "localhost:8080"
 
-var last_time_stamp time.Time
+var number int
 
 func main() {
-	//last_time_stamp = time.Now()
 
-	fmt.Println("test")
-	//channel_timer := make(chan int)
-
-	backup()
-	openTerminal()
-	primary()
-
-	//go primary()
-
-	//go watch_dog(last_time_stamp, 2)
-	//for {
-	//select {
-	// case a := <-channel_timer:
-	// 	last_time_stamp = time.Now()
-	// 	println(a)
-	//}
-
-	//}
-}
-
-func watch_dog(time_stamp time.Time, time_limit int) {
-	if time.Now().Second()-time_stamp.Second() > time_limit {
-		fmt.Println("Time-limit exceeded")
-	}
-}
-
-func backup() {
-	fmt.Println("-- Backup phase --")
+	//Connect to UDP-socket
 	udpAddr, err := net.ResolveUDPAddr("udp", address)
 	if err != nil {
-		fmt.Println("Feil ved å løse opp adresse: ", err)
+		fmt.Println("Error resolving UDP address:", err)
 		return
 	}
 
-	conn, _ := net.ListenUDP("udp", udpAddr)
-
-	buffer := make([]byte, 1024)
-	deadline := time.Now().Add(3 * time.Second)
+	conn, err := net.ListenUDP("udp", udpAddr)
+	if err != nil {
+		fmt.Println("Error listening on UDP port:", err)
+		return
+	}
+	//Initiating backup-phase
+	fmt.Println("---Initiating backup process---")
+	buffer := make([]byte, 1024) //Creating buffer to receive data
 
 	for {
-		conn.SetReadDeadline(deadline)
 
+		deadline := time.Now().Add(3 * time.Second)
+		conn.SetReadDeadline(deadline)
 		n, addr, err := conn.ReadFromUDP(buffer)
+
+		//Listen for message until deadline is reached
 		if err != nil {
 			fmt.Println("--Primary phase--")
 			break
 		}
 
-		fmt.Printf("Mottatt %d bytes fra %s: %s\n", n, addr, string(buffer))
-		//channel <- 1
+		number_temp, err := strconv.Atoi(string(buffer[:n]))
+		if err != nil {
+			fmt.Println("Feil ved konvertering av streng til heltall:", err)
+			return
+		}
+		number = number_temp
+		fmt.Printf("Mottatt %d bytes fra %s: %d\n", n, addr, (number))
 	}
 	conn.Close()
-
-}
-
-func primary() {
-
-	udpAddr_send, err := net.ResolveUDPAddr("udp", address)
-	if err != nil {
-		fmt.Println("Feil ved å løse opp adresse: ", err)
-		return
-	}
-
-	conn, err := net.DialUDP("udp", nil, udpAddr_send)
+	//Start a new backup-process in a new terminal when no other is detected on UDP-broadcast
+	openTerminal()
+	//Switch over to primary process and start sending a number
+	conn_send, err := net.DialUDP("udp", nil, udpAddr)
 	if err != nil {
 		fmt.Println("Feil ved å åpne UDP-port: ", err)
 	}
-	var k int = 0
+	fmt.Println("---Initiating primary process---")
 	for {
-		_, err = conn.Write([]byte(fmt.Sprint(k)))
-		fmt.Println(k)
+		_, err = conn_send.Write([]byte(fmt.Sprint(number)))
+		fmt.Println(number)
+
 		if err != nil {
 			fmt.Println(err)
 		}
-		k++
-		if k > 6 {
-			break
-		}
-		time.Sleep(time.Second)
+
+		number++
+		time.Sleep(time.Second * 1)
 	}
-	terminate()
+	//Terminate terminal.
+
 }
 
 func openTerminal() {
-	cmd := exec.Command("gnome-terminal", "--", "go", "run", "main.go")
+	// Bestem kommandoen for å åpne en ny terminal og kjøre go run main.go
+	var cmd *exec.Cmd
+	switch runtime.GOOS {
+	case "windows":
+		// For Windows bruker vi "cmd.exe" for å åpne en ny terminal og kjøre go run main.go
+		cmd = exec.Command("cmd.exe", "/c", "start", "cmd.exe", "/k", "go", "run", "main.go")
+	default:
+		fmt.Println("Dette operativsystemet støttes ikke")
+		return
+	}
+
+	// Start den nye terminalen
 	err := cmd.Start()
 	if err != nil {
 		fmt.Println("Feil ved åpning av terminal: ", err)
 		return
 	}
-
-	// Vent til terminalvinduet er ferdig før du fortsetter
-	err = cmd.Wait()
-	if err != nil {
-		fmt.Println("Feil ved venting på terminal: ", err)
-	}
-}
-
-func terminate() {
-	fmt.Println("Program terminated")
-	os.Exit(3)
 }
