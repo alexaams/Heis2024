@@ -3,14 +3,16 @@ package main
 import (
 	"fmt"
 	"net"
-	"os"
 	"os/exec"
+	"strconv"
 	"time"
 )
 
-const address = "localhost:8080"
+const address = "127.0.0.1:27106"
 
-var last_time_stamp time.Time
+var message int
+
+//var last_time_stamp time.Time
 
 func main() {
 	//last_time_stamp = time.Now()
@@ -19,9 +21,8 @@ func main() {
 	//channel_timer := make(chan int)
 
 	backup()
-	openTerminal()
-	primary()
 
+	primary()
 	//go primary()
 
 	//go watch_dog(last_time_stamp, 2)
@@ -33,15 +34,17 @@ func main() {
 	//}
 
 	//}
+
 }
 
-func watch_dog(time_stamp time.Time, time_limit int) {
-	if time.Now().Second()-time_stamp.Second() > time_limit {
-		fmt.Println("Time-limit exceeded")
-	}
-}
+// func watch_dog(time_stamp time.Time, time_limit int) {
+// 	if time.Now().Second()-time_stamp.Second() > time_limit {
+// 		fmt.Println("Time-limit exceeded")
+// 	}
+// }
 
 func backup() {
+
 	fmt.Println("-- Backup phase --")
 	udpAddr, err := net.ResolveUDPAddr("udp", address)
 	if err != nil {
@@ -51,10 +54,13 @@ func backup() {
 
 	conn, _ := net.ListenUDP("udp", udpAddr)
 
+	defer openTerminal()
+	defer conn.Close()
+
 	buffer := make([]byte, 1024)
-	deadline := time.Now().Add(3 * time.Second)
 
 	for {
+		deadline := time.Now().Add(2 * time.Second)
 		conn.SetReadDeadline(deadline)
 
 		n, addr, err := conn.ReadFromUDP(buffer)
@@ -62,11 +68,11 @@ func backup() {
 			fmt.Println("--Primary phase--")
 			break
 		}
+		message, _ = strconv.Atoi(string(buffer[:n]))
 
-		fmt.Printf("Mottatt %d bytes fra %s: %s\n", n, addr, string(buffer))
+		fmt.Printf("Mottatt %d bytes fra %s: %s\n", n, addr, fmt.Sprint(message))
 		//channel <- 1
 	}
-	conn.Close()
 
 }
 
@@ -82,20 +88,18 @@ func primary() {
 	if err != nil {
 		fmt.Println("Feil ved å åpne UDP-port: ", err)
 	}
-	var k int = 0
+	defer conn.Close()
 	for {
-		_, err = conn.Write([]byte(fmt.Sprint(k)))
-		fmt.Println(k)
+		message++
+		_, err = conn.Write([]byte(strconv.Itoa(message)))
+		fmt.Println(message)
 		if err != nil {
 			fmt.Println(err)
 		}
-		k++
-		if k > 6 {
-			break
-		}
 		time.Sleep(time.Second)
+
 	}
-	terminate()
+
 }
 
 func openTerminal() {
@@ -106,14 +110,15 @@ func openTerminal() {
 		return
 	}
 
-	// Vent til terminalvinduet er ferdig før du fortsetter
+	// Wait until the terminal window is closed before continuing
 	err = cmd.Wait()
 	if err != nil {
 		fmt.Println("Feil ved venting på terminal: ", err)
 	}
+
 }
 
-func terminate() {
-	fmt.Println("Program terminated")
-	os.Exit(3)
-}
+//func terminate() {
+//	fmt.Println("Program terminated")
+//	os.Exit(3)
+//}
