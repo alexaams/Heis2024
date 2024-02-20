@@ -2,3 +2,5 @@
 - Få det til å kjøre i en thread
 - Gjør det mer adaptivt ift ventetider og sånn
 - Acknowledgement
+
+- Lag to programmer som har sin egen backup

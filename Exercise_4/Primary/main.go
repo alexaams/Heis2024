@@ -15,12 +15,29 @@ var ournumber int = 0
 
 func main() {
 
+	go backup_sequence()
+	go other_func()
+
+	select {}
+}
+
+func other_func() {
+	variable := 1
+	for {
+		variable++
+		fmt.Printf("Backgroundvariable is now: %d\n", variable)
+		time.Sleep(time.Second * 3)
+	}
+}
+func backup_sequence() {
 	//Creating a UDP-listener socket (not sure about the terminology)
 	conn := listenToUDP(address)
 
 	//Initiating backup-phase with the listener-socket, data and specified deadline
 	backupPhase(&ournumber, 3, conn)
+
 	conn.Close()
+
 	//Start a new backup-process in a new terminal when no other is detected on UDP-broadcast
 	openTerminal()
 
@@ -29,7 +46,6 @@ func main() {
 
 	//Initiating primary-phase with the sender-socket, data and specified deadline
 	primaryPhase(&ournumber, 3, conn_send)
-
 }
 
 func primaryPhase(number *int, deadlineSecs int, conn *net.UDPConn) {
