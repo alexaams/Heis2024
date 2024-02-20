@@ -17,8 +17,14 @@ The process pair mechanism on its own forms one of the three parts of making bug
 Some engineering questions, before you continue:
 
 - Why would we aim to detect success in results, instead of the more classical way of detecting errors/failures?
+#Answer
+Because detecting success means that all other types of response is interpreted as failure. We are only looking for one specific thing, which is success. That way, we cannot be caught of guard by unexpected errors.
 - Why would we want to self-terminate, instead of handling the error immediately in the "primary" (as opposed to deferring it to the backup as it "spins up")?
+#Answer
+Because we have a backup that can take over immediately, which is much more effective. Besides, fixing an error could cause more problems, especially if we get more than one error, it makes for a more complex program. It's easier to just re-initiate a new program. 
 - Is there any reason to prefer a process pair style, as opposed to making a separate supervisor-like program whose sole purpose is to restart the main program?
+#Answer
+A process pair style for each node makes the system more modular than a system with a separate supervisor. With a separate superviser we suddenly have one dedicated master. With a process pair, all nodes are equal.
 
 ---
 
