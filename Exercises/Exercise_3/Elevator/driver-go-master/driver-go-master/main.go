@@ -16,7 +16,7 @@ func main() {
 	numFloors := 4
 
 	elevio.Init("localhost:15657", numFloors)
-	request_list := config.MakeReqList(4,0)
+	request_list := config.MakeReqList(4, 0)
 
 	var d elevio.MotorDirection = elevio.MD_Up
 	//elevio.SetMotorDirection(d)
@@ -42,7 +42,7 @@ func main() {
 
 			//Test
 
-			if (a.Button == elevio.BT_Cab) {
+			if a.Button == elevio.BT_Cab {
 				elevio.SetDoorOpenLamp(false)
 				request_list.SetFloor(a.Floor)
 			}
