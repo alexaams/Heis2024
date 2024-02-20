@@ -1,9 +1,9 @@
 package main
 
 import (
-	"Network-go/network/bcast"
-	"Network-go/network/localip"
-	"Network-go/network/peers"
+	"ProjectHeis/network/bcast"
+	"ProjectHeis/network/localip"
+	"ProjectHeis/network/peers"
 	"flag"
 	"fmt"
 	"os"

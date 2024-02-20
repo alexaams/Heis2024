@@ -1,8 +1,8 @@
-package main
+package fms
 
 import (
-	"Heisprosjekt/config"
-	"Heisprosjekt/elevio"
+	"ProjectHeis/drivers/config"
+	"ProjectHeis/drivers/elevio"
 	"fmt"
 )
 
@@ -11,7 +11,7 @@ var amountFloors int = 5
 var botFloor int = 0
 var mapFloors = make(map[int]bool)
 
-func main() {
+func fms() {
 
 	numFloors := 4
 
