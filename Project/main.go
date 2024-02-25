@@ -16,10 +16,6 @@ type HelloMsg struct {
 	Message string
 	Iter    int
 }
-type OtherHelloMsg struct{
-	Message string
-	Iter int
-}
 
 func main() {
 	//Create and asssign ID
@@ -36,23 +32,11 @@ func main() {
 	// We make channels for sending and receiving our custom data types
 	helloTx := make(chan HelloMsg)
 	helloRx := make(chan HelloMsg)
-	otherHelloTx := make(chan OtherHelloMsg)
-	otherHelloRx := make(chan OtherHelloMsg)
+
 	//Start transmitting and receiving
 	go bcast.Transmitter(16569, helloTx)
 	go bcast.Receiver(16569, helloRx)
 
-	go bcast.Transmitter(16569, otherHelloTx)
-	go bcast.Receiver(16569, otherHelloRx)
-
-	go func() {
-		otherMessage := OtherHelloMsg{"HEI" , 0}
-		for{
-			otherMessage.Iter++
-			otherHelloTx <- otherMessage
-			time.Sleep(3*time.Second)
-		}
-	}()
 
 	// The example message. We just send one of these every second.
 	go func() {
@@ -83,3 +67,13 @@ func main() {
 	}
 }
 
+/*
+Neste steg (Jørgen):
+1. Primary og backup
+
+2. Påse at heartbeat/watchdog kjører i bakgrunnen som tiltenkt
+
+3. Alle heiser skal ha en lokal PeersData. Vi lager en thread som leser sine knapper, sjekker
+opp mot Peersdata, og broadcaster eventuelt ut en melding om at nå er det ny ordre ved mismatch mot
+Peersdata. Alle skal kvittere på denne meldingen.
+*/
