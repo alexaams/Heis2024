@@ -2,7 +2,10 @@ package config
 
 import (
 	"ProjectHeis/drivers/elevio"
+	"ProjectHeis/network/localip"
+	"flag"
 	"fmt"
+	"os"
 )
 
 // ---- GLOBALS----
@@ -22,6 +25,12 @@ const (
 var ElevatorID int = -1
 
 // ---------TYPES-----------
+<<<<<<< HEAD
+type ReqList 			map[int]bool
+type AckList 			[NumElevators]bool
+type OrderList			[NumFloors]bool
+
+=======
 type ReqList map[int]bool
 type AckList [NumElevators]bool
 type OrdersAckTable []AckList
@@ -82,6 +91,25 @@ func (r ReqList) ClearFloor(floor int) {
 	}
 }
 
+<<<<<<< HEAD
+//Creating ID with local ip and PID
+func CreateID () string {
+	id := ""
+	flag.StringVar(&id, "id", "", "id of this peer")
+	flag.Parse()
+
+	if id == "" {
+		localIP, err := localip.LocalIP()
+		if err != nil {
+			fmt.Println(err)
+			localIP = "DISCONNECTED"
+		}
+		id = fmt.Sprintf("peer-%s-%d", localIP, os.Getpid())
+	}
+
+	return id
+}
+=======
 func ElevatorBehaviorToString(elev Elevator) string {
 	behavior := elev.Behavior
 	switch behavior {
@@ -94,13 +122,5 @@ func ElevatorBehaviorToString(elev Elevator) string {
 	default:
 		return "undefined"
 	}
-}
 
-func NewElevator() Elevator {
-	return Elevator{
-		Direction:    elevio.MD_Stop,
-		Floor:        -1,
-		Behavior:     BehaviorIdle,
-		OpenDuration: doorOpenDuration,
-	}
 }
