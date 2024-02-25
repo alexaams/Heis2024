@@ -5,26 +5,36 @@ import (
 	"fmt"
 )
 
-// ---- Globals----
+// ---- GLOBALS----
 const NumElevators int = 3
 const NumFloors int = 4
 const NumButtons int = 3
+const BackupFile string = "systemBackup.txt"
+const doorOpenDuration float32 = 4.0 // [s] open door duration
+
+const (
+	BehaviorIdle = iota
+	BehaviorMoving
+	BehaviorOpen
+	BehavoirObst
+)
 
 var ElevatorID int = -1
 
 // ---------TYPES-----------
 type ReqList map[int]bool
 type AckList [NumElevators]bool
-type OrdersCab [NumFloors][]bool
-type OrdersHall [][2]bool
+type OrdersAckTable []AckList
+type OrdersCab [NumElevators][NumFloors]bool
+type OrdersHall [NumFloors][2]bool // [floor][0]: ned [floor][1]: OPP
 
 // ---------STRUCTS----------
 type Elevator struct {
-	Floor     int
-	Direction elevio.MotorDirection
-	Requests  [NumFloors][NumElevators]bool
-	Behavior  int // 0:idle, 1:open, 2:moving, 3: obst
-
+	Floor        int
+	Direction    elevio.MotorDirection
+	Requests     [NumFloors][NumElevators]bool
+	Behavior     int // 0:idle, 1:open, 2:moving, 3: obst
+	OpenDuration float32
 }
 
 type PeersConnection struct {
@@ -34,10 +44,17 @@ type PeersConnection struct {
 }
 
 type PeersData struct {
-	Elevator Elevator
-	Id       int
-	//Orders
-	//
+	Elevator       Elevator
+	Id             int
+	OrdersCab      []bool
+	OrdersHall     OrdersHall
+	GlobalAckTable OrdersAckTable
+}
+
+type HallEvent struct {
+	Floor     int
+	Direction int
+	Id        int
 }
 
 // -------FUNCTIONS--------
@@ -77,5 +94,13 @@ func ElevatorBehaviorToString(elev Elevator) string {
 	default:
 		return "undefined"
 	}
+}
 
+func NewElevator() Elevator {
+	return Elevator{
+		Direction:    elevio.MD_Stop,
+		Floor:        -1,
+		Behavior:     BehaviorIdle,
+		OpenDuration: doorOpenDuration,
+	}
 }
