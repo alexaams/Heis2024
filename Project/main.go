@@ -1,12 +1,10 @@
 package main
 
 import (
+	"ProjectHeis/drivers/config"
 	"ProjectHeis/network/bcast"
-	"ProjectHeis/network/localip"
 	"ProjectHeis/network/peers"
-	"flag"
 	"fmt"
-	"os"
 	"time"
 )
 
@@ -18,43 +16,43 @@ type HelloMsg struct {
 	Message string
 	Iter    int
 }
+type OtherHelloMsg struct{
+	Message string
+	Iter int
+}
 
 func main() {
-	// Our id can be anything. Here we pass it on the command line, using
-	//  `go run main.go -id=our_id`
-	var id string
-	flag.StringVar(&id, "id", "", "id of this peer")
-	flag.Parse()
+	//Create and asssign ID
+	id := config.CreateID()
 
-	// ... or alternatively, we can use the local IP address.
-	// (But since we can run multiple programs on the same PC, we also append the
-	//  process ID)
-	if id == "" {
-		localIP, err := localip.LocalIP()
-		if err != nil {
-			fmt.Println(err)
-			localIP = "DISCONNECTED"
-		}
-		id = fmt.Sprintf("peer-%s-%d", localIP, os.Getpid())
-	}
-
-	// We make a channel for receiving updates on the id's of the peers that are
-	//  alive on the network
+	//ID-channel - updates (new and lost peers)
 	peerUpdateCh := make(chan peers.PeerUpdate)
-	// We can disable/enable the transmitter after it has been started.
-	// This could be used to signal that we are somehow "unavailable".
+	//Enable-transmit-channel
 	peerTxEnable := make(chan bool)
+	//Transmit- and receive-threads
 	go peers.Transmitter(15647, id, peerTxEnable)
 	go peers.Receiver(15647, peerUpdateCh)
 
 	// We make channels for sending and receiving our custom data types
 	helloTx := make(chan HelloMsg)
 	helloRx := make(chan HelloMsg)
-	// ... and start the transmitter/receiver pair on some port
-	// These functions can take any number of channels! It is also possible to
-	//  start multiple transmitters/receivers on the same port.
+	otherHelloTx := make(chan OtherHelloMsg)
+	otherHelloRx := make(chan OtherHelloMsg)
+	//Start transmitting and receiving
 	go bcast.Transmitter(16569, helloTx)
 	go bcast.Receiver(16569, helloRx)
+
+	go bcast.Transmitter(16569, otherHelloTx)
+	go bcast.Receiver(16569, otherHelloRx)
+
+	go func() {
+		otherMessage := OtherHelloMsg{"HEI" , 0}
+		for{
+			otherMessage.Iter++
+			otherHelloTx <- otherMessage
+			time.Sleep(3*time.Second)
+		}
+	}()
 
 	// The example message. We just send one of these every second.
 	go func() {
@@ -77,6 +75,12 @@ func main() {
 
 		case a := <-helloRx:
 			fmt.Printf("Received: %#v\n", a)
+		case othermsg := <-otherHelloRx:
+			fmt.Printf("Other message: ")
+			fmt.Printf("msg: %q", othermsg.Message)
+			fmt.Printf("iteration: %d\n", othermsg.Iter)
 		}
 	}
 }
+
+func HallOrderUpdate ()

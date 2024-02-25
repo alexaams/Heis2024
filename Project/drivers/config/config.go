@@ -2,7 +2,10 @@ package config
 
 import (
 	"ProjectHeis/drivers/elevio"
+	"ProjectHeis/network/localip"
+	"flag"
 	"fmt"
+	"os"
 )
 
 // ---- Globals----
@@ -18,7 +21,7 @@ var ElevatorID int = -1
 // ---------TYPES-----------
 type ReqList 			map[int]bool
 type AckList 			[NumElevators]bool
-type OrderList			[NumFloors]
+type OrderList			[NumFloors]bool
 
 
 // ---------STRUCTS----------
@@ -73,4 +76,22 @@ func (r ReqList) ClearFloor(floor int) {
 	} else {
 		fmt.Println("Floor does not exist")
 	}
+}
+
+//Creating ID with local ip and PID
+func CreateID () string {
+	id := ""
+	flag.StringVar(&id, "id", "", "id of this peer")
+	flag.Parse()
+
+	if id == "" {
+		localIP, err := localip.LocalIP()
+		if err != nil {
+			fmt.Println(err)
+			localIP = "DISCONNECTED"
+		}
+		id = fmt.Sprintf("peer-%s-%d", localIP, os.Getpid())
+	}
+
+	return id
 }

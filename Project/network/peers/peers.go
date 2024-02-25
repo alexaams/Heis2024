@@ -35,7 +35,8 @@ func Transmitter(port int, id string, transmitEnable <-chan bool) {
 }
 
 func Receiver(port int, peerUpdateCh chan<- PeerUpdate) {
-
+	//This code is specifically made for peers and checking if there are new peers/lost peers. 
+	//Should not be used for anything else.
 	var buf [1024]byte
 	var p PeerUpdate
 	lastSeen := make(map[string]time.Time)
