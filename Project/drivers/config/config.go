@@ -13,45 +13,42 @@ const NumElevators int = 3
 const NumFloors int = 4
 const NumButtons int = 3
 
-
 var ElevatorID int = -1
 
-
-
 // ---------TYPES-----------
+<<<<<<< HEAD
 type ReqList 			map[int]bool
 type AckList 			[NumElevators]bool
 type OrderList			[NumFloors]bool
 
+=======
+type ReqList map[int]bool
+type AckList [NumElevators]bool
+type OrdersCab [NumFloors][]bool
+type OrdersHall [][2]bool
+>>>>>>> 9c12e3aaf55bdebd971c3cdca00b306bac5eff0f
 
 // ---------STRUCTS----------
 type Elevator struct {
-	Floor 				int
-	Direction 			elevio.MotorDirection
-	Requests			[NumFloors][NumElevators]bool
-	Status				int 	// 0:idle, 1:open, 2:moving, 3: obst
+	Floor     int
+	Direction elevio.MotorDirection
+	Requests  [NumFloors][NumElevators]bool
+	Behavior  int // 0:idle, 1:open, 2:moving, 3: obst
 
 }
 
-type PeersConnection struct{
-	Peers				[]string
-	New					[]string
-	Lost				[]string
+type PeersConnection struct {
+	Peers []string
+	New   []string
+	Lost  []string
 }
 
-type PeersData struct{
-	Elevator 			Elevator
-	Id					int
+type PeersData struct {
+	Elevator Elevator
+	Id       int
 	//Orders
 	//
 }
-
-
-
-
-
-
-
 
 // -------FUNCTIONS--------
 func MakeReqList(amountFloors, botFloor int) ReqList {
@@ -78,6 +75,7 @@ func (r ReqList) ClearFloor(floor int) {
 	}
 }
 
+<<<<<<< HEAD
 //Creating ID with local ip and PID
 func CreateID () string {
 	id := ""
@@ -95,3 +93,19 @@ func CreateID () string {
 
 	return id
 }
+=======
+func ElevatorBehaviorToString(elev Elevator) string {
+	behavior := elev.Behavior
+	switch behavior {
+	case 0:
+		return "idle"
+	case 1:
+		return "moving"
+	case 2:
+		return "obst"
+	default:
+		return "undefined"
+	}
+
+}
+>>>>>>> 9c12e3aaf55bdebd971c3cdca00b306bac5eff0f
