@@ -10,15 +10,61 @@ import (
 var amountFloors int = 5
 var botFloor int = 0
 var mapFloors = make(map[int]bool)
+var d elevio.MotorDirection = elevio.MD_Up
+var numFloors int = 4
 
+func ButtonSelected(a elevio.ButtonEvent) {
+	request_list := config.MakeReqList(4, 0)
+	elevio.SetButtonLamp(a.Button, a.Floor, true)
+	//Test
+	if a.Button == elevio.BT_Cab {
+		elevio.SetDoorOpenLamp(false)
+		request_list.SetFloor(a.Floor)
+	}
+}
+
+func FloorCurrent(a int) {
+	elevio.SetFloorIndicator(elevio.GetFloor())
+	// elevio.SetMotorDirection(d)
+	if elevio.CurrentOrder.BtnEvent.Floor == elevio.GetFloor() {
+		elevio.SetButtonLamp(elevio.CurrentOrder.BtnEvent.Button, elevio.CurrentOrder.BtnEvent.Floor, false)
+		elevio.SetMotorDirection(elevio.MD_Stop)
+		elevio.SetDoorOpenLamp(true)
+		elevio.CurrentOrder.Active = false
+	}
+}
+
+func ObstFound(a bool) {
+	fmt.Printf("%+v\n", a)
+	if a {
+		elevio.SetMotorDirection(elevio.MD_Stop)
+	} else {
+		elevio.SetMotorDirection(d)
+		elevio.SetStopLamp(false)
+		elevio.SetMotorDirection(elevio.MD_Stop)
+	}
+}
+
+func StopFound(a bool) {
+	fmt.Printf("%+v\n", a)
+	for f := 0; f < numFloors; f++ {
+		for b := elevio.ButtonType(0); b < 3; b++ {
+			elevio.SetButtonLamp(b, f, false)
+		}
+	}
+	if a {
+		elevio.SetStopLamp(true)
+		elevio.SetMotorDirection(elevio.MD_Stop)
+	}
+}
+
+/*
 func fms() {
 
-	numFloors := 4
 
 	elevio.Init("localhost:15657", numFloors)
-	request_list := config.MakeReqList(4, 0)
 
-	var d elevio.MotorDirection = elevio.MD_Up
+
 	//elevio.SetMotorDirection(d)
 
 	elevio.CurrentOrder.Active = false
@@ -33,6 +79,7 @@ func fms() {
 	go elevio.PollFloorSensor(drv_floors)      //Channel receives which floor you are at
 	go elevio.PollObstructionSwitch(drv_obstr) //Channel receives state for obstruction switch when changed
 	go elevio.PollStopButton(drv_stop)         //Channel receives state of stop switch when changed
+
 
 	for {
 		select {
@@ -93,3 +140,4 @@ func fms() {
 		}
 	}
 }
+*/
