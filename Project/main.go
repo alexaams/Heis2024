@@ -2,6 +2,7 @@ package main
 
 import (
 	"ProjectHeis/drivers/config"
+	"ProjectHeis/drivers/elevio"
 	"ProjectHeis/network/bcast"
 	"ProjectHeis/network/peers"
 	"fmt"
@@ -18,6 +19,7 @@ type HelloMsg struct {
 }
 
 func main() {
+
 	//Create and asssign ID
 	id := config.CreateID()
 
@@ -63,6 +65,24 @@ func main() {
 	}
 }
 
+//Må flyttes senere
+func UpdatePeersdata (localPeersdata config.PeersData){
+	ch_hallBtn	:=	make(chan elevio.ButtonEvent)
+	go elevio.PollButtons(ch_hallBtn)
+
+	for{
+		select{
+			case a := <-ch_hallBtn:
+				if a.Button == elevio.BT_HallUp || a.Button == elevio.BT_HallDown{
+					for floor := 0 ; floor < config.NumFloors ; floor++{
+						if !localPeersdata.OrdersHall[floor][a.Button]{
+							fmt.Println("Sending message")
+						}
+					}
+				}
+			}
+	}
+}
 /*
 Neste steg (Jørgen):
 1. Primary og backup

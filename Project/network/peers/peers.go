@@ -1,6 +1,7 @@
 package peers
 
 import (
+	"ProjectHeis/drivers/config"
 	"ProjectHeis/network/conn"
 	"fmt"
 	"net"
