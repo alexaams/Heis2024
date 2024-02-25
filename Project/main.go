@@ -59,10 +59,6 @@ func main() {
 
 		case a := <-helloRx:
 			fmt.Printf("Received: %#v\n", a)
-		case othermsg := <-otherHelloRx:
-			fmt.Printf("Other message: ")
-			fmt.Printf("msg: %q", othermsg.Message)
-			fmt.Printf("iteration: %d\n", othermsg.Iter)
 		}
 	}
 }
