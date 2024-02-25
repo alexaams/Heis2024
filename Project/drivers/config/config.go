@@ -3,9 +3,7 @@ package config
 import (
 	"ProjectHeis/drivers/elevio"
 	"ProjectHeis/network/localip"
-	"flag"
 	"fmt"
-	"os"
 )
 
 // ---- GLOBALS----
@@ -88,8 +86,6 @@ func (r ReqList) ClearFloor(floor int) {
 // Creating ID with local ip and PID
 func CreateID() string {
 	id := ""
-	flag.StringVar(&id, "id", "", "id of this peer")
-	flag.Parse()
 
 	if id == "" {
 		localIP, err := localip.LocalIP()
@@ -97,7 +93,7 @@ func CreateID() string {
 			fmt.Println(err)
 			localIP = "DISCONNECTED"
 		}
-		id = fmt.Sprintf("peer-%s-%d", localIP, os.Getpid())
+		id = localIP
 	}
 
 	return id
