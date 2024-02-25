@@ -7,16 +7,19 @@ import (
 )
 
 // variables
-var amountFloors int = 5
-var botFloor int = 0
-var mapFloors = make(map[int]bool)
+//var amountFloors int = 5
+//var botFloor int = 0
+//var mapFloors = make(map[int]bool)
 
 func main() {
 
 	numFloors := 4
 
 	elevio.Init("localhost:15657", numFloors)
-	request_list := config.MakeReqList(4,0)
+	//request_list := config.MakeReqList(4, 0)
+
+	var ReqFloor int
+	var CurrentFloor int
 
 	var d elevio.MotorDirection = elevio.MD_Up
 	//elevio.SetMotorDirection(d)
@@ -41,11 +44,13 @@ func main() {
 			elevio.SetButtonLamp(a.Button, a.Floor, true)
 
 			//Test
-
-			if (a.Button == elevio.BT_Cab) {
-				elevio.SetDoorOpenLamp(false)
-				request_list.SetFloor(a.Floor)
-			}
+			ReqFloor = a.Floor
+			//if a.Button == elevio.BT_Cab {
+			//	elevio.SetDoorOpenLamp(false)
+			//	request_list.SetFloor(a.Floor)
+			//	ReqFloor = a.Floor
+			//}
+			config.ElevMoving(ReqFloor, CurrentFloor)
 			// if (elevio.CurrentOrder.Active) && (a.Button == elevio.BT_Cab) {
 			// 	var pending_order elevio.Order
 			// 	pending_order.BtnEvent = a
@@ -55,24 +60,31 @@ func main() {
 
 		case a := <-drv_floors:
 			fmt.Printf("%+v\n", a)
-			// if a == numFloors-1 {
-			// 	d = elevio.MD_Down
-			// } else if a == 0 {
-			// 	d = elevio.MD_Up
-			// }
+			//if a == numFloors-1 {
+			//	d = elevio.MD_Down
+			//	elevio.SetMotorDirection(d)
+			//} else if a == 0 {
+			//	d = elevio.MD_Up
+			//	elevio.SetMotorDirection(d)
+			//}
+			CurrentFloor = elevio.GetFloor()
+
 			elevio.SetFloorIndicator(elevio.GetFloor())
-			// elevio.SetMotorDirection(d)
-			if elevio.CurrentOrder.BtnEvent.Floor == elevio.GetFloor() {
-				elevio.SetButtonLamp(elevio.CurrentOrder.BtnEvent.Button, elevio.CurrentOrder.BtnEvent.Floor, false)
-				elevio.SetMotorDirection(elevio.MD_Stop)
-				elevio.SetDoorOpenLamp(true)
-				elevio.CurrentOrder.Active = false
-			}
+			config.ElevMoving(ReqFloor, CurrentFloor)
+
+			//elevio.SetMotorDirection(d)
+			//if elevio.CurrentOrder.BtnEvent.Floor == elevio.GetFloor() {
+			//	elevio.SetButtonLamp(elevio.CurrentOrder.BtnEvent.Button, elevio.CurrentOrder.BtnEvent.Floor, false)
+			//	elevio.SetMotorDirection(elevio.MD_Stop)
+			//	elevio.SetDoorOpenLamp(true)
+			//	elevio.CurrentOrder.Active = false
+			//}
 
 		case a := <-drv_obstr:
 			fmt.Printf("%+v\n", a)
 			if a {
 				elevio.SetMotorDirection(elevio.MD_Stop)
+				config.ElevMoving(ReqFloor, CurrentFloor)
 			} else {
 				elevio.SetMotorDirection(d)
 				elevio.SetStopLamp(false)

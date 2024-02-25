@@ -1,6 +1,7 @@
 package config
 
 import (
+	"Driver-go/elevio"
 	"fmt"
 )
 
@@ -30,4 +31,23 @@ func (r ReqList) ClearFloor(floor int) {
 	} else {
 		fmt.Println("Floor does not exist")
 	}
+}
+
+func ElevMoving(ReqFloor int, CurrentFloor int) {
+	if ReqFloor == CurrentFloor {
+		elevio.SetMotorDirection(elevio.MD_Stop)
+		elevio.SetDoorOpenLamp(true)
+		for i := elevio.ButtonType(0); i < 3; i++ {
+			elevio.SetButtonLamp(i, CurrentFloor, false)
+			fmt.Println("Button val", i)
+		}
+	} else if ReqFloor-CurrentFloor >= 1 {
+		elevio.SetDoorOpenLamp(false)
+		elevio.SetMotorDirection(elevio.MD_Up)
+	} else {
+		elevio.SetDoorOpenLamp(false)
+		elevio.SetMotorDirection(elevio.MD_Down)
+	}
+	fmt.Println("Current:  ", CurrentFloor)
+
 }
