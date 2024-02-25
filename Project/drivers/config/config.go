@@ -4,6 +4,7 @@ import (
 	"ProjectHeis/drivers/elevio"
 	"ProjectHeis/network/localip"
 	"fmt"
+	"strings"
 )
 
 // ---- GLOBALS----
@@ -94,6 +95,8 @@ func CreateID() string {
 			localIP = "DISCONNECTED"
 		}
 		id = localIP
+		temp_arr := strings.Split(id,".")
+		id = temp_arr[3]
 	}
 
 	return id
