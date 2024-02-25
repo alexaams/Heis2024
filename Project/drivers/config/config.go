@@ -25,12 +25,6 @@ const (
 var ElevatorID int = -1
 
 // ---------TYPES-----------
-<<<<<<< HEAD
-type ReqList 			map[int]bool
-type AckList 			[NumElevators]bool
-type OrderList			[NumFloors]bool
-
-=======
 type ReqList map[int]bool
 type AckList [NumElevators]bool
 type OrdersAckTable []AckList
@@ -91,9 +85,8 @@ func (r ReqList) ClearFloor(floor int) {
 	}
 }
 
-<<<<<<< HEAD
-//Creating ID with local ip and PID
-func CreateID () string {
+// Creating ID with local ip and PID
+func CreateID() string {
 	id := ""
 	flag.StringVar(&id, "id", "", "id of this peer")
 	flag.Parse()
@@ -109,7 +102,7 @@ func CreateID () string {
 
 	return id
 }
-=======
+
 func ElevatorBehaviorToString(elev Elevator) string {
 	behavior := elev.Behavior
 	switch behavior {
@@ -123,4 +116,13 @@ func ElevatorBehaviorToString(elev Elevator) string {
 		return "undefined"
 	}
 
+}
+
+func NewElevator() Elevator {
+	return Elevator{
+		Direction:    elevio.MD_Stop,
+		Floor:        -1,
+		Behavior:     BehaviorIdle,
+		OpenDuration: doorOpenDuration,
+	}
 }
