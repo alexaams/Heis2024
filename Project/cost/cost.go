@@ -1,11 +1,12 @@
 package cost
 
 import (
+	"ProjectHeis/drivers/config"
 	"encoding/json"
 	"fmt"
 	"os/exec"
 	"runtime"
-	"ProjectHeis/drivers/config"
+	"strconv"
 )
 
 // Struct members must be public in order to be accessible by json.Marshal/.Unmarshal
@@ -18,13 +19,12 @@ type HRAElevState struct {
 	CabRequests []bool `json:"cabRequests"`
 }
 
-
 type HRAInput struct {
-	HallRequests config.OrdersHall               `json:"hallRequests"`
+	HallRequests config.OrdersHall       `json:"hallRequests"`
 	States       map[string]HRAElevState `json:"states"`
 }
 
-func OrderEmpty(order config.OrdersCab) bool {
+func OrderEmpty(order config.OrdersHall) bool {
 	for i := 0; i < config.NumFloors; i++ {
 		for j := 0; j < config.NumElevators; j++ {
 			if order[i][j] {
@@ -36,8 +36,8 @@ func OrderEmpty(order config.OrdersCab) bool {
 
 }
 
-func CostFunc(elevatorObject config.PeersData, hallRequests config.OrdersHall) config.OrdersHall {
-	if OrderEmpty(elevatorObject.OrdersCab) {
+func CostFunc(elevatorObject config.PeersData, hallRequests config.OrdersHall, peers config.PeersConnection) config.OrdersHall {
+	if OrderEmpty(elevatorObject.OrdersHall) {
 		fmt.Println("No orders available in hall request")
 		return elevatorObject.OrdersHall
 	}
@@ -51,58 +51,51 @@ func CostFunc(elevatorObject config.PeersData, hallRequests config.OrdersHall) c
 		panic("OS not supported")
 	}
 
+	peersActive := len(peers.Peers)
+	statesElevators := make(map[string]HRAElevState, peersActive)
+	idstring := strconv.Itoa(elevatorObject.Id)
+
+	for range statesElevators {
+		id := elevatorObject.Id
+		statesElevators[strconv.Itoa(id)] = elevatorToHRAState(elevatorObject.Elevator)
+	}
+
 	input := HRAInput{
-		HallRequests: [][2]bool{{false, false}, {true, false}, {false, false}, {false, true}},
-		States: map[string]HRAElevState{
-			"one": HRAElevState{
-				Behavior:    "moving",
-				Floor:       2,
-				Direction:   "up",
-				CabRequests: []bool{false, false, false, true},
-			},
-			"two": HRAElevState{
-				Behavior:    "idle",
-				Floor:       0,
-				Direction:   "stop",
-				CabRequests: []bool{false, false, false, false},
-			},
-		},
+		HallRequests: elevatorObject.OrdersHall,
+		States:       statesElevators,
 	}
 
 	jsonBytes, err := json.Marshal(input)
 	if err != nil {
 		fmt.Println("json.Marshal error: ", err)
-		return
 	}
 
 	ret, err := exec.Command("../hall_request_assigner/"+hraExecutable, "-i", string(jsonBytes)).CombinedOutput()
 	if err != nil {
 		fmt.Println("exec.Command error: ", err)
 		fmt.Println(string(ret))
-		return
 	}
 
 	output := new(map[string][][2]bool)
 	err = json.Unmarshal(ret, &output)
 	if err != nil {
 		fmt.Println("json.Unmarshal error: ", err)
-		return
 	}
 
 	fmt.Printf("output: \n")
 	for k, v := range *output {
 		fmt.Printf("%6v :  %+v\n", k, v)
 	}
+	ordersFixed := (*output)[idstring]
+	return config.OrdersHall(ordersFixed)
 }
 
-
-
-func elevatorToHRAState(elev config.elevator) HRAElevState{
+func elevatorToHRAState(elev config.Elevator) HRAElevState {
 	return HRAElevState{
-		Behavior: 		config.ElevatorBehaviorToString(elev),
-		Floor: 			elev.Floor,
-		Direction: 		config.ElevatorDirectionToString(elev),
-		CabRequests		elev.Requests
+		Behavior:    config.ElevatorBehaviorToString(elev),
+		Floor:       elev.Floor,
+		Direction:   config.ElevatorDirectionToString(elev),
+		CabRequests: elev.Requests[:],
 	}
 
 }
