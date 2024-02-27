@@ -28,6 +28,7 @@ const (
 )
 
 var ElevatorID int = -1
+var Peers PeersConnection
 
 // --------------------------------TYPES--------------------------------
 
@@ -54,18 +55,16 @@ type PeersConnection struct {
 }
 
 type PeersData struct {
-	Elevator       Elevator
-	Id             int
-	OrdersCab      OrdersCab
-	OrdersHall     OrdersHall
-	GlobalAckTable OrdersAckTable
+	Elevator   Elevator
+	Id         int
+	OrdersHall OrdersHall
 }
 
-type HallEvent struct {
-	Floor     int
-	Direction int
-	Id        int
+type Order struct {
+	Taken bool
+	ID    int
 }
+type GlobalOrders [NumFloors][2]Order
 
 // -------------------------------FUNCTIONS--------------------------------
 
