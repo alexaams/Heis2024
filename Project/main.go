@@ -22,6 +22,8 @@ func main() {
 
 	//Create and asssign ID
 	id := config.CreateID()
+	//Create peerData
+	peerData := config.CreatePeersData(id)
 
 	//ID-channel - updates (new and lost peers)
 	peerUpdateCh := make(chan peers.PeerUpdate)
@@ -38,7 +40,6 @@ func main() {
 	//Start transmitting and receiving
 	go bcast.Transmitter(16569, helloTx)
 	go bcast.Receiver(16569, helloRx)
-
 
 	// The example message. We just send one of these every second.
 	go func() {
@@ -65,24 +66,25 @@ func main() {
 	}
 }
 
-//Må flyttes senere
-func UpdatePeersdata (localPeersdata config.PeersData){
-	ch_hallBtn	:=	make(chan elevio.ButtonEvent)
+// Må flyttes senere
+func UpdatePeersdata(localPeersdata config.PeersData) {
+	ch_hallBtn := make(chan elevio.ButtonEvent)
 	go elevio.PollButtons(ch_hallBtn)
 
-	for{
-		select{
-			case a := <-ch_hallBtn:
-				if a.Button == elevio.BT_HallUp || a.Button == elevio.BT_HallDown{
-					for floor := 0 ; floor < config.NumFloors ; floor++{
-						if !localPeersdata.OrdersHall[floor][a.Button]{
-							fmt.Println("Sending message")
-						}
+	for {
+		select {
+		case a := <-ch_hallBtn:
+			if a.Button == elevio.BT_HallUp || a.Button == elevio.BT_HallDown {
+				for floor := 0; floor < config.NumFloors; floor++ {
+					if !localPeersdata.OrdersHall[floor][a.Button] {
+						fmt.Println("Sending message")
 					}
 				}
 			}
+		}
 	}
 }
+
 /*
 Neste steg (Jørgen):
 1. Primary og backup
