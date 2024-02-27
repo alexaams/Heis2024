@@ -31,6 +31,7 @@ type OrdersCab [NumElevators][NumFloors]bool
 type OrdersHall [NumFloors][2]bool // [floor][0]: ned [floor][1]: OPP
 
 // ---------STRUCTS----------
+// Elevator-type is current states (not how many floors it has etc.)
 type Elevator struct {
 	Floor        int
 	Direction    elevio.MotorDirection
@@ -95,7 +96,7 @@ func CreateID() string {
 			localIP = "DISCONNECTED"
 		}
 		id = localIP
-		temp_arr := strings.Split(id,".")
+		temp_arr := strings.Split(id, ".")
 		id = temp_arr[3]
 	}
 
@@ -123,5 +124,15 @@ func NewElevator() Elevator {
 		Floor:        -1,
 		Behavior:     BehaviorIdle,
 		OpenDuration: doorOpenDuration,
+	}
+}
+
+func CreatePeersData(ID int) PeersData {
+	return PeersData{
+		Elevator:  NewElevator(),
+		Id:        ID,
+		OrdersCab: make([]bool, 0),
+		OrdersHall: OrdersHall,
+		GlobalAckTable: 
 	}
 }
