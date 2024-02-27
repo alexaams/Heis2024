@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os/exec"
 	"runtime"
+	"ProjectHeis/drivers/config"
 )
 
 // Struct members must be public in order to be accessible by json.Marshal/.Unmarshal
@@ -19,13 +20,27 @@ type HRAElevState struct {
 
 
 type HRAInput struct {
-	HallRequests [][2]bool               `json:"hallRequests"`
+	HallRequests config.OrdersHall               `json:"hallRequests"`
 	States       map[string]HRAElevState `json:"states"`
 }
 
+func OrderEmpty(order config.OrdersCab) bool {
+	for i := 0; i < config.NumFloors; i++ {
+		for j := 0; j < config.NumElevators; j++ {
+			if order[i][j] {
+				return false
+			}
+		}
+	}
+	return true
 
-func CostFunc() {
+}
 
+func CostFunc(elevatorObject config.PeersData, hallRequests config.OrdersHall) config.OrdersHall {
+	if OrderEmpty(elevatorObject.OrdersCab) {
+		fmt.Println("No orders available in hall request")
+		return elevatorObject.OrdersHall
+	}
 	hraExecutable := ""
 	switch runtime.GOOS {
 	case "linux":

@@ -43,7 +43,7 @@ type Elevator struct {
 	Floor        int
 	Direction    elevio.MotorDirection
 	Requests     OrdersCab
-	Behavior     int
+	Behavior     int // 0:idle, 1:open, 2:moving, 3: obst
 	OpenDuration float32
 }
 
@@ -56,7 +56,7 @@ type PeersConnection struct {
 type PeersData struct {
 	Elevator       Elevator
 	Id             int
-	OrdersCab      []bool
+	OrdersCab      OrdersCab
 	OrdersHall     OrdersHall
 	GlobalAckTable OrdersAckTable
 }

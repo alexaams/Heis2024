@@ -1,7 +1,7 @@
-package config
+package temp
 
 import (
-	"Driver-go/elevio"
+	"ProjectHeis/drivers/elevio"
 	"fmt"
 )
 
