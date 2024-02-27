@@ -27,14 +27,14 @@ var ElevatorID int = -1
 type ReqList map[int]bool
 type AckList [NumElevators]bool
 type OrdersAckTable []AckList
-type OrdersCab [NumElevators][NumFloors]bool
-type OrdersHall [NumFloors][2]bool // [floor][0]: ned [floor][1]: OPP
+type OrdersCab [NumFloors][NumElevators]bool
+type OrdersHall [][2]bool // [floor][0]: ned [floor][1]: OPP
 
 // ---------STRUCTS----------
 type Elevator struct {
 	Floor        int
 	Direction    elevio.MotorDirection
-	Requests     [NumFloors][NumElevators]bool
+	Requests     OrdersCab
 	Behavior     int // 0:idle, 1:open, 2:moving, 3: obst
 	OpenDuration float32
 }
@@ -48,7 +48,7 @@ type PeersConnection struct {
 type PeersData struct {
 	Elevator       Elevator
 	Id             int
-	OrdersCab      []bool
+	OrdersCab      OrdersCab
 	OrdersHall     OrdersHall
 	GlobalAckTable OrdersAckTable
 }
@@ -95,7 +95,7 @@ func CreateID() string {
 			localIP = "DISCONNECTED"
 		}
 		id = localIP
-		temp_arr := strings.Split(id,".")
+		temp_arr := strings.Split(id, ".")
 		id = temp_arr[3]
 	}
 

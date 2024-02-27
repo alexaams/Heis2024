@@ -1,8 +1,7 @@
-package main
+package temp
 
 import (
-	"Driver-go/config"
-	"Driver-go/elevio"
+	"ProjectHeis/drivers/elevio"
 	"fmt"
 )
 
@@ -11,7 +10,7 @@ import (
 //var botFloor int = 0
 //var mapFloors = make(map[int]bool)
 
-func main() {
+func ActiveElevator() {
 
 	numFloors := 4
 
@@ -50,7 +49,7 @@ func main() {
 			//	request_list.SetFloor(a.Floor)
 			//	ReqFloor = a.Floor
 			//}
-			config.ElevMoving(ReqFloor, CurrentFloor)
+			ElevMoving(ReqFloor, CurrentFloor)
 			// if (elevio.CurrentOrder.Active) && (a.Button == elevio.BT_Cab) {
 			// 	var pending_order elevio.Order
 			// 	pending_order.BtnEvent = a
@@ -70,7 +69,7 @@ func main() {
 			CurrentFloor = elevio.GetFloor()
 
 			elevio.SetFloorIndicator(elevio.GetFloor())
-			config.ElevMoving(ReqFloor, CurrentFloor)
+			ElevMoving(ReqFloor, CurrentFloor)
 
 			//elevio.SetMotorDirection(d)
 			//if elevio.CurrentOrder.BtnEvent.Floor == elevio.GetFloor() {
@@ -84,7 +83,7 @@ func main() {
 			fmt.Printf("%+v\n", a)
 			if a {
 				elevio.SetMotorDirection(elevio.MD_Stop)
-				config.ElevMoving(ReqFloor, CurrentFloor)
+				ElevMoving(ReqFloor, CurrentFloor)
 			} else {
 				elevio.SetMotorDirection(d)
 				elevio.SetStopLamp(false)
