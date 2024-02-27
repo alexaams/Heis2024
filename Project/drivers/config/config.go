@@ -154,10 +154,10 @@ func NewElevator() Elevator {
 
 func CreatePeersData(ID int) PeersData {
 	return PeersData{
-		Elevator:  NewElevator(),
-		Id:        ID,
-		OrdersCab: make([]bool, 0),
-		OrdersHall: OrdersHall,
-		GlobalAckTable: 
+		Elevator:       NewElevator(),
+		Id:             ID,
+		OrdersCab:      OrdersCab{},
+		OrdersHall:     OrdersHall{},
+		GlobalAckTable: make(OrdersAckTable, NumElevators),
 	}
 }
