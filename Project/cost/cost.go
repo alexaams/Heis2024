@@ -17,10 +17,12 @@ type HRAElevState struct {
 	CabRequests []bool `json:"cabRequests"`
 }
 
+
 type HRAInput struct {
 	HallRequests [][2]bool               `json:"hallRequests"`
 	States       map[string]HRAElevState `json:"states"`
 }
+
 
 func CostFunc() {
 
@@ -76,4 +78,16 @@ func CostFunc() {
 	for k, v := range *output {
 		fmt.Printf("%6v :  %+v\n", k, v)
 	}
+}
+
+
+
+func elevatorToHRAState(elev config.elevator) HRAElevState{
+	return HRAElevState{
+		Behavior: 		config.ElevatorBehaviorToString(elev),
+		Floor: 			elev.Floor,
+		Direction: 		config.ElevatorDirectionToString(elev),
+		CabRequests		elev.Requests
+	}
+
 }

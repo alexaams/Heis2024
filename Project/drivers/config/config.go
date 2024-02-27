@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-// ---- GLOBALS----
+// -------------------------------- GLOBALS--------------------------------
 const NumElevators int = 3
 const NumFloors int = 4
 const NumButtons int = 3
@@ -21,21 +21,29 @@ const (
 	BehavoirObst
 )
 
+const (
+	DirectionStop = iota
+	DirectionUp
+	DirectionDown
+)
+
 var ElevatorID int = -1
 
-// ---------TYPES-----------
+// --------------------------------TYPES--------------------------------
+
 type ReqList map[int]bool
 type AckList [NumElevators]bool
 type OrdersAckTable []AckList
-type OrdersCab [NumElevators][NumFloors]bool
-type OrdersHall [NumFloors][2]bool // [floor][0]: ned [floor][1]: OPP
+type OrdersCab [NumFloors]bool
+type OrdersHall [NumFloors][2]bool // [floor][False]: ned [floor][True]: OPP
 
-// ---------STRUCTS----------
+// --------------------------------STRUCTS--------------------------------
+
 type Elevator struct {
 	Floor        int
 	Direction    elevio.MotorDirection
-	Requests     [NumFloors][NumElevators]bool
-	Behavior     int // 0:idle, 1:open, 2:moving, 3: obst
+	Requests     OrdersCab
+	Behavior     int
 	OpenDuration float32
 }
 
@@ -59,7 +67,8 @@ type HallEvent struct {
 	Id        int
 }
 
-// -------FUNCTIONS--------
+// -------------------------------FUNCTIONS--------------------------------
+
 func MakeReqList(amountFloors, botFloor int) ReqList {
 	listFloor := make(map[int]bool)
 	for x := 0; x < amountFloors; x++ {
@@ -95,7 +104,7 @@ func CreateID() string {
 			localIP = "DISCONNECTED"
 		}
 		id = localIP
-		temp_arr := strings.Split(id,".")
+		temp_arr := strings.Split(id, ".")
 		id = temp_arr[3]
 	}
 
@@ -105,16 +114,31 @@ func CreateID() string {
 func ElevatorBehaviorToString(elev Elevator) string {
 	behavior := elev.Behavior
 	switch behavior {
-	case 0:
+	case BehaviorIdle:
 		return "idle"
-	case 1:
+	case BehaviorMoving:
 		return "moving"
-	case 2:
+	case BehaviorOpen:
+		return "moving"
+	case BehavoirObst:
 		return "obst"
 	default:
 		return "undefined"
 	}
+}
 
+func ElevatorDirectionToString(elev Elevator) string {
+	dir := elev.Direction
+	switch dir {
+	case DirectionStop:
+		return "stop"
+	case DirectionUp:
+		return "up"
+	case DirectionDown:
+		return "down"
+	default:
+		return "undefined"
+	}
 }
 
 func NewElevator() Elevator {
