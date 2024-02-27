@@ -56,9 +56,9 @@ type PeersConnection struct {
 }
 
 type PeersData struct {
-	Elevator       Elevator
-	Id             int
-	OrdersCab      OrdersCab
+	Elevator Elevator
+	Id       int
+	//OrdersCab      OrdersCab
 	OrdersHall     OrdersHall
 	GlobalAckTable OrdersAckTable
 }
