@@ -69,6 +69,15 @@ type HallEvent struct {
 	Id        int
 }
 
+// True if active request, int represent elevator-ID that took the order
+type RequestActive struct {
+	Active     bool //True if there is an active order
+	ElevatorID int  //-1 if no elevators are on it
+}
+
+// Two-dimensional array (matrix) containing all hall-request for all floors - up and down
+type GlobalOrderTable [NumFloors][2]RequestActive
+
 // -------------------------------FUNCTIONS--------------------------------
 
 func MakeReqList(amountFloors, botFloor int) ReqList {
@@ -156,8 +165,26 @@ func CreatePeersData(ID int) PeersData {
 	return PeersData{
 		Elevator:       NewElevator(),
 		Id:             ID,
-		OrdersCab:      OrdersCab{},
 		OrdersHall:     OrdersHall{},
 		GlobalAckTable: make(OrdersAckTable, NumElevators),
+	}
+}
+
+func CreateGlobalOrderTable() GlobalOrderTable {
+	var table GlobalOrderTable
+	for x := 0; x < NumFloors; x++ {
+		table[x][0].Active = false
+		table[x][0].ElevatorID = -1
+		table[x][1].Active = false
+		table[x][1].ElevatorID = -1
+	}
+	return table
+}
+
+func (r GlobalOrderTable) PrintGlobalOrderTable() {
+	for x := 0; x < NumFloors; x++ {
+		fmt.Printf("%d:\n", x+1)
+		fmt.Printf("Up: %t , ID: %d\n", r[x][0].Active, r[x][0].ElevatorID)
+		fmt.Printf("Down: %t , ID: %d\n", r[x][1].Active, r[x][1].ElevatorID)
 	}
 }
