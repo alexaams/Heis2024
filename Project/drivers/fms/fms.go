@@ -7,11 +7,11 @@ import (
 )
 
 // variables
-var amountFloors int = 5
-var botFloor int = 0
-var mapFloors = make(map[int]bool)
 var d elevio.MotorDirection = elevio.MD_Up
 var numFloors int = 4
+var cuElevator config.Elevator
+
+
 
 func ButtonSelected(a elevio.ButtonEvent) {
 	request_list := config.MakeReqList(4, 0)
@@ -24,8 +24,16 @@ func ButtonSelected(a elevio.ButtonEvent) {
 }
 
 func FloorCurrent(a int) {
-	elevio.SetFloorIndicator(elevio.GetFloor())
+	cuElevator.Floor = a
+	elevio.SetFloorIndicator(cuElevator.Floor)
 	// elevio.SetMotorDirection(d)
+	switch cuElevator.Behavior{
+	case config.BehaviorMoving:
+		if /*requested should be handled to stop*/{
+			elevio.SetMotorDirection(elevio.MD_Stop)
+			
+		}
+	}
 	if elevio.CurrentOrder.BtnEvent.Floor == elevio.GetFloor() {
 		elevio.SetButtonLamp(elevio.CurrentOrder.BtnEvent.Button, elevio.CurrentOrder.BtnEvent.Floor, false)
 		elevio.SetMotorDirection(elevio.MD_Stop)
