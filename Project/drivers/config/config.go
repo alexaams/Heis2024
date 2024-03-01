@@ -1,9 +1,10 @@
 package config
 
 import (
-	"ProjectHeis/drivers/elevio"
+	"ProjectHeis/drivers/elevator"
 	"ProjectHeis/network/localip"
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -13,8 +14,6 @@ const NumFloors int = 4
 const NumButtons int = 3
 const BackupFile string = "systemBackup.txt"
 const doorOpenDuration float32 = 4.0 // [s] open door duration
-
-
 
 var ElevatorID int = -1
 var Peers PeersConnection
@@ -50,19 +49,31 @@ type GlobalOrders [NumFloors][2]Order
 // -------------------------------FUNCTIONS--------------------------------
 
 // Creating ID with local ip and PID
-func CreateID() string {
-	id := ""
+func CreateID() int {
+	idStr := ""
 
-	if id == "" {
+	if idStr == "" {
 		localIP, err := localip.LocalIP()
 		if err != nil {
 			fmt.Println(err)
 			localIP = "DISCONNECTED"
 		}
-		id = localIP
-		temp_arr := strings.Split(id, ".")
-		id = temp_arr[3]
-	}
+		idStr = localIP
+		temp_arr := strings.Split(idStr, ".")
+		idStr = temp_arr[3]
 
-	return id
+	}
+	idInt, err := strconv.Atoi(idStr)
+	if err != nil {
+		fmt.Println("Error Converting stringID to Int: " + e)
+	}
+	return idInt
+}
+
+func InitPeers() PeersData {
+	return PeersData{
+		Elevator:   elevator.InitElevator(),
+		Id:         CreateID(),
+		OrdersHall: OrdersHall{},
+	}
 }

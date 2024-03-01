@@ -1,7 +1,9 @@
 package elevator
 
-import "fmt"
-import "ProjectHeis/drivers/config"
+import (
+	"ProjectHeis/drivers/config"
+	"ProjectHeis/drivers/elevio"
+)
 
 // --------------------------------VALUES--------------------------------
 
@@ -13,6 +15,7 @@ const (
 	BehaviorOpen
 	BehavoirObst
 )
+const doorOpenDuration = 3.0
 
 // --------------------------------TYPES--------------------------------
 
