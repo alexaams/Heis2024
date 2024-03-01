@@ -3,14 +3,18 @@ package fms
 import (
 	"ProjectHeis/drivers/config"
 	"ProjectHeis/drivers/elevio"
+	"ProjectHeis/drivers/elevator"
 	"ProjectHeis/ticks"
 	"fmt"
 )
 
+//channels
+var elevBehaviorChan = make(chan elevator.ElevBehavior)
 // variables
 var d elevio.MotorDirection = elevio.MD_Up
 var numFloors int = 4
-var cuElevator config.Elevator
+var cuElevator elevator.Elevator
+
 
 
 
@@ -33,7 +37,12 @@ func FloorCurrent(a int) {
 			if /*requested should be handled to stop*/{
 				elevio.SetMotorDirection(elevio.MD_Stop)
 				ticks.tickerStart(cuElevator.OpenDuration)
-				
+				elevio.SetDoorOpenLamp(true)
+				//IMPLEMENTER REQUEST FUNKSJONALITET
+				cuElevator.Behavior = config.BehaviorOpen
+				elevBehaviorChan <- cuElevator.Behavior
+
+
 			}
 	}
 	if elevio.CurrentOrder.BtnEvent.Floor == elevio.GetFloor() {

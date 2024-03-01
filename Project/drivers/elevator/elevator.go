@@ -17,6 +17,7 @@ const (
 )
 const doorOpenDuration = 3.0
 
+
 // --------------------------------TYPES--------------------------------
 
 type Elevator struct {
