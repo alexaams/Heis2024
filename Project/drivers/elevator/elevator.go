@@ -38,7 +38,7 @@ func ElevatorBehaviorToString(elev Elevator) string {
 	case BehaviorMoving:
 		return "moving"
 	case BehaviorOpen:
-		return "moving"
+		return "open"
 	case BehavoirObst:
 		return "obst"
 	default:
