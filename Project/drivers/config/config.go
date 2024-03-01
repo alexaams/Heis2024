@@ -1,7 +1,7 @@
 package config
 
 import (
-	"ProjectHeis/drivers/elevio"
+	"ProjectHeis/drivers/elevator"
 	"ProjectHeis/network/localip"
 	"fmt"
 	"strings"
