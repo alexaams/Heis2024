@@ -2,6 +2,7 @@ package cost
 
 import (
 	"ProjectHeis/drivers/config"
+	"ProjectHeis/drivers/elevator"
 	"encoding/json"
 	"fmt"
 	"os/exec"
@@ -90,11 +91,11 @@ func CostFunc(elevatorObject config.PeersData, hallRequests config.OrdersHall, p
 	return config.OrdersHall(ordersFixed)
 }
 
-func elevatorToHRAState(elev config.Elevator) HRAElevState {
+func elevatorToHRAState(elev elevator.Elevator) HRAElevState {
 	return HRAElevState{
-		Behavior:    config.ElevatorBehaviorToString(elev),
+		Behavior:    elevator.ElevatorBehaviorToString(elev),
 		Floor:       elev.Floor,
-		Direction:   config.ElevatorDirectionToString(elev),
+		Direction:   elevator.ElevatorDirectionToString(elev),
 		CabRequests: elev.Requests[:],
 	}
 
