@@ -3,6 +3,7 @@ package fms
 import (
 	"ProjectHeis/drivers/config"
 	"ProjectHeis/drivers/elevio"
+	"ProjectHeis/ticks"
 	"fmt"
 )
 
@@ -28,11 +29,12 @@ func FloorCurrent(a int) {
 	elevio.SetFloorIndicator(cuElevator.Floor)
 	// elevio.SetMotorDirection(d)
 	switch cuElevator.Behavior{
-	case config.BehaviorMoving:
-		if /*requested should be handled to stop*/{
-			elevio.SetMotorDirection(elevio.MD_Stop)
-			
-		}
+		case config.BehaviorMoving:
+			if /*requested should be handled to stop*/{
+				elevio.SetMotorDirection(elevio.MD_Stop)
+				ticks.tickerStart(cuElevator.OpenDuration)
+				
+			}
 	}
 	if elevio.CurrentOrder.BtnEvent.Floor == elevio.GetFloor() {
 		elevio.SetButtonLamp(elevio.CurrentOrder.BtnEvent.Button, elevio.CurrentOrder.BtnEvent.Floor, false)
