@@ -17,10 +17,11 @@ type HelloMsg struct {
 }
 
 func main() {
+	elevio.Init("localhost:15657", config.NumFloors)
 
 	//Create and asssign ID
 	id := config.CreateID()
-	fmt.Print("ID: %d\n", id)
+	fmt.Printf("ID: %d\n", id)
 
 	//Create global order-table
 	globalOrderTable := config.CreateGlobalOrderTable()

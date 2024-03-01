@@ -4,6 +4,7 @@ import (
 	"ProjectHeis/drivers/elevio"
 	"ProjectHeis/network/localip"
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -105,7 +106,7 @@ func (r ReqList) ClearFloor(floor int) {
 }
 
 // Creating ID with local ip and PID
-func CreateID() string {
+func CreateID() int {
 	id := ""
 
 	if id == "" {
@@ -118,8 +119,9 @@ func CreateID() string {
 		temp_arr := strings.Split(id, ".")
 		id = temp_arr[3]
 	}
+	idint, _ := strconv.Atoi(id)
 
-	return id
+	return idint
 }
 
 func ElevatorBehaviorToString(elev Elevator) string {
