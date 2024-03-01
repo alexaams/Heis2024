@@ -24,7 +24,9 @@ type ReqList map[int]bool
 type AckList [NumElevators]bool
 type OrdersAckTable []AckList
 type OrdersCab [NumFloors]bool
+
 type OrdersHall [NumFloors][2]bool // [floor][False]: ned [floor][True]: OPP
+type Requests [NumFloors][NumElevators]bool
 
 // --------------------------------STRUCTS--------------------------------
 

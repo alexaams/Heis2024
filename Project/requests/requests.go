@@ -2,8 +2,13 @@ package requests
 
 import (
 	"ProjectHeis/drivers/config"
+	"ProjectHeis/drivers/elevator"
 	"fmt"
 )
+
+func ArrivedRequest(elev elevator.Elevator) bool {
+
+}
 
 func MakeReqList(amountFloors, botFloor int) config.ReqList {
 	listFloor := make(map[int]bool)

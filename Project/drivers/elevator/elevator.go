@@ -15,17 +15,17 @@ const (
 	BehaviorOpen
 	BehavoirObst
 )
-const doorOpenDuration = 3.0
 
+const doorOpenDuration = 3.0
 
 // --------------------------------TYPES--------------------------------
 
 type Elevator struct {
 	Floor        int
 	Direction    elevio.MotorDirection
-	Requests     config.OrdersCab
 	Behavior     ElevBehavior // 0:idle, 1:open, 2:moving, 3: obst
 	OpenDuration float64
+	Requests     config.Requests
 }
 
 // --------------------------------FUNCTIONS--------------------------------

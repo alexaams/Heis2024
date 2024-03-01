@@ -2,9 +2,9 @@ package ticks
 
 import "time"
 
-func tickerStart(waitDuration time.Duration){
+func tickerStart(waitDuration time.Duration) {
 	startTime := time.Now()
-	ticker := time.NewTicker(1*time.Second)
+	ticker := time.NewTicker(1 * time.Second)
 	defer ticker.Stop()
 
 	for {
