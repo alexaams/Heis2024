@@ -29,17 +29,21 @@ func main() {
 	ch_HallButton_event := make(chan elevio.ButtonEvent)
 	//Create channel for button-polling
 	button_channel := make(chan elevio.ButtonEvent)
+	//Create channel for globalordertable over UDP
+	udp_GlobalOrder := make(chan config.GlobalOrderTable)
+	//Create channel for sensor-polling
+	//sensor_channel := make(chan int)
 	//Running thread checking ch_HallButton_event
-	go UpdateGlobalData(globalOrderTable, ch_HallButton_event)
+	go UpdateGlobalData(globalOrderTable, ch_HallButton_event, udp_GlobalOrder)
 	go elevio.PollButtons(button_channel)
+	go UDP_SendRead_GlobalOrder(udp_GlobalOrder)
+	//go elevio.PollFloorSensor(sensor_channel)
 
 	for {
 		select {
 		case a := <-button_channel:
 			switch a.Button {
-			case elevio.BT_HallUp:
-				ch_HallButton_event <- a
-			case elevio.BT_HallDown:
+			case elevio.BT_HallUp, elevio.BT_HallDown:
 				ch_HallButton_event <- a
 			default:
 				fmt.Println("Nothing happens")
@@ -49,29 +53,48 @@ func main() {
 
 }
 
+// ____________________________________________________________
 // Må flyttes senere
-func UpdateGlobalData(GlobalTable config.GlobalOrderTable, ch_HallBtn chan elevio.ButtonEvent) {
+func UpdateGlobalData(GlobalTable config.GlobalOrderTable, ch_HallBtn chan elevio.ButtonEvent, udp_GlobalOrder chan config.GlobalOrderTable) {
 	for {
 		select {
 		case a := <-ch_HallBtn:
 			switch a.Button {
-			case elevio.BT_HallUp:
-				fmt.Printf("Requested hall up from floor %d\n", a.Floor)
-				GlobalTable[a.Floor][0].Active = true
-				GlobalTable.PrintGlobalOrderTable()
-				time.Sleep(10 * time.Millisecond)
-			case elevio.BT_HallDown:
-				fmt.Printf("Requested hall down from floor %d\n", a.Floor)
-				GlobalTable[a.Floor][1].Active = true
-				GlobalTable.PrintGlobalOrderTable()
+			case elevio.BT_HallUp, elevio.BT_HallDown:
+				if IsOrderNew(&GlobalTable, a) {
+					udp_GlobalOrder <- GlobalTable
+				}
 				time.Sleep(10 * time.Millisecond)
 			default:
 				fmt.Printf("Button type is N/A\n")
 				time.Sleep(10 * time.Millisecond)
 			}
+		default:
+			continue
 		}
 	}
 
+}
+
+func IsOrderNew(GlobalTable *config.GlobalOrderTable, Button elevio.ButtonEvent) bool {
+	if !GlobalTable[Button.Floor][Button.Button].Active {
+		GlobalTable[Button.Floor][Button.Button].Active = true
+		return true
+	} else {
+		return false
+	}
+}
+
+func UDP_SendRead_GlobalOrder(udp_GlobalOrder chan config.GlobalOrderTable) {
+	for {
+		select {
+		case a := <-udp_GlobalOrder:
+			fmt.Println("Order sent for sending over UDP")
+			a.PrintGlobalOrderTable()
+		default:
+			continue
+		}
+	}
 }
 
 /*
