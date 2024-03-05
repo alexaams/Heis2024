@@ -25,7 +25,7 @@ type Elevator struct {
 	Direction    elevio.MotorDirection
 	Behavior     ElevBehavior // 0:idle, 1:open, 2:moving, 3: obst
 	OpenDuration float64
-	Requests     config.Requests
+	Requests     config.Requests // list default as false
 }
 
 // --------------------------------FUNCTIONS--------------------------------

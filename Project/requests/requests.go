@@ -41,16 +41,21 @@ func IsRequestArrived(elev elevator.Elevator) bool {
 	return false
 }
 
-func ClearOneRequest(elev elevator.Elevator, button elevio.ButtonEvent) {
+func ClearOneRequest(elev *elevator.Elevator, button elevio.ButtonEvent) {
 	elev.Requests[button.Floor][button.Button] = false
 }
 
-func ClearAllRequests(elev elevator.Elevator) {
-	for floor := 0; floor < config.NumFloors; floor++ {
-		for button := 0; button < config.NumButtons; button++ {
-			elev.Requests[floor][button] = false
-		}
-	}
+// func ClearAllRequests(elev *elevator.Elevator) {
+// 	for floor := 0; floor < config.NumFloors; floor++ {
+// 		for button := 0; button < config.NumButtons; button++ {
+// 			elev.Requests[floor][button] = false
+// 		}
+// 	}
+// }
+
+func ClearAllRequests(elev *elevator.Elevator) {
+	var temp config.Requests // initialized as default false
+	elev.Requests = temp
 }
 
 // ----------------- GIVEN ------------------------
