@@ -7,8 +7,8 @@ import (
 	"fmt"
 )
 
-// checks current floor to top floor
-func AboveRequest(elev elevator.Elevator) bool {
+// Checks current floor to top floor
+func IsRequestAbove(elev elevator.Elevator) bool {
 	for floor := elev.Floor + 1; floor <= config.NumFloors; floor++ {
 		for i := 0; i < config.NumButtons; i++ {
 			if elev.Requests[elev.Floor][i] {
@@ -19,8 +19,8 @@ func AboveRequest(elev elevator.Elevator) bool {
 	return false
 }
 
-// check request from 0 to current floor
-func BelowRequest(elev elevator.Elevator) bool {
+// Check request from 0 to current floor
+func IsRequestBelow(elev elevator.Elevator) bool {
 	for floor := 0; floor < elev.Floor; floor++ {
 		for i := 0; i < config.NumButtons; i++ {
 			if elev.Requests[elev.Floor][i] {
@@ -31,8 +31,8 @@ func BelowRequest(elev elevator.Elevator) bool {
 	return false
 }
 
-// checks current floor
-func ArrivedRequest(elev elevator.Elevator) bool {
+// Checks current floor
+func IsRequestArrived(elev elevator.Elevator) bool {
 	for i := 0; i < config.NumButtons; i++ {
 		if elev.Requests[elev.Floor][i] {
 			return true
