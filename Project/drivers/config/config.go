@@ -13,7 +13,7 @@ const NumElevators int = 3
 const NumFloors int = 4
 const NumButtons int = 3
 const BackupFile string = "systemBackup.txt"
-const doorOpenDuration float32 = 4.0 // [s] open door duration
+const doorOpenDuration float64 = 4.0 // [s] open door duration
 
 var ElevatorID int = -1
 var Peers PeersConnection
@@ -46,6 +46,7 @@ type Order struct {
 	Taken bool
 	ID    int
 }
+
 type GlobalOrders [NumFloors][2]Order
 
 // -------------------------------FUNCTIONS--------------------------------

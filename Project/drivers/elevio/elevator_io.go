@@ -27,7 +27,6 @@ var CurrentOrder Order
 // Our additional types over
 // Additional functions
 
-
 //End additional functions
 
 type MotorDirection int

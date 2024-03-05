@@ -6,8 +6,38 @@ import (
 	"fmt"
 )
 
-func ArrivedRequest(elev elevator.Elevator) bool {
+// checks current floor to top floor
+func AboveRequest(elev elevator.Elevator) bool {
+	for floor := elev.Floor + 1; floor <= config.NumFloors; floor++ {
+		for i := 0; i < config.NumButtons; i++ {
+			if elev.Requests[elev.Floor][i] {
+				return true
+			}
+		}
+	}
+	return false
+}
 
+// check request from 0 to current floor
+func BelowRequest(elev elevator.Elevator) bool {
+	for floor := 0; floor < elev.Floor; floor++ {
+		for i := 0; i < config.NumButtons; i++ {
+			if elev.Requests[elev.Floor][i] {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+// checks current floor
+func ArrivedRequest(elev elevator.Elevator) bool {
+	for i := 0; i < config.NumButtons; i++ {
+		if elev.Requests[elev.Floor][i] {
+			return true
+		}
+	}
+	return false
 }
 
 func MakeReqList(amountFloors, botFloor int) config.ReqList {
