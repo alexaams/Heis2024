@@ -96,7 +96,7 @@ func elevatorToHRAState(elev elevator.Elevator) HRAElevState {
 		Behavior:    elevator.ElevatorBehaviorToString(elev),
 		Floor:       elev.Floor,
 		Direction:   elevator.ElevatorDirectionToString(elev),
-		CabRequests: elev.Requests,
+		CabRequests: elev.CabRequests[:],
 	}
 
 }
