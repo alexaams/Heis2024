@@ -169,7 +169,7 @@ func eventHandling(orderChan chan []bool) {
 	for {
 		select {
 		case <-timer.C:
-			if len(peers.PeerUpdate.Lost) > 0 {
+			if len(peers.PeerUpdate.Lost) > 0 { // TODO: fiks et globalt PeerUpdate object, da kan lista len
 
 			}
 		}
