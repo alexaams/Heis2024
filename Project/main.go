@@ -18,7 +18,16 @@ type HelloMsg struct {
 }
 
 func main() {
+
 	elevio.Init("localhost:15657", config.NumFloors)
+	//Set all button lamps to off
+	//REMOVE THIS LATER!
+	elevio.SetButtonLamp(elevio.BT_HallUp, 0, false)
+	elevio.SetButtonLamp(elevio.BT_HallDown, 1, false)
+	elevio.SetButtonLamp(elevio.BT_HallUp, 1, false)
+	elevio.SetButtonLamp(elevio.BT_HallDown, 2, false)
+	elevio.SetButtonLamp(elevio.BT_HallUp, 2, false)
+	elevio.SetButtonLamp(elevio.BT_HallDown, 3, false)
 
 	//Create and asssign ID
 	id := config.CreateID()
@@ -59,6 +68,7 @@ func main() {
 			if IsOrderNew(&globalOrderTable, a) {
 				elevio.SetButtonLamp(a.Button, a.Floor, true)
 				fmt.Println("Order is new to this node")
+				elevio.SetButtonLamp(a.Button, a.Floor, true)
 			}
 		}
 	}
