@@ -1,23 +1,20 @@
 package fms
 
 import (
-	"ProjectHeis/drivers/config"
-	"ProjectHeis/drivers/elevio"
 	"ProjectHeis/drivers/elevator"
-	"ProjectHeis/ticks"
+	"ProjectHeis/drivers/elevio"
+	"ProjectHeis/requests"
 	"fmt"
 )
 
 //channels
-var elevBehaviorChan = make(chan elevator.ElevBehavior)
+var elevBehaviorChan = make(chan elevator.ElevatorBehavior)
 var obschan = make(chan bool)
+
 // variables
 var d elevio.MotorDirection = elevio.MD_Up
 var numFloors int = 4
 var cuElevator elevator.Elevator
-
-
-
 
 /*func ButtonSelected(a elevio.ButtonEvent) {
 	request_list := config.MakeReqList(4, 0)
@@ -33,18 +30,17 @@ func FloorCurrent(a int) {
 	cuElevator.Floor = a
 	elevio.SetFloorIndicator(cuElevator.Floor)
 	// elevio.SetMotorDirection(d)
-	switch cuElevator.Behavior{
-		case config.BehaviorMoving:
-			if /*requested should be handled to stop*/{
-				elevio.SetMotorDirection(elevio.MD_Stop)
-				ticks.tickerStart(cuElevator.OpenDuration)
-				elevio.SetDoorOpenLamp(true)
-				//IMPLEMENTER REQUEST FUNKSJONALITET
-				cuElevator.Behavior = config.BehaviorOpen
-				elevBehaviorChan <- cuElevator.Behavior
+	switch cuElevator.Behavior {
+	case elevator.BehaviorMoving:
+		if requests.IsRequestArrived(cuElevator) {
+			elevio.SetMotorDirection(elevio.MD_Stop)
+			ticks.tickerStart(cuElevator.OpenDuration)
+			elevio.SetDoorOpenLamp(true)
+			requests.ClearOneRequest(&cuElevator, elevio.CurrentOrder.BtnEvent)
+			cuElevator.Behavior = elevator.BehaviorOpen
+			elevBehaviorChan <- cuElevator.Behavior
 
-
-			}
+		}
 	}
 }
 
@@ -68,12 +64,9 @@ func StopFound(a bool) {
 	}
 }
 
-
 func fms() {
 
-
 	elevio.Init("localhost:15657", numFloors)
-
 
 	//elevio.SetMotorDirection(d)
 
@@ -83,11 +76,10 @@ func fms() {
 	drv_obstr := make(chan bool)
 	drv_stop := make(chan bool)
 	//awaiting_orders := make(chan elevio.Order)
-       //Channel receives all buttonevents on every floor
+	//Channel receives all buttonevents on every floor
 	go elevio.PollFloorSensor(drv_floors)      //Channel receives which floor you are at
 	go elevio.PollObstructionSwitch(drv_obstr) //Channel receives state for obstruction switch when changed
 	go elevio.PollStopButton(drv_stop)         //Channel receives state of stop switch when changed
-
 
 	for {
 		select {
@@ -114,4 +106,3 @@ func fms() {
 		}
 	}
 }
-
