@@ -63,6 +63,7 @@ func UpdateGlobalData(GlobalTable config.GlobalOrderTable, ch_HallBtn chan elevi
 			case elevio.BT_HallUp, elevio.BT_HallDown:
 				if IsOrderNew(&GlobalTable, a) {
 					udp_GlobalOrder <- GlobalTable
+					elevio.SetButtonLamp(a.Button, a.Floor, true)
 				}
 				time.Sleep(10 * time.Millisecond)
 			default:
