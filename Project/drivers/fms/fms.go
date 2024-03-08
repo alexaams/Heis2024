@@ -4,14 +4,17 @@ import (
 	"ProjectHeis/config"
 	"ProjectHeis/drivers/elevator"
 	"ProjectHeis/drivers/elevio"
+	"ProjectHeis/network/peers"
 	"ProjectHeis/requests"
 	"ProjectHeis/ticker"
 	"fmt"
+	"time"
 )
 
 // channels
 var elevBehaviorChan = make(chan elevator.ElevatorBehavior)
 var obschan = make(chan bool)
+var peerMsgChan = make(chan peers.PeersData)
 
 // variables
 // var d elevio.MotorDirection = elevio.MD_Up
@@ -95,7 +98,7 @@ func StopFound(a bool) {
 	}
 }
 
-func fms() {
+func fms(hallOrderChan chan config.OrdersHall, orderChan chan []bool) {
 
 	elevio.Init("localhost:15657", numFloors)
 
@@ -136,4 +139,40 @@ func fms() {
 			}
 		}
 	}
+}
+
+func lampChange() {
+	for floors := range config.NumFloors {
+		for buttons := range config.NumButtonTypes - 1 {
+			elevio.SetButtonLamp(elevio.ButtonType(buttons), floors, cuElevator.Requests[floors][buttons])
+		}
+		elevio.SetButtonLamp(elevio.BT_Cab, floors, cuElevator.CabRequests[floors])
+	}
+}
+
+func eventHandling(orderChan chan []bool) {
+	var (
+		hallOrderChan  = make(chan config.OrdersHall)
+		elevUpdateChan = make(chan elevator.Elevator)
+		//bcastReadChan     = make(chan peers.PeersData)
+		orderCompleteChan = make(chan elevio.ButtonEvent)
+		drv_buttons       = make(chan elevio.ButtonEvent)
+		timer             = time.NewTicker(300 * time.Millisecond)
+	)
+	defer timer.Stop()
+
+	go elevio.PollButtons(drv_buttons)
+	//go bcast.Transmitter(peerMsgChan)
+	//go bcast.Receiver(bcastReadChan)
+	go fms(hallOrderChan, orderChan)
+
+	for {
+		select {
+		case <-timer.C:
+			if len(peers.PeerUpdate.Lost) > 0 {
+
+			}
+		}
+	}
+
 }
