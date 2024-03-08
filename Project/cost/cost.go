@@ -89,7 +89,7 @@ func CostFunc(elevatorObject peers.PeersData, hallRequests config.OrdersHall, pe
 		fmt.Printf("%6v :  %+v\n", k, v)
 	}
 	ordersFixed := (*output)[idstring]
-	return config.OrdersHall(ordersFixed)
+	return ordersFixed
 }
 
 func elevatorToHRAState(elev elevator.Elevator) HRAElevState {
