@@ -30,14 +30,29 @@ func ButtonSelected(a elevio.ButtonEvent) {
 func requestUpdates() {
 	var buttonpressed elevio.ButtonEvent
 	switch cuElevator.Behavior {
-	case elevator.BehaviorMoving:
-		elevio.SetMotorDirection(cuElevator.Direction)
+	case elevator.BehaviorOpen:
+		if floor, buttonType := requests.ClearRequestBtnReturn(cuElevator); floor < -1 {
+			ticker.TickerStart(cuElevator.OpenDuration)
+			buttonpressed.Button = buttonType
+			buttonpressed.Floor = floor
+			requests.ClearOneRequest(&cuElevator, buttonpressed)
+		}
 
 	case elevator.BehaviorIdle:
 		set := requests.RequestToElevatorMovement(cuElevator)
 		cuElevator.Behavior = set.Behavior
 		cuElevator.Direction = set.Direction
 		elevBehaviorChan <- cuElevator.Behavior
+		switch set.Behavior {
+		case elevator.BehaviorOpen:
+			elevio.SetDoorOpenLamp(true)
+			ticker.TickerStart(cuElevator.OpenDuration)
+			requests.ClearOneRequest(&cuElevator, elevio.CurrentOrder.BtnEvent)
+
+		case elevator.BehaviorMoving:
+			elevio.SetMotorDirection(cuElevator.Direction)
+		}
+
 	}
 }
 

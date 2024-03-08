@@ -56,6 +56,15 @@ func ClearAllRequests(elev *elevator.Elevator) {
 	elev.Requests = tempEmptyRequests
 }
 
+func ClearRequestBtnReturn(elev elevator.Elevator) (int, elevio.ButtonType) {
+	for ButtonType := elevio.ButtonType(0); ButtonType < elevio.ButtonType(config.NumButtonTypes); ButtonType++ {
+		if elev.Requests[elev.Floor][ButtonType] && ((elev.Direction == elevio.MD_Up && ButtonType == elevio.BT_HallUp) || (elev.Direction == elevio.MD_Down && ButtonType == elevio.HallDown) || ButtonType == elevio.BT_Cab || elev.Direction == elevio.MD_Stop) {
+			return elev.Floor, ButtonType
+		}
+	}
+	return -1, elevio.BT_HallUp
+}
+
 func RequestToElevatorMovement(elev elevator.Elevator) elevator.BehaviorAndDirection {
 	switch elev.Direction {
 	case elevio.MD_Stop:
