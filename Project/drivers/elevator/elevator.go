@@ -21,7 +21,7 @@ const (
 type Elevator struct {
 	Floor        int
 	Direction    elevio.MotorDirection
-	Behavior     ElevatorBehavior // 0:idle, 1:open, 2:moving, 3: obst
+	Behavior     ElevatorBehavior // 0:Idle, 1:Moving, 2:Open, 3: Obst
 	OpenDuration float64
 	CabRequests  config.OrdersCab
 	Requests     config.Requests // list default as false

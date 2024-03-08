@@ -9,8 +9,8 @@ import (
 // Checks current floor to top floor
 func IsRequestAbove(elev elevator.Elevator) bool {
 	for floor := elev.Floor; floor < config.NumFloors; floor++ {
-		for button := 0; button < config.NumButtonTypes; button++ {
-			if elev.Requests[floor][button] {
+		for buttonType := 0; buttonType < config.NumButtonTypes; buttonType++ {
+			if elev.Requests[floor][buttonType] {
 				return true
 			}
 		}
@@ -21,8 +21,8 @@ func IsRequestAbove(elev elevator.Elevator) bool {
 // Check request from 0 to current floor
 func IsRequestBelow(elev elevator.Elevator) bool {
 	for floor := 0; floor < elev.Floor; floor++ {
-		for button := 0; button < config.NumButtonTypes; button++ {
-			if elev.Requests[floor][button] {
+		for buttonType := 0; buttonType < config.NumButtonTypes; buttonType++ {
+			if elev.Requests[floor][buttonType] {
 				return true
 			}
 		}
@@ -32,8 +32,8 @@ func IsRequestBelow(elev elevator.Elevator) bool {
 
 // Checks current floor
 func IsRequestArrived(elev elevator.Elevator) bool {
-	for button := 0; button < config.NumButtonTypes; button++ {
-		if elev.Requests[elev.Floor][button] {
+	for buttonType := 0; buttonType < config.NumButtonTypes; buttonType++ {
+		if elev.Requests[elev.Floor][buttonType] {
 			return true
 		}
 	}
@@ -56,11 +56,18 @@ func ClearAllRequests(elev *elevator.Elevator) {
 }
 
 func ClearRequestBtnReturn(elev elevator.Elevator) (int, elevio.ButtonType) {
-	for ButtonType := elevio.ButtonType(0); ButtonType < elevio.ButtonType(config.NumButtonTypes); ButtonType++ {
-		if elev.Requests[elev.Floor][ButtonType] && ((elev.Direction == elevio.MD_Up && ButtonType == elevio.BT_HallUp) || (elev.Direction == elevio.MD_Down && ButtonType == elevio.BT_HallDown) || ButtonType == elevio.BT_Cab || elev.Direction == elevio.MD_Stop) {
-			return elev.Floor, ButtonType
+	for buttonType := elevio.BT_HallUp; buttonType < elevio.ButtonType(config.NumButtonTypes); buttonType++ {
+		isRequested := elev.Requests[elev.Floor][buttonType]
+		isDirectionMatch := (elev.Direction == elevio.MD_Up && buttonType == elevio.BT_HallUp) ||
+			(elev.Direction == elevio.MD_Down && buttonType == elevio.BT_HallDown)
+		isCabButton := buttonType == elevio.BT_Cab
+		isStopped := elev.Direction == elevio.MD_Stop
+
+		if isRequested && (isDirectionMatch || isCabButton || isStopped) {
+			return elev.Floor, buttonType
 		}
 	}
+	// defaults to this as an error indicating that it is stuck at the bottom
 	return -1, elevio.BT_HallUp
 }
 

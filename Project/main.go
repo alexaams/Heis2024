@@ -1,7 +1,7 @@
 package main
 
 import (
-	"ProjectHeis/drivers/config"
+	"ProjectHeis/config"
 	"ProjectHeis/drivers/elevio"
 	"ProjectHeis/network/bcast"
 	"ProjectHeis/network/localip"

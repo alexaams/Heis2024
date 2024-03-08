@@ -9,13 +9,15 @@ import (
 func checkFileExists(folderName, fileName string) error {
 	workingDirectory, err := os.Getwd()
 	if err != nil {
-		return fmt.Errorf("Getting Working dir: %w", err)
+		return fmt.Errorf("getting working dir: %w", err)
 	}
 
 	folderPath := filepath.Join(workingDirectory, folderName)
 	// Check if the folder exists, create it if not
-	if err := os.Mkdir(folderPath, 0755); err != nil { // 0755 permissions allow the owner to read/write/execute, others to read/execute
-		return fmt.Errorf("creating folder '%s': %w", folderName, err)
+	if _, err := os.Stat(folderPath); os.IsNotExist(err) {
+		if err := os.Mkdir(folderPath, 0755); err != nil {
+			return fmt.Errorf("creating folder '%s': %w", folderName, err)
+		}
 	}
 
 	filePath := filepath.Join(folderPath, fileName)
@@ -32,6 +34,27 @@ func checkFileExists(folderName, fileName string) error {
 	return nil
 }
 
-func ReadFile(folderName, fileName string) {
+func WriteToFile(folderName, fileName, msg string) {
+	workingDirectory, err := os.Getwd()
+	if err != nil {
+		fmt.Println("Error getting working directory:", err)
+		return
+	}
 
+	folderPath := filepath.Join(workingDirectory, folderName)
+	filePath := filepath.Join(folderPath, fileName)
+
+	f, err := os.OpenFile(filePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0644) // Ensure file is created if it doesn't exist
+	if err != nil {
+		fmt.Println("Error opening file:", err)
+		return
+	}
+	defer f.Close()
+
+	_, err = fmt.Fprintln(f, msg)
+	if err != nil {
+		fmt.Println("Error writing to file:", err)
+		return
+	}
+	fmt.Println("Successfully wrote to the file:", filePath)
 }
