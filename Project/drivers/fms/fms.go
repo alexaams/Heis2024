@@ -4,6 +4,7 @@ import (
 	"ProjectHeis/drivers/elevator"
 	"ProjectHeis/drivers/elevio"
 	"ProjectHeis/requests"
+	"ProjectHeis/ticker"
 	"fmt"
 )
 
@@ -34,7 +35,7 @@ func FloorCurrent(a int) {
 	case elevator.BehaviorMoving:
 		if requests.IsRequestArrived(cuElevator) {
 			elevio.SetMotorDirection(elevio.MD_Stop)
-			ticks.tickerStart(cuElevator.OpenDuration)
+			ticker.TickerStart(cuElevator.OpenDuration)
 			elevio.SetDoorOpenLamp(true)
 			requests.ClearOneRequest(&cuElevator, elevio.CurrentOrder.BtnEvent)
 			cuElevator.Behavior = elevator.BehaviorOpen
@@ -46,7 +47,7 @@ func FloorCurrent(a int) {
 
 func ObstFound() {
 	if cuElevator.Behavior == elevator.BehaviorOpen {
-		ticks.tickerStart(cuElevator.OpenDuration)
+		ticker.TickerStart(cuElevator.OpenDuration)
 		obschan <- true
 	}
 }
