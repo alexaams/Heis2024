@@ -4,7 +4,6 @@ import (
 	"ProjectHeis/drivers/config"
 	"ProjectHeis/drivers/elevator"
 	"ProjectHeis/drivers/elevio"
-	"fmt"
 )
 
 // Checks current floor to top floor
@@ -50,40 +49,40 @@ func ClearAllRequests(elev *elevator.Elevator) {
 	elev.Requests = tempEmptyRequests
 }
 
-func RequestToElevatorMovement(elev elevator.Elevator) config.BehaviorAndDirection {
+func RequestToElevatorMovement(elev elevator.Elevator) elevator.BehaviorAndDirection {
 	switch elev.Direction {
 	case elevio.MD_Stop:
 		if IsRequestArrived(elev) {
-			return config.BehaviorAndDirection{elevator.BehaviorOpen, elevio.MD_Stop}
+			return elevator.BehaviorAndDirection{elevator.BehaviorOpen, elevio.MD_Stop}
 		} else if IsRequestAbove(elev) {
-			return config.BehaviorAndDirection{elevator.BehaviorMoving, elevio.MD_Up}
+			return elevator.BehaviorAndDirection{elevator.BehaviorMoving, elevio.MD_Up}
 		} else if IsRequestBelow(elev) {
-			return config.BehaviorAndDirection{elevator.BehaviorMoving, elevio.MD_Down}
+			return elevator.BehaviorAndDirection{elevator.BehaviorMoving, elevio.MD_Down}
 		} else {
-			return config.BehaviorAndDirection{elevator.BehaviorIdle, elevio.MD_Stop}
+			return elevator.BehaviorAndDirection{elevator.BehaviorIdle, elevio.MD_Stop}
 		}
 	case elevio.MD_Up:
 		if IsRequestArrived(elev) {
-			return config.BehaviorAndDirection{elevator.BehaviorOpen, elevio.MD_Stop}
+			return elevator.BehaviorAndDirection{elevator.BehaviorOpen, elevio.MD_Stop}
 		} else if IsRequestAbove(elev) {
-			return config.BehaviorAndDirection{elevator.BehaviorMoving, elevio.MD_Up}
+			return elevator.BehaviorAndDirection{elevator.BehaviorMoving, elevio.MD_Up}
 		} else if IsRequestBelow(elev) {
-			return config.BehaviorAndDirection{elevator.BehaviorMoving, elevio.MD_Down}
+			return elevator.BehaviorAndDirection{elevator.BehaviorMoving, elevio.MD_Down}
 		} else {
-			return config.BehaviorAndDirection{elevator.BehaviorIdle, elevio.MD_Stop}
+			return elevator.BehaviorAndDirection{elevator.BehaviorIdle, elevio.MD_Stop}
 		}
 	case elevio.MD_Down:
 		if IsRequestArrived(elev) {
-			return config.BehaviorAndDirection{elevator.BehaviorOpen, elevio.MD_Stop}
+			return elevator.BehaviorAndDirection{elevator.BehaviorOpen, elevio.MD_Stop}
 		} else if IsRequestAbove(elev) {
-			return config.BehaviorAndDirection{elevator.BehaviorMoving, elevio.MD_Up}
+			return elevator.BehaviorAndDirection{elevator.BehaviorMoving, elevio.MD_Up}
 		} else if IsRequestBelow(elev) {
-			return config.BehaviorAndDirection{elevator.BehaviorMoving, elevio.MD_Down}
+			return elevator.BehaviorAndDirection{elevator.BehaviorMoving, elevio.MD_Down}
 		} else {
-			return config.BehaviorAndDirection{elevator.BehaviorIdle, elevio.MD_Stop}
+			return elevator.BehaviorAndDirection{elevator.BehaviorIdle, elevio.MD_Stop}
 		}
 	default:
-		return config.BehaviorAndDirection{elevator.BehaviorIdle, elevio.MD_Stop}
+		return elevator.BehaviorAndDirection{elevator.BehaviorIdle, elevio.MD_Stop}
 	}
 }
 
@@ -96,18 +95,18 @@ func MakeReqList(amountFloors, botFloor int) config.ReqList {
 	return listFloor
 }
 
-func (r config.ReqList) SetFloor(floor int) {
-	if _, ok := r[floor]; ok {
-		r[floor] = true
-	} else {
-		fmt.Println("Floor does not exist")
-	}
-}
+// func (r config.ReqList) SetFloor(floor int) {
+// 	if _, ok := r[floor]; ok {
+// 		r[floor] = true
+// 	} else {
+// 		fmt.Println("Floor does not exist")
+// 	}
+// }
 
-func (r config.ReqList) ClearFloor(floor int) {
-	if _, ok := r[floor]; ok {
-		r[floor] = false
-	} else {
-		fmt.Println("Floor does not exist")
-	}
-}
+// func (r config.ReqList) ClearFloor(floor int) {
+// 	if _, ok := r[floor]; ok {
+// 		r[floor] = false
+// 	} else {
+// 		fmt.Println("Floor does not exist")
+// 	}
+// }

@@ -1,7 +1,10 @@
 package peers
 
 import (
+	"ProjectHeis/drivers/config"
+	"ProjectHeis/drivers/elevator"
 	"ProjectHeis/network/conn"
+	"ProjectHeis/network/localip"
 	"fmt"
 	"net"
 	"sort"
@@ -84,5 +87,25 @@ func Receiver(port int, peerUpdateCh chan<- PeerUpdate) {
 			sort.Strings(p.Lost)
 			peerUpdateCh <- p
 		}
+	}
+}
+
+type PeersConnection struct {
+	Peers []string
+	New   []string
+	Lost  []string
+}
+
+type PeersData struct {
+	Elevator   elevator.Elevator
+	Id         int
+	OrdersHall config.OrdersHall
+}
+
+func InitPeers() PeersData {
+	return PeersData{
+		Elevator:   elevator.InitElevator(),
+		Id:         localip.CreateID(),
+		OrdersHall: config.OrdersHall{},
 	}
 }

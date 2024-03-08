@@ -16,8 +16,6 @@ const (
 	BehaviorObst
 )
 
-const doorOpenDuration = 3.0
-
 // --------------------------------TYPES--------------------------------
 
 type Elevator struct {
@@ -27,6 +25,11 @@ type Elevator struct {
 	OpenDuration float64
 	CabRequests  config.OrdersCab
 	Requests     config.Requests // list default as false
+}
+
+type BehaviorAndDirection struct {
+	Behavior  ElevatorBehavior
+	Direction elevio.MotorDirection
 }
 
 // --------------------------------FUNCTIONS--------------------------------
@@ -66,7 +69,7 @@ func InitElevator() Elevator {
 		Direction:    elevio.MD_Stop,
 		Floor:        -1,
 		Behavior:     BehaviorIdle,
-		OpenDuration: doorOpenDuration,
+		OpenDuration: config.doorOpenDuration,
 	}
 }
 
@@ -78,7 +81,7 @@ func SetElevatorDir(elev *Elevator, dir elevio.MotorDirection) {
 	elev.Direction = dir
 }
 
-func SetElevatorBehaviour(elev *Elevator, behavior ElevBehavior) {
+func SetElevatorBehaviour(elev *Elevator, behavior ElevatorBehavior) {
 	elev.Behavior = behavior
 }
 

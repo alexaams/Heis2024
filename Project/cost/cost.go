@@ -3,6 +3,7 @@ package cost
 import (
 	"ProjectHeis/drivers/config"
 	"ProjectHeis/drivers/elevator"
+	"ProjectHeis/network/peers"
 	"encoding/json"
 	"fmt"
 	"os/exec"
@@ -37,7 +38,7 @@ func OrderEmpty(order config.OrdersHall) bool {
 
 }
 
-func CostFunc(elevatorObject config.PeersData, hallRequests config.OrdersHall, peers config.PeersConnection) config.OrdersHall {
+func CostFunc(elevatorObject peers.PeersData, hallRequests config.OrdersHall, peers peers.PeerUpdate) config.OrdersHall {
 	if OrderEmpty(elevatorObject.OrdersHall) {
 		fmt.Println("No orders available in hall request")
 		return elevatorObject.OrdersHall
