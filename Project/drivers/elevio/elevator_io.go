@@ -27,7 +27,6 @@ var CurrentOrder Order
 // Our additional types over
 // Additional functions
 
-
 //End additional functions
 
 type MotorDirection int
@@ -215,4 +214,22 @@ func ProcessFloorOrder(request Order) {
 	} else {
 		SetMotorDirection(MD_Stop)
 	}
+}
+
+func (bt ButtonType) PrintButtonType() {
+	switch bt {
+	case BT_HallUp:
+		fmt.Println("Direction: Up")
+	case BT_HallDown:
+		fmt.Println("Direction: Down")
+	case BT_Cab:
+		fmt.Println("Cab-button")
+	default:
+		fmt.Println("Button type is N/A")
+	}
+}
+
+func (be ButtonEvent) PrintButtonEvent() {
+	fmt.Printf("Floor: %d\n", be.Floor+1)
+	be.Button.PrintButtonType()
 }

@@ -31,9 +31,9 @@ func main() {
 	//Create channel for button-polling
 	button_channel := make(chan elevio.ButtonEvent)
 	//Create channel for transmitting globalordertable over UDP
-	udp_GlobalOrder_Tx := make(chan config.GlobalOrderTable)
+	udp_GlobalOrder_Tx := make(chan elevio.ButtonEvent)
 	//Create channel for receiving globalordertable over UDP
-	udp_GLobalOrder_Rx := make(chan config.GlobalOrderTable)
+	udp_GLobalOrder_Rx := make(chan elevio.ButtonEvent)
 	//Create channel for sensor-polling
 	//sensor_channel := make(chan int)
 	//Running thread checking ch_HallButton_event
@@ -55,7 +55,7 @@ func main() {
 			}
 		case a := <-udp_GLobalOrder_Rx:
 			fmt.Println("Order received over UDP")
-			a.PrintGlobalOrderTable()
+			a.PrintButtonEvent()
 		}
 	}
 
@@ -63,14 +63,14 @@ func main() {
 
 // ____________________________________________________________
 // Må flyttes senere
-func UpdateGlobalData(GlobalTable config.GlobalOrderTable, ch_HallBtn chan elevio.ButtonEvent, udp_GlobalOrder chan config.GlobalOrderTable) {
+func UpdateGlobalData(GlobalTable config.GlobalOrderTable, ch_HallBtn chan elevio.ButtonEvent, udp_GlobalOrder chan elevio.ButtonEvent) {
 	for {
 		select {
 		case a := <-ch_HallBtn:
 			switch a.Button {
 			case elevio.BT_HallUp, elevio.BT_HallDown:
 				if IsOrderNew(&GlobalTable, a) {
-					udp_GlobalOrder <- GlobalTable
+					udp_GlobalOrder <- a
 					elevio.SetButtonLamp(a.Button, a.Floor, true)
 				}
 				time.Sleep(10 * time.Millisecond)
