@@ -3,6 +3,7 @@ package main
 import (
 	"ProjectHeis/drivers/config"
 	"ProjectHeis/drivers/elevio"
+	"ProjectHeis/network/bcast"
 	"fmt"
 	"time"
 )
@@ -29,14 +30,17 @@ func main() {
 	ch_HallButton_event := make(chan elevio.ButtonEvent)
 	//Create channel for button-polling
 	button_channel := make(chan elevio.ButtonEvent)
-	//Create channel for globalordertable over UDP
-	udp_GlobalOrder := make(chan config.GlobalOrderTable)
+	//Create channel for transmitting globalordertable over UDP
+	udp_GlobalOrder_Tx := make(chan config.GlobalOrderTable)
+	//Create channel for receiving globalordertable over UDP
+	udp_GLobalOrder_Rx := make(chan config.GlobalOrderTable)
 	//Create channel for sensor-polling
 	//sensor_channel := make(chan int)
 	//Running thread checking ch_HallButton_event
-	go UpdateGlobalData(globalOrderTable, ch_HallButton_event, udp_GlobalOrder)
+	go UpdateGlobalData(globalOrderTable, ch_HallButton_event, udp_GlobalOrder_Tx)
 	go elevio.PollButtons(button_channel)
-	go UDP_SendRead_GlobalOrder(udp_GlobalOrder)
+	go bcast.Transmitter(16569, udp_GlobalOrder_Tx)
+	go bcast.Receiver(16569, udp_GLobalOrder_Rx)
 	//go elevio.PollFloorSensor(sensor_channel)
 
 	for {
@@ -45,9 +49,13 @@ func main() {
 			switch a.Button {
 			case elevio.BT_HallUp, elevio.BT_HallDown:
 				ch_HallButton_event <- a
+
 			default:
 				fmt.Println("Nothing happens")
 			}
+		case a := <-udp_GLobalOrder_Rx:
+			fmt.Println("Order received over UDP")
+			a.PrintGlobalOrderTable()
 		}
 	}
 
@@ -150,4 +158,3 @@ for {
 	}
 }
 */
-
