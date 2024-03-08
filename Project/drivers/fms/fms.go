@@ -1,6 +1,7 @@
 package fms
 
 import (
+	"ProjectHeis/drivers/config"
 	"ProjectHeis/drivers/elevator"
 	"ProjectHeis/drivers/elevio"
 	"ProjectHeis/requests"
@@ -13,7 +14,7 @@ var obschan = make(chan bool)
 
 // variables
 var d elevio.MotorDirection = elevio.MD_Up
-var numFloors int = 4
+var numFloors config.NumFloors
 var cuElevator elevator.Elevator
 
 /*func ButtonSelected(a elevio.ButtonEvent) {
@@ -25,6 +26,19 @@ var cuElevator elevator.Elevator
 		request_list.SetFloor(a.Floor)
 	}
 }*/
+func requestUpdates() {
+	var buttonpressed elevio.ButtonEvent
+	switch cuElevator.Behavior {
+	case elevator.BehaviorMoving:
+		elevio.SetMotorDirection(cuElevator.Direction)
+
+	case elevator.BehaviorIdle:
+		set := requests.RequestToElevatorMovement(cuElevator)
+		cuElevator.Behavior = set.Behavior
+		cuElevator.Direction = set.Direction
+		elevBehaviorChan <- cuElevator.Behavior
+	}
+}
 
 func FloorCurrent(a int) {
 	cuElevator.Floor = a
