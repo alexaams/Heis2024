@@ -14,19 +14,20 @@ var elevBehaviorChan = make(chan elevator.ElevatorBehavior)
 var obschan = make(chan bool)
 
 // variables
-var d elevio.MotorDirection = elevio.MD_Up
+// var d elevio.MotorDirection = elevio.MD_Up
 var numFloors = config.NumFloors
 var cuElevator elevator.Elevator
 
-func ButtonSelected(a elevio.ButtonEvent) {
-	request_list := requests.MakeReqList(4, 0)
-	elevio.SetButtonLamp(a.Button, a.Floor, true)
-	//Test
-	if a.Button == elevio.BT_Cab {
-		elevio.SetDoorOpenLamp(false)
-		request_list.SetFloor(a.Floor)
-	}
-}
+// func ButtonSelected(a elevio.ButtonEvent) {
+// 	request_list := requests.MakeReqList(4, 0)
+// 	elevio.SetButtonLamp(a.Button, a.Floor, true)
+// 	//Test
+// 	if a.Button == elevio.BT_Cab {
+// 		elevio.SetDoorOpenLamp(false)
+// 		request_list.SetFloor(a.Floor)
+// 	}
+// }
+
 func requestUpdates() {
 	var buttonpressed elevio.ButtonEvent
 	switch cuElevator.Behavior {

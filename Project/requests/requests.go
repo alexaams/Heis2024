@@ -4,7 +4,6 @@ import (
 	"ProjectHeis/config"
 	"ProjectHeis/drivers/elevator"
 	"ProjectHeis/drivers/elevio"
-	"fmt"
 )
 
 // Checks current floor to top floor
@@ -58,7 +57,7 @@ func ClearAllRequests(elev *elevator.Elevator) {
 
 func ClearRequestBtnReturn(elev elevator.Elevator) (int, elevio.ButtonType) {
 	for ButtonType := elevio.ButtonType(0); ButtonType < elevio.ButtonType(config.NumButtonTypes); ButtonType++ {
-		if elev.Requests[elev.Floor][ButtonType] && ((elev.Direction == elevio.MD_Up && ButtonType == elevio.BT_HallUp) || (elev.Direction == elevio.MD_Down && ButtonType == elevio.HallDown) || ButtonType == elevio.BT_Cab || elev.Direction == elevio.MD_Stop) {
+		if elev.Requests[elev.Floor][ButtonType] && ((elev.Direction == elevio.MD_Up && ButtonType == elevio.BT_HallUp) || (elev.Direction == elevio.MD_Down && ButtonType == elevio.BT_HallDown) || ButtonType == elevio.BT_Cab || elev.Direction == elevio.MD_Stop) {
 			return elev.Floor, ButtonType
 		}
 	}
@@ -111,18 +110,18 @@ func MakeReqList(amountFloors, botFloor int) config.ReqList {
 	return listFloor
 }
 
-func (r config.ReqList) SetFloor(floor int) {
-	if _, ok := r[floor]; ok {
-		r[floor] = true
-	} else {
-		fmt.Println("Floor does not exist")
-	}
-}
+// func (r config.ReqList) SetFloor(floor int) {
+// 	if _, ok := r[floor]; ok {
+// 		r[floor] = true
+// 	} else {
+// 		fmt.Println("Floor does not exist")
+// 	}
+// }
 
-func (r config.ReqList) ClearFloor(floor int) {
-	if _, ok := r[floor]; ok {
-		r[floor] = false
-	} else {
-		fmt.Println("Floor does not exist")
-	}
-}
+// func (r config.ReqList) ClearFloor(floor int) {
+// 	if _, ok := r[floor]; ok {
+// 		r[floor] = false
+// 	} else {
+// 		fmt.Println("Floor does not exist")
+// 	}
+// }
