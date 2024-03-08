@@ -9,9 +9,9 @@ import (
 
 // Checks current floor to top floor
 func IsRequestAbove(elev elevator.Elevator) bool {
-	for floor := elev.Floor + 1; floor <= config.NumFloors; floor++ {
-		for i := 0; i < config.NumButtons; i++ {
-			if elev.Requests[elev.Floor][i] {
+	for floor := elev.Floor; floor < config.NumFloors; floor++ {
+		for button := 0; button < config.NumButtons; button++ {
+			if elev.Requests[floor][button] {
 				return true
 			}
 		}
@@ -22,8 +22,8 @@ func IsRequestAbove(elev elevator.Elevator) bool {
 // Check request from 0 to current floor
 func IsRequestBelow(elev elevator.Elevator) bool {
 	for floor := 0; floor < elev.Floor; floor++ {
-		for i := 0; i < config.NumButtons; i++ {
-			if elev.Requests[elev.Floor][i] {
+		for button := 0; button < config.NumButtons; button++ {
+			if elev.Requests[floor][button] {
 				return true
 			}
 		}
@@ -33,8 +33,8 @@ func IsRequestBelow(elev elevator.Elevator) bool {
 
 // Checks current floor
 func IsRequestArrived(elev elevator.Elevator) bool {
-	for i := 0; i < config.NumButtons; i++ {
-		if elev.Requests[elev.Floor][i] {
+	for button := 0; button < config.NumButtons; button++ {
+		if elev.Requests[elev.Floor][button] {
 			return true
 		}
 	}
@@ -45,17 +45,46 @@ func ClearOneRequest(elev *elevator.Elevator, button elevio.ButtonEvent) {
 	elev.Requests[button.Floor][button.Button] = false
 }
 
-// func ClearAllRequests(elev *elevator.Elevator) {
-// 	for floor := 0; floor < config.NumFloors; floor++ {
-// 		for button := 0; button < config.NumButtons; button++ {
-// 			elev.Requests[floor][button] = false
-// 		}
-// 	}
-// }
-
 func ClearAllRequests(elev *elevator.Elevator) {
-	var temp config.Requests // initialized as default false
-	elev.Requests = temp
+	var tempEmptyRequests config.Requests // initialized as default false
+	elev.Requests = tempEmptyRequests
+}
+
+func RequestToElevatorMovement(elev elevator.Elevator) config.BehaviorAndDirection {
+	switch elev.Direction {
+	case elevio.MD_Stop:
+		if IsRequestArrived(elev) {
+			return config.BehaviorAndDirection{elevator.BehaviorOpen, elevio.MD_Stop}
+		} else if IsRequestAbove(elev) {
+			return config.BehaviorAndDirection{elevator.BehaviorMoving, elevio.MD_Up}
+		} else if IsRequestBelow(elev) {
+			return config.BehaviorAndDirection{elevator.BehaviorMoving, elevio.MD_Down}
+		} else {
+			return config.BehaviorAndDirection{elevator.BehaviorIdle, elevio.MD_Stop}
+		}
+	case elevio.MD_Up:
+		if IsRequestArrived(elev) {
+			return config.BehaviorAndDirection{elevator.BehaviorOpen, elevio.MD_Stop}
+		} else if IsRequestAbove(elev) {
+			return config.BehaviorAndDirection{elevator.BehaviorMoving, elevio.MD_Up}
+		} else if IsRequestBelow(elev) {
+			return config.BehaviorAndDirection{elevator.BehaviorMoving, elevio.MD_Down}
+		} else {
+			return config.BehaviorAndDirection{elevator.BehaviorIdle, elevio.MD_Stop}
+		}
+	case elevio.MD_Down:
+		if IsRequestArrived(elev) {
+			return config.BehaviorAndDirection{elevator.BehaviorOpen, elevio.MD_Stop}
+		} else if IsRequestAbove(elev) {
+			return config.BehaviorAndDirection{elevator.BehaviorMoving, elevio.MD_Up}
+		} else if IsRequestBelow(elev) {
+			return config.BehaviorAndDirection{elevator.BehaviorMoving, elevio.MD_Down}
+		} else {
+			return config.BehaviorAndDirection{elevator.BehaviorIdle, elevio.MD_Stop}
+		}
+	default:
+		return config.BehaviorAndDirection{elevator.BehaviorIdle, elevio.MD_Stop}
+	}
 }
 
 // ----------------- GIVEN ------------------------

@@ -2,6 +2,7 @@ package config
 
 import (
 	"ProjectHeis/drivers/elevator"
+	"ProjectHeis/drivers/elevio"
 	"ProjectHeis/network/localip"
 	"fmt"
 	"strconv"
@@ -47,6 +48,11 @@ type Order struct {
 	ID    int
 }
 
+type BehaviorAndDirection struct {
+	Behavior  elevator.ElevatorBehavior
+	Direction elevio.MotorDirection
+}
+
 type GlobalOrders [NumFloors][2]Order
 
 // -------------------------------FUNCTIONS--------------------------------
@@ -68,7 +74,7 @@ func CreateID() int {
 	}
 	idInt, err := strconv.Atoi(idStr)
 	if err != nil {
-		fmt.Println("Error Converting stringID to Int: " + e)
+		fmt.Println("Error Converting stringID to Int: ", err)
 	}
 	return idInt
 }

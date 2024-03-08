@@ -7,13 +7,13 @@ import (
 
 // --------------------------------VALUES--------------------------------
 
-type ElevBehavior int
+type ElevatorBehavior int
 
 const (
-	BehaviorIdle ElevBehavior = iota
+	BehaviorIdle ElevatorBehavior = iota
 	BehaviorMoving
 	BehaviorOpen
-	BehavoirObst
+	BehaviorObst
 )
 
 const doorOpenDuration = 3.0
@@ -23,7 +23,7 @@ const doorOpenDuration = 3.0
 type Elevator struct {
 	Floor        int
 	Direction    elevio.MotorDirection
-	Behavior     ElevBehavior // 0:idle, 1:open, 2:moving, 3: obst
+	Behavior     ElevatorBehavior // 0:idle, 1:open, 2:moving, 3: obst
 	OpenDuration float64
 	CabRequests  config.OrdersCab
 	Requests     config.Requests // list default as false
@@ -40,7 +40,7 @@ func ElevatorBehaviorToString(elev Elevator) string {
 		return "moving"
 	case BehaviorOpen:
 		return "open"
-	case BehavoirObst:
+	case BehaviorObst:
 		return "obst"
 	default:
 		return "undefined"
