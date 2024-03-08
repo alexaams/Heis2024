@@ -22,12 +22,14 @@ func main() {
 	elevio.Init("localhost:15657", config.NumFloors)
 	//Set all button lamps to off
 	//REMOVE THIS LATER!
+	//__________________________
 	elevio.SetButtonLamp(elevio.BT_HallUp, 0, false)
 	elevio.SetButtonLamp(elevio.BT_HallDown, 1, false)
 	elevio.SetButtonLamp(elevio.BT_HallUp, 1, false)
 	elevio.SetButtonLamp(elevio.BT_HallDown, 2, false)
 	elevio.SetButtonLamp(elevio.BT_HallUp, 2, false)
 	elevio.SetButtonLamp(elevio.BT_HallDown, 3, false)
+	//__________________________
 
 	//Create and asssign ID
 	id := config.CreateID()
@@ -43,6 +45,9 @@ func main() {
 	udp_GlobalOrder_Tx := make(chan elevio.ButtonEvent)
 	//Create channel for receiving globalordertable over UDP
 	udp_GLobalOrder_Rx := make(chan elevio.ButtonEvent)
+
+	//Startup-procedure--------------------------------
+
 	//Create channel for sensor-polling
 	//sensor_channel := make(chan int)
 	//Running thread checking ch_HallButton_event
@@ -120,15 +125,54 @@ func UDP_SendRead_GlobalOrder(udp_GlobalOrder chan config.GlobalOrderTable) {
 	}
 }
 
+//NOT TESTED_______________________________________________________
+
+func BackupRequestHandler(isMaster bool, reqChanTx chan config.GlobalOrderTable, reqChanRx chan bool, GlobalTable config.GlobalOrderTable) {
+	if isMaster {
+		for {
+			select {
+			case <-reqChanRx:
+				reqChanTx <- GlobalTable
+			default:
+				continue
+			}
+		}
+	}
+}
+
+func ReceiveBackup(askedForBackup bool, reqChanRx chan config.GlobalOrderTable, GlobalTable *config.GlobalOrderTable) {
+	if askedForBackup {
+		for {
+			select {
+			case a := <-reqChanRx:
+				fmt.Println("Backup received")
+				*GlobalTable = a
+			default:
+				continue
+			}
+		}
+	}
+}
+
+func SendBackupRequest(askedForBackup *bool, reqChanTx chan bool) {
+	reqChanTx <- true
+	*askedForBackup = true
+	time.Sleep(10 * time.Millisecond)
+}
+
+func InitiatingProcedure(id int) {
+
+}
+
 /*
-Neste steg (Jørgen):
-1. Primary og backup
-
-2. Påse at heartbeat/watchdog kjører i bakgrunnen som tiltenkt
-
-3. Alle heiser skal ha en lokal PeersData. Vi lager en thread som leser sine knapper, sjekker
-opp mot Peersdata, og broadcaster eventuelt ut en melding om at nå er det ny ordre ved mismatch mot
-Peersdata. Alle skal kvittere på denne meldingen.
+ORDNE:
+* Lag en initieringsprosess som henter ut liste over alle noder i nettverket.
+* Deretter skal den sende en request om å få ordreliste.
+* Lag og test funksjoner for å sende og motta ordreliste.
+* Se om du kan gjøre main-koden mer kompakt ved å deklarere kanaler inne i funksjonene.
+* Få et overblikk over andre løsninger, for å se hvor mange kanaler over UDP som er i bruk der.
+* Finn ut hva slags kø-system som burde brukes (ikke bruke kø-system?)
+* Busy-waiting, risikerer vi det når vi har default-case? ChatGpT sier så.
 */
 
 /* OLD CODE
