@@ -53,36 +53,36 @@ func RequestToElevatorMovement(elev elevator.Elevator) elevator.BehaviorAndDirec
 	switch elev.Direction {
 	case elevio.MD_Stop:
 		if IsRequestArrived(elev) {
-			return elevator.BehaviorAndDirection{elevator.BehaviorOpen, elevio.MD_Stop}
+			return elevator.BehaviorAndDirection{Behavior: elevator.BehaviorOpen, Direction: elevio.MD_Stop}
 		} else if IsRequestAbove(elev) {
-			return elevator.BehaviorAndDirection{elevator.BehaviorMoving, elevio.MD_Up}
+			return elevator.BehaviorAndDirection{Behavior: elevator.BehaviorMoving, Direction: elevio.MD_Up}
 		} else if IsRequestBelow(elev) {
-			return elevator.BehaviorAndDirection{elevator.BehaviorMoving, elevio.MD_Down}
+			return elevator.BehaviorAndDirection{Behavior: elevator.BehaviorMoving, Direction: elevio.MD_Down}
 		} else {
-			return elevator.BehaviorAndDirection{elevator.BehaviorIdle, elevio.MD_Stop}
+			return elevator.BehaviorAndDirection{Behavior: elevator.BehaviorIdle, Direction: elevio.MD_Stop}
 		}
 	case elevio.MD_Up:
 		if IsRequestArrived(elev) {
-			return elevator.BehaviorAndDirection{elevator.BehaviorOpen, elevio.MD_Stop}
+			return elevator.BehaviorAndDirection{Behavior: elevator.BehaviorOpen, Direction: elevio.MD_Stop}
 		} else if IsRequestAbove(elev) {
-			return elevator.BehaviorAndDirection{elevator.BehaviorMoving, elevio.MD_Up}
+			return elevator.BehaviorAndDirection{Behavior: elevator.BehaviorMoving, Direction: elevio.MD_Up}
 		} else if IsRequestBelow(elev) {
-			return elevator.BehaviorAndDirection{elevator.BehaviorMoving, elevio.MD_Down}
+			return elevator.BehaviorAndDirection{Behavior: elevator.BehaviorMoving, Direction: elevio.MD_Down}
 		} else {
-			return elevator.BehaviorAndDirection{elevator.BehaviorIdle, elevio.MD_Stop}
+			return elevator.BehaviorAndDirection{Behavior: elevator.BehaviorIdle, Direction: elevio.MD_Stop}
 		}
 	case elevio.MD_Down:
 		if IsRequestArrived(elev) {
-			return elevator.BehaviorAndDirection{elevator.BehaviorOpen, elevio.MD_Stop}
+			return elevator.BehaviorAndDirection{Behavior: elevator.BehaviorOpen, Direction: elevio.MD_Stop}
 		} else if IsRequestAbove(elev) {
-			return elevator.BehaviorAndDirection{elevator.BehaviorMoving, elevio.MD_Up}
+			return elevator.BehaviorAndDirection{Behavior: elevator.BehaviorMoving, Direction: elevio.MD_Up}
 		} else if IsRequestBelow(elev) {
-			return elevator.BehaviorAndDirection{elevator.BehaviorMoving, elevio.MD_Down}
+			return elevator.BehaviorAndDirection{Behavior: elevator.BehaviorMoving, Direction: elevio.MD_Down}
 		} else {
-			return elevator.BehaviorAndDirection{elevator.BehaviorIdle, elevio.MD_Stop}
+			return elevator.BehaviorAndDirection{Behavior: elevator.BehaviorIdle, Direction: elevio.MD_Stop}
 		}
 	default:
-		return elevator.BehaviorAndDirection{elevator.BehaviorIdle, elevio.MD_Stop}
+		return elevator.BehaviorAndDirection{Behavior: elevator.BehaviorIdle, Direction: elevio.MD_Stop}
 	}
 }
 

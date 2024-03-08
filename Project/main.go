@@ -4,8 +4,10 @@ import (
 	"ProjectHeis/drivers/config"
 	"ProjectHeis/drivers/elevio"
 	"ProjectHeis/network/bcast"
+	"ProjectHeis/network/localip"
 	"ProjectHeis/network/peers"
 	"fmt"
+	"strconv"
 	"time"
 )
 
@@ -21,14 +23,14 @@ type HelloMsg struct {
 func main() {
 
 	//Create and asssign ID
-	id := config.CreateID()
+	id := localip.CreateID()
 
 	//ID-channel - updates (new and lost peers)
 	peerUpdateCh := make(chan peers.PeerUpdate)
 	//Enable-transmit-channel
 	peerTxEnable := make(chan bool)
 	//Transmit- and receive-threads
-	go peers.Transmitter(15647, id, peerTxEnable)
+	go peers.Transmitter(15647, strconv.Itoa(id), peerTxEnable)
 	go peers.Receiver(15647, peerUpdateCh)
 
 	// We make channels for sending and receiving our custom data types
@@ -41,7 +43,7 @@ func main() {
 
 	// The example message. We just send one of these every second.
 	go func() {
-		helloMsg := HelloMsg{"Hello from " + id, 0}
+		helloMsg := HelloMsg{"Hello from ", id}
 		for {
 			helloMsg.Iter++
 			helloTx <- helloMsg
@@ -65,7 +67,7 @@ func main() {
 }
 
 // Må flyttes senere
-func UpdatePeersdata(localPeersdata config.PeersData) {
+func UpdatePeersdata(localPeersdata peers.PeersData) {
 	ch_hallBtn := make(chan elevio.ButtonEvent)
 	go elevio.PollButtons(ch_hallBtn)
 
