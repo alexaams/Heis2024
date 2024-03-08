@@ -4,6 +4,7 @@ import (
 	"ProjectHeis/config"
 	"ProjectHeis/drivers/elevator"
 	"ProjectHeis/drivers/elevio"
+	"fmt"
 )
 
 // Checks current floor to top floor
@@ -101,18 +102,18 @@ func MakeReqList(amountFloors, botFloor int) config.ReqList {
 	return listFloor
 }
 
-// func (r config.ReqList) SetFloor(floor int) {
-// 	if _, ok := r[floor]; ok {
-// 		r[floor] = true
-// 	} else {
-// 		fmt.Println("Floor does not exist")
-// 	}
-// }
+func (r config.ReqList) SetFloor(floor int) {
+	if _, ok := r[floor]; ok {
+		r[floor] = true
+	} else {
+		fmt.Println("Floor does not exist")
+	}
+}
 
-// func (r config.ReqList) ClearFloor(floor int) {
-// 	if _, ok := r[floor]; ok {
-// 		r[floor] = false
-// 	} else {
-// 		fmt.Println("Floor does not exist")
-// 	}
-// }
+func (r config.ReqList) ClearFloor(floor int) {
+	if _, ok := r[floor]; ok {
+		r[floor] = false
+	} else {
+		fmt.Println("Floor does not exist")
+	}
+}

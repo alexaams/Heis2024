@@ -1,10 +1,11 @@
 package fms
 
 import (
-	"ProjectHeis/drivers/config"
+	"ProjectHeis/config"
 	"ProjectHeis/drivers/elevator"
 	"ProjectHeis/drivers/elevio"
 	"ProjectHeis/requests"
+	"ProjectHeis/ticker"
 	"fmt"
 )
 
@@ -14,18 +15,18 @@ var obschan = make(chan bool)
 
 // variables
 var d elevio.MotorDirection = elevio.MD_Up
-var numFloors config.NumFloors
+var numFloors = config.NumFloors
 var cuElevator elevator.Elevator
 
-/*func ButtonSelected(a elevio.ButtonEvent) {
-	request_list := config.MakeReqList(4, 0)
+func ButtonSelected(a elevio.ButtonEvent) {
+	request_list := requests.MakeReqList(4, 0)
 	elevio.SetButtonLamp(a.Button, a.Floor, true)
 	//Test
 	if a.Button == elevio.BT_Cab {
 		elevio.SetDoorOpenLamp(false)
 		request_list.SetFloor(a.Floor)
 	}
-}*/
+}
 func requestUpdates() {
 	var buttonpressed elevio.ButtonEvent
 	switch cuElevator.Behavior {
@@ -48,7 +49,7 @@ func FloorCurrent(a int) {
 	case elevator.BehaviorMoving:
 		if requests.IsRequestArrived(cuElevator) {
 			elevio.SetMotorDirection(elevio.MD_Stop)
-			ticks.tickerStart(cuElevator.OpenDuration)
+			ticker.TickerStart(cuElevator.OpenDuration)
 			elevio.SetDoorOpenLamp(true)
 			requests.ClearOneRequest(&cuElevator, elevio.CurrentOrder.BtnEvent)
 			cuElevator.Behavior = elevator.BehaviorOpen
@@ -60,7 +61,7 @@ func FloorCurrent(a int) {
 
 func ObstFound() {
 	if cuElevator.Behavior == elevator.BehaviorOpen {
-		ticks.tickerStart(cuElevator.OpenDuration)
+		ticker.TickerStart(cuElevator.OpenDuration)
 		obschan <- true
 	}
 }
