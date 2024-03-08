@@ -17,6 +17,12 @@ type PeerUpdate struct {
 	Lost  []string
 }
 
+type PeersData struct {
+	Elevator   elevator.Elevator
+	Id         int
+	OrdersHall config.OrdersHall
+}
+
 const interval = 15 * time.Millisecond
 const timeout = 500 * time.Millisecond
 
@@ -88,18 +94,6 @@ func Receiver(port int, peerUpdateCh chan<- PeerUpdate) {
 			peerUpdateCh <- p
 		}
 	}
-}
-
-type PeersConnection struct {
-	Peers []string
-	New   []string
-	Lost  []string
-}
-
-type PeersData struct {
-	Elevator   elevator.Elevator
-	Id         int
-	OrdersHall config.OrdersHall
 }
 
 func InitPeers() PeersData {

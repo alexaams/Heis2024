@@ -5,7 +5,7 @@ const NumElevators int = 3
 const NumFloors int = 4
 const NumButtons int = 3
 const BackupFile string = "systemBackup.txt"
-const doorOpenDuration float64 = 4.0 // [s] open door duration
+const DoorOpenDuration float64 = 4.0 // [s] open door duration
 
 var ElevatorID int = -1
 

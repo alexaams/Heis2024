@@ -69,7 +69,7 @@ func InitElevator() Elevator {
 		Direction:    elevio.MD_Stop,
 		Floor:        -1,
 		Behavior:     BehaviorIdle,
-		OpenDuration: config.doorOpenDuration,
+		OpenDuration: config.DoorOpenDuration,
 	}
 }
 
