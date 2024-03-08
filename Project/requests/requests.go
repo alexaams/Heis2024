@@ -1,7 +1,7 @@
 package requests
 
 import (
-	"ProjectHeis/drivers/config"
+	"ProjectHeis/config"
 	"ProjectHeis/drivers/elevator"
 	"ProjectHeis/drivers/elevio"
 )
@@ -9,7 +9,7 @@ import (
 // Checks current floor to top floor
 func IsRequestAbove(elev elevator.Elevator) bool {
 	for floor := elev.Floor; floor < config.NumFloors; floor++ {
-		for button := 0; button < config.NumButtons; button++ {
+		for button := 0; button < config.NumButtonTypes; button++ {
 			if elev.Requests[floor][button] {
 				return true
 			}
@@ -21,7 +21,7 @@ func IsRequestAbove(elev elevator.Elevator) bool {
 // Check request from 0 to current floor
 func IsRequestBelow(elev elevator.Elevator) bool {
 	for floor := 0; floor < elev.Floor; floor++ {
-		for button := 0; button < config.NumButtons; button++ {
+		for button := 0; button < config.NumButtonTypes; button++ {
 			if elev.Requests[floor][button] {
 				return true
 			}
@@ -32,7 +32,7 @@ func IsRequestBelow(elev elevator.Elevator) bool {
 
 // Checks current floor
 func IsRequestArrived(elev elevator.Elevator) bool {
-	for button := 0; button < config.NumButtons; button++ {
+	for button := 0; button < config.NumButtonTypes; button++ {
 		if elev.Requests[elev.Floor][button] {
 			return true
 		}
@@ -42,6 +42,12 @@ func IsRequestArrived(elev elevator.Elevator) bool {
 
 func ClearOneRequest(elev *elevator.Elevator, button elevio.ButtonEvent) {
 	elev.Requests[button.Floor][button.Button] = false
+}
+
+func ClearRequests(elev *elevator.Elevator, buttons []elevio.ButtonEvent) {
+	for _, button := range buttons {
+		elev.Requests[button.Floor][button.Button] = false
+	}
 }
 
 func ClearAllRequests(elev *elevator.Elevator) {

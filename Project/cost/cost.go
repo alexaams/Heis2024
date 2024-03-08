@@ -1,7 +1,7 @@
 package cost
 
 import (
-	"ProjectHeis/drivers/config"
+	"ProjectHeis/config"
 	"ProjectHeis/drivers/elevator"
 	"ProjectHeis/network/peers"
 	"encoding/json"

@@ -4,11 +4,10 @@ import (
 	"ProjectHeis/drivers/elevator"
 	"ProjectHeis/drivers/elevio"
 	"ProjectHeis/requests"
-	"ProjectHeis/ticker"
 	"fmt"
 )
 
-//channels
+// channels
 var elevBehaviorChan = make(chan elevator.ElevatorBehavior)
 var obschan = make(chan bool)
 
@@ -35,7 +34,7 @@ func FloorCurrent(a int) {
 	case elevator.BehaviorMoving:
 		if requests.IsRequestArrived(cuElevator) {
 			elevio.SetMotorDirection(elevio.MD_Stop)
-			ticker.TickerStart(cuElevator.OpenDuration)
+			ticks.tickerStart(cuElevator.OpenDuration)
 			elevio.SetDoorOpenLamp(true)
 			requests.ClearOneRequest(&cuElevator, elevio.CurrentOrder.BtnEvent)
 			cuElevator.Behavior = elevator.BehaviorOpen
@@ -47,7 +46,7 @@ func FloorCurrent(a int) {
 
 func ObstFound() {
 	if cuElevator.Behavior == elevator.BehaviorOpen {
-		ticker.TickerStart(cuElevator.OpenDuration)
+		ticks.tickerStart(cuElevator.OpenDuration)
 		obschan <- true
 	}
 }

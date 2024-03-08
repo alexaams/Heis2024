@@ -3,8 +3,9 @@ package config
 // --------------------------------GLOBALS--------------------------------
 const NumElevators int = 3
 const NumFloors int = 4
-const NumButtons int = 3
-const BackupFile string = "systemBackup.txt"
+const NumButtonTypes int = 3
+const BackupFile string = "SystemBackup.txt"
+const BackupDir string = "BackupFiles"
 const DoorOpenDuration float64 = 4.0 // [s] open door duration
 
 var ElevatorID int = -1
@@ -17,7 +18,7 @@ type OrdersAckTable []AckList
 type OrdersCab [NumFloors]bool
 
 type OrdersHall [NumFloors][2]bool // [floor][False]: ned [floor][True]: OPP
-type Requests [NumFloors][NumButtons]bool
+type Requests [NumFloors][NumButtonTypes]bool
 
 // --------------------------------STRUCTS--------------------------------
 

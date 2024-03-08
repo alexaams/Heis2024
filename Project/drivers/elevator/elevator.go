@@ -1,7 +1,7 @@
 package elevator
 
 import (
-	"ProjectHeis/drivers/config"
+	"ProjectHeis/config"
 	"ProjectHeis/drivers/elevio"
 )
 
@@ -35,8 +35,7 @@ type BehaviorAndDirection struct {
 // --------------------------------FUNCTIONS--------------------------------
 
 func ElevatorBehaviorToString(elev Elevator) string {
-	behavior := elev.Behavior
-	switch behavior {
+	switch elev.Behavior {
 	case BehaviorIdle:
 		return "idle"
 	case BehaviorMoving:
@@ -51,8 +50,7 @@ func ElevatorBehaviorToString(elev Elevator) string {
 }
 
 func ElevatorDirectionToString(elev Elevator) string {
-	dir := elev.Direction
-	switch dir {
+	switch elev.Direction {
 	case elevio.MD_Stop:
 		return "stop"
 	case elevio.MD_Up:

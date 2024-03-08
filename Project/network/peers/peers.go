@@ -1,7 +1,7 @@
 package peers
 
 import (
-	"ProjectHeis/drivers/config"
+	"ProjectHeis/config"
 	"ProjectHeis/drivers/elevator"
 	"ProjectHeis/network/conn"
 	"ProjectHeis/network/localip"
