@@ -2,6 +2,7 @@ package fms
 
 import (
 	"ProjectHeis/config"
+	"ProjectHeis/cost"
 	"ProjectHeis/drivers/elevator"
 	"ProjectHeis/drivers/elevio"
 	"ProjectHeis/network/peers"
@@ -20,6 +21,7 @@ var peerMsgChan = make(chan peers.PeersData)
 // var d elevio.MotorDirection = elevio.MD_Up
 var numFloors = config.NumFloors
 var cuElevator elevator.Elevator
+var nodeElevator peers.PeersData
 
 // func ButtonSelected(a elevio.ButtonEvent) {
 // 	request_list := requests.MakeReqList(4, 0)
@@ -150,6 +152,20 @@ func lampChange() {
 	}
 }
 
+func updateOrders(hallOrderChan chan config.OrdersHall) {
+	nodeElevator.OrdersHall = cost.CostFunc(nodeElevator, nodeElevator.OrdersHall, peers.PeerUpdate)
+}
+
+func btnEventHandler(btnEvent elevio.ButtonEvent, orderChan chan []bool) {
+	if btnEvent.Button == elevio.BT_Cab {
+		cuElevator.CabRequests[btnEvent.Floor] = true
+		orderChan <- cuElevator.CabRequests[:]
+	} else {
+		cuElevator.Requests[btnEvent.Floor][btnEvent.Button] = true
+
+	}
+}
+
 func eventHandling(orderChan chan []bool) {
 	var (
 		hallOrderChan  = make(chan config.OrdersHall)
@@ -169,10 +185,13 @@ func eventHandling(orderChan chan []bool) {
 	for {
 		select {
 		case <-timer.C:
-			if len(peers.PeerUpdate.Lost) > 0 { // TODO: fiks et globalt PeerUpdate object, da kan lista len
-
+			if len(peers.PeerUpdate.Lost) > 0 {
+				//legg til peers data
 			}
+		case btnEvent := <-drv_buttons:
+
 		}
+
 	}
 
 }
