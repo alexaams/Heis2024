@@ -76,7 +76,7 @@ func UpdatePeersdata(localPeersdata peers.PeersData) {
 		case a := <-ch_hallBtn:
 			if a.Button == elevio.BT_HallUp || a.Button == elevio.BT_HallDown {
 				for floor := 0; floor < config.NumFloors; floor++ {
-					if !localPeersdata.OrdersHall[floor][a.Button] {
+					if !localPeersdata.SingleOrdersHall[floor][a.Button] {
 						fmt.Println("Sending message")
 					}
 				}

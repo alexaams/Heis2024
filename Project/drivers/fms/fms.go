@@ -5,6 +5,7 @@ import (
 	"ProjectHeis/cost"
 	"ProjectHeis/drivers/elevator"
 	"ProjectHeis/drivers/elevio"
+	"ProjectHeis/network/bcast"
 	"ProjectHeis/network/peers"
 	"ProjectHeis/requests"
 	"ProjectHeis/ticker"
@@ -161,6 +162,26 @@ func updateOrders(hallOrderChan chan config.OrdersHall) {
 	hallOrderChan <- nodeElevator.SingleOrdersHall
 }
 
+func newPeersData(msg peers.PeersData) bool {
+	newOrder := false
+	peersDataMap[msg.Id] = msg
+	newOrderGlobal := make(config.OrdersHall, config.NumFloors)
+	for i := range nodeElevator.GlobalOrderHall {
+		for j := 0; j < 2; j++ {
+			if msg.GlobalOrderHall[i][j] {
+				newOrderGlobal[i][j] = true
+				if !nodeElevator.GlobalOrderHall[i][j] {
+					newOrder = true
+				}
+			} else {
+				newOrderGlobal[i][j] = nodeElevator.GlobalOrderHall[i][j]
+			}
+		}
+	}
+	nodeElevator.GlobalOrderHall = newOrderGlobal
+	return newOrder
+}
+
 func btnEventHandler(btnEvent elevio.ButtonEvent, orderChan chan []bool, hallOrderChan chan config.OrdersHall) {
 	if btnEvent.Button == elevio.BT_Cab {
 		cuElevator.CabRequests[btnEvent.Floor] = true
@@ -193,9 +214,10 @@ func orderCompleteHandler(orderComplete elevio.ButtonEvent) {
 
 func eventHandling(orderChan chan []bool) {
 	var (
-		hallOrderChan  = make(chan config.OrdersHall)
-		elevUpdateChan = make(chan elevator.Elevator)
-		//bcastReadChan     = make(chan peers.PeersData)
+		hallOrderChan     = make(chan config.OrdersHall)
+		elevUpdateChan    = make(chan elevator.Elevator)
+		bcastReadChan     = make(chan peers.PeersData)
+		bcastTransChan    = make(chan peers.PeersData)
 		orderCompleteChan = make(chan elevio.ButtonEvent)
 		drv_buttons       = make(chan elevio.ButtonEvent)
 		timer             = time.NewTicker(300 * time.Millisecond)
@@ -203,8 +225,8 @@ func eventHandling(orderChan chan []bool) {
 	defer timer.Stop()
 
 	go elevio.PollButtons(drv_buttons)
-	//go bcast.Transmitter(peerMsgChan)
-	//go bcast.Receiver(bcastReadChan)
+	go bcast.Transmitter(18297, bcastTransChan)
+	go bcast.Receiver(18923, bcastReadChan)
 	go fms(hallOrderChan, orderChan)
 	go sendFinishedData(elevUpdateChan, orderCompleteChan)
 
@@ -212,6 +234,10 @@ func eventHandling(orderChan chan []bool) {
 		select {
 		case <-timer.C:
 			if len(peersUpdate.Lost) > 0 {
+				updateOrders(hallOrderChan)
+			}
+		case msg := <-bcastReadChan:
+			if newPeersData(msg) {
 				updateOrders(hallOrderChan)
 			}
 		case btnEvent := <-drv_buttons:
