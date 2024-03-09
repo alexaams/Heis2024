@@ -7,14 +7,15 @@ import (
 )
 
 func main() {
-	//Initiating elevator
-	go elevio.Init("localhost:15657", config.NumFloors)
+	//Initiating and starting elevator
+	go fms.InitFms()
 	//Creating ID and initiating heartbeat
 	go peers.PeersHeartBeat()
 	//Initiate PeersData
 	go peers.SendPeersData_init()
 
 	//Få i gang polling av alle knapper, etc
+	
 
 	//Disse knappene skal polles, og alt som endrer på status til en heis, skal sendes til peers.G_Ch_PeersData_Tx
 

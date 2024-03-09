@@ -205,7 +205,9 @@ func eventHandling(orderChan chan []bool) {
 	//go bcast.Receiver(bcastReadChan)
 	go fms(hallOrderChan, orderChan)
 	go sendFinishedData(elevUpdateChan, orderCompleteChan)
-
+	hallOrderChan = make(chan config.OrdersHall)
+	elevUpdateChan = make(chan elevator.Elevator)
+	//bcastReadChan     = make(chan peers.PeersDa
 	for {
 		select {
 		case <-timer.C:
