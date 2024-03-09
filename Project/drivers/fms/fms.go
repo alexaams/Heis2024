@@ -40,7 +40,7 @@ var peersDataMap = make(map[int]peers.PeersData)
 // }
 
 func InitFms() {
-	fmt.Println("Staring FMS")
+	fmt.Println("Starting FMS")
 	eventHandling(updateCabChan)
 	bcastTransChan <- peersElevator
 }
