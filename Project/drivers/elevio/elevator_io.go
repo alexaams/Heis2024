@@ -225,7 +225,7 @@ func (bt ButtonType) PrintButtonType() {
 	case BT_Cab:
 		fmt.Println("Cab-button")
 	default:
-		fmt.Println("Button type is N/A")
+		fmt.Println("Button type is unknown")
 	}
 }
 

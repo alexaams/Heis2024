@@ -49,10 +49,11 @@ func main() {
 	//Startup-procedure--------------------------------
 
 	//Create channel for sensor-polling
-	//sensor_channel := make(chan int)
+	sensor_channel := make(chan int)
 	//Running thread checking ch_HallButton_event
 	go UpdateGlobalData(&globalOrderTable, ch_HallButton_event, udp_GlobalOrder_Tx)
 	go elevio.PollButtons(button_channel)
+	go elevio.PollFloorSensor(sensor_channel)
 	go bcast.Transmitter(16569, udp_GlobalOrder_Tx)
 	go bcast.Receiver(16569, udp_GLobalOrder_Rx)
 	//go elevio.PollFloorSensor(sensor_channel)
@@ -75,6 +76,11 @@ func main() {
 				fmt.Println("Order is new to this node")
 				elevio.SetButtonLamp(a.Button, a.Floor, true)
 			}
+		case a := <-sensor_channel:
+
+			globalOrderTable[a][0].Active = false
+			globalOrderTable[a][0].ElevatorID = -1
+
 		}
 	}
 
@@ -166,6 +172,8 @@ func InitiatingProcedure(id int) {
 
 /*
 ORDNE:
+* Sensorpolling
+* Trenger da også å sette ordre til false igjen
 * Lag en initieringsprosess som henter ut liste over alle noder i nettverket.
 * Deretter skal den sende en request om å få ordreliste.
 * Lag og test funksjoner for å sende og motta ordreliste.
