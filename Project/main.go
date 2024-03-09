@@ -3,6 +3,7 @@ package main
 import (
 	"ProjectHeis/config"
 	"ProjectHeis/drivers/elevio"
+	"ProjectHeis/drivers/fms"
 	"ProjectHeis/network/bcast"
 	"ProjectHeis/network/localip"
 	"ProjectHeis/network/peers"
@@ -52,6 +53,7 @@ func main() {
 	}()
 
 	fmt.Println("Started")
+	go fms.InitFms()
 	for {
 		select {
 		case p := <-peerUpdateCh:
@@ -76,7 +78,7 @@ func UpdatePeersdata(localPeersdata peers.PeersData) {
 		case a := <-ch_hallBtn:
 			if a.Button == elevio.BT_HallUp || a.Button == elevio.BT_HallDown {
 				for floor := 0; floor < config.NumFloors; floor++ {
-					if !localPeersdata.OrdersHall[floor][a.Button] {
+					if !localPeersdata.SingleOrdersHall[floor][a.Button] {
 						fmt.Println("Sending message")
 					}
 				}
