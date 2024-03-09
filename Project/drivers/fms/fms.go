@@ -5,7 +5,6 @@ import (
 	"ProjectHeis/cost"
 	"ProjectHeis/drivers/elevator"
 	"ProjectHeis/drivers/elevio"
-	"ProjectHeis/network/bcast"
 	"ProjectHeis/network/peers"
 	"ProjectHeis/requests"
 	"ProjectHeis/ticker"
@@ -42,7 +41,7 @@ var peersDataMap = make(map[int]peers.PeersData)
 func InitFms() {
 	fmt.Println("Starting FMS")
 	eventHandling(updateCabChan)
-	bcastTransChan <- peersElevator
+	peers.G_Ch_PeersData_Tx <- peersElevator
 }
 
 func requestUpdates() {
@@ -249,12 +248,13 @@ func eventHandling(cabOrderChan chan []bool) {
 		drv_buttons       = make(chan elevio.ButtonEvent)
 		timer             = time.NewTicker(300 * time.Millisecond)
 	)
+
 	defer timer.Stop()
 
 	go elevio.PollButtons(drv_buttons)
-	go bcast.Transmitter(18297, bcastTransChan)
-	go bcast.Receiver(18923, bcastReadChan)
+
 	go fms(hallOrderChan, cabOrderChan)
+
 	go sendFinishedData(elevUpdateChan, orderCompleteChan)
 
 	for {

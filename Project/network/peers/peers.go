@@ -3,6 +3,7 @@ package peers
 import (
 	"ProjectHeis/config"
 	"ProjectHeis/drivers/elevator"
+	"ProjectHeis/network/bcast"
 	"ProjectHeis/network/conn"
 	"ProjectHeis/network/localip"
 	"fmt"
@@ -10,6 +11,10 @@ import (
 	"sort"
 	"time"
 )
+
+// ___________Global variables___________
+var G_Ch_PeersData_Tx = make(chan PeersData)
+var G_Ch_PeersData_Rx = make(chan PeersData)
 
 type PeerUpdate struct {
 	Peers []string
@@ -104,4 +109,9 @@ func InitPeers() PeersData {
 		SingleOrdersHall: config.OrdersHall{},
 		GlobalOrderHall:  config.OrdersHall{},
 	}
+}
+
+func SendPeersData_init() {
+	go bcast.Transmitter(16569, G_Ch_PeersData_Tx)
+	go bcast.Receiver(16569, G_Ch_PeersData_Rx)
 }
