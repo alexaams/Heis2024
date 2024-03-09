@@ -14,14 +14,18 @@ import (
 
 // channels
 var elevBehaviorChan = make(chan elevator.ElevatorBehavior)
+var sendElevDataChan = make(chan bool)
 var obschan = make(chan bool)
 var peerMsgChan = make(chan peers.PeersData)
+var reqFinChan = make(chan elevio.ButtonEvent)
 
 // variables
 // var d elevio.MotorDirection = elevio.MD_Up
 var numFloors = config.NumFloors
 var cuElevator elevator.Elevator
 var nodeElevator peers.PeersData
+var peersUpdate peers.PeerUpdate
+var peersDataMap = make(map[int]peers.PeersData)
 
 // func ButtonSelected(a elevio.ButtonEvent) {
 // 	request_list := requests.MakeReqList(4, 0)
@@ -153,15 +157,34 @@ func lampChange() {
 }
 
 func updateOrders(hallOrderChan chan config.OrdersHall) {
-	nodeElevator.OrdersHall = cost.CostFunc(nodeElevator, nodeElevator.OrdersHall, peers.PeerUpdate)
+	nodeElevator.OrdersHall = cost.CostFunc(nodeElevator, peersDataMap, peersUpdate)
+	hallOrderChan <- nodeElevator.OrdersHall
 }
 
-func btnEventHandler(btnEvent elevio.ButtonEvent, orderChan chan []bool) {
+func btnEventHandler(btnEvent elevio.ButtonEvent, orderChan chan []bool, hallOrderChan chan config.OrdersHall) {
 	if btnEvent.Button == elevio.BT_Cab {
 		cuElevator.CabRequests[btnEvent.Floor] = true
 		orderChan <- cuElevator.CabRequests[:]
 	} else {
 		cuElevator.Requests[btnEvent.Floor][btnEvent.Button] = true
+		updateOrders(hallOrderChan)
+	}
+}
+
+func sendFinishedData(elevDataChan chan<- elevator.Elevator, finishedOrderchan chan<- elevio.ButtonEvent) {
+	for {
+		select {
+		case finReq := <-reqFinChan:
+			finishedOrderchan <- finReq
+		case <-sendElevDataChan:
+			elevDataChan <- cuElevator
+		}
+	}
+}
+
+func orderCompleteHandler(orderComplete elevio.ButtonEvent) {
+	if orderComplete.Button == elevio.BT_Cab {
+		nodeElevator.Elevator.CabRequests[orderComplete.Floor] = false
 
 	}
 }
@@ -181,14 +204,21 @@ func eventHandling(orderChan chan []bool) {
 	//go bcast.Transmitter(peerMsgChan)
 	//go bcast.Receiver(bcastReadChan)
 	go fms(hallOrderChan, orderChan)
+	go sendFinishedData(elevUpdateChan, orderCompleteChan)
 
 	for {
 		select {
 		case <-timer.C:
 			if len(peers.PeerUpdate.Lost) > 0 {
-				//legg til peers data
+				updateOrders(hallOrderChan)
 			}
 		case btnEvent := <-drv_buttons:
+			btnEventHandler(btnEvent, orderChan, hallOrderChan)
+
+		case elevData := <-elevUpdateChan:
+			nodeElevator.Elevator = elevData
+
+		case orderComplete := <-orderCompleteChan:
 
 		}
 

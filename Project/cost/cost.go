@@ -39,9 +39,9 @@ func OrderEmpty(order config.OrdersHall) bool {
 }
 
 func CostFunc(elevatorObject peers.PeersData, dataPeers map[int]peers.PeersData, peers peers.PeerUpdate) config.OrdersHall {
-	if OrderEmpty(elevatorObject.OrdersHall) {
+	if OrderEmpty(elevatorObject.GlobalOrderHall) {
 		fmt.Println("No orders available in hall request")
-		return elevatorObject.OrdersHall
+		return elevatorObject.GlobalOrderHall
 	}
 	hraExecutable := ""
 	switch runtime.GOOS {
@@ -66,7 +66,7 @@ func CostFunc(elevatorObject peers.PeersData, dataPeers map[int]peers.PeersData,
 	}
 
 	input := HRAInput{
-		HallRequests: elevatorObject.OrdersHall, //Dette skal være en globalt gjeldende liste, så vi må få på plass funksjonalitet for å sikre at denne er oppdatert!
+		HallRequests: elevatorObject.GlobalOrderHall, //Dette skal være en globalt gjeldende liste, så vi må få på plass funksjonalitet for å sikre at denne er oppdatert!
 		States:       statesElevators,
 	}
 

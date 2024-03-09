@@ -18,9 +18,10 @@ type PeerUpdate struct {
 }
 
 type PeersData struct {
-	Elevator   elevator.Elevator
-	Id         int
-	OrdersHall config.OrdersHall
+	Elevator         elevator.Elevator
+	Id               int
+	SingleOrdersHall config.OrdersHall
+	GlobalOrderHall  config.OrdersHall
 }
 
 const interval = 15 * time.Millisecond
@@ -98,8 +99,9 @@ func Receiver(port int, peerUpdateCh chan<- PeerUpdate) {
 
 func InitPeers() PeersData {
 	return PeersData{
-		Elevator:   elevator.InitElevator(),
-		Id:         localip.CreateID(),
-		OrdersHall: config.OrdersHall{},
+		Elevator:         elevator.InitElevator(),
+		Id:               localip.CreateID(),
+		SingleOrdersHall: config.OrdersHall{},
+		GlobalOrderHall:  config.OrdersHall{},
 	}
 }
