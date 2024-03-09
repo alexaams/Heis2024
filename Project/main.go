@@ -172,9 +172,8 @@ func InitiatingProcedure(id int) {
 
 /*
 ORDNE:
-* Sensorpolling
-* Trenger da også å sette ordre til false igjen
 * Lag en initieringsprosess som henter ut liste over alle noder i nettverket.
+
 * Deretter skal den sende en request om å få ordreliste.
 * Lag og test funksjoner for å sende og motta ordreliste.
 * Se om du kan gjøre main-koden mer kompakt ved å deklarere kanaler inne i funksjonene.
