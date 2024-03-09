@@ -28,6 +28,4 @@ type Order struct {
 	ID    int
 }
 
-type GlobalOrders [NumFloors][2]Order
-
 // -------------------------------FUNCTIONS--------------------------------

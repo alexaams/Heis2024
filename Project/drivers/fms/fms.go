@@ -157,8 +157,8 @@ func lampChange() {
 }
 
 func updateOrders(hallOrderChan chan config.OrdersHall) {
-	nodeElevator.OrdersHall = cost.CostFunc(nodeElevator, peersDataMap, peersUpdate)
-	hallOrderChan <- nodeElevator.OrdersHall
+	nodeElevator.SingleOrdersHall = cost.CostFunc(nodeElevator, peersDataMap, peersUpdate)
+	hallOrderChan <- nodeElevator.SingleOrdersHall
 }
 
 func btnEventHandler(btnEvent elevio.ButtonEvent, orderChan chan []bool, hallOrderChan chan config.OrdersHall) {
@@ -185,7 +185,9 @@ func sendFinishedData(elevDataChan chan<- elevator.Elevator, finishedOrderchan c
 func orderCompleteHandler(orderComplete elevio.ButtonEvent) {
 	if orderComplete.Button == elevio.BT_Cab {
 		nodeElevator.Elevator.CabRequests[orderComplete.Floor] = false
-
+		//skrive til fil
+	} else {
+		nodeElevator.SingleOrdersHall[orderComplete.Floor][orderComplete.Button] = false
 	}
 }
 
@@ -209,7 +211,7 @@ func eventHandling(orderChan chan []bool) {
 	for {
 		select {
 		case <-timer.C:
-			if len(peers.PeerUpdate.Lost) > 0 {
+			if len(peersUpdate.Lost) > 0 {
 				updateOrders(hallOrderChan)
 			}
 		case btnEvent := <-drv_buttons:
@@ -219,7 +221,7 @@ func eventHandling(orderChan chan []bool) {
 			nodeElevator.Elevator = elevData
 
 		case orderComplete := <-orderCompleteChan:
-
+			orderCompleteHandler(orderComplete)
 		}
 
 	}
