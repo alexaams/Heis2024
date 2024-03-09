@@ -3,6 +3,7 @@ package main
 import (
 	"ProjectHeis/config"
 	"ProjectHeis/drivers/elevio"
+	"ProjectHeis/drivers/fms"
 	"ProjectHeis/network/bcast"
 	"ProjectHeis/network/localip"
 	"ProjectHeis/network/peers"
@@ -52,6 +53,7 @@ func main() {
 	}()
 
 	fmt.Println("Started")
+	go fms.InitFms()
 	for {
 		select {
 		case p := <-peerUpdateCh:

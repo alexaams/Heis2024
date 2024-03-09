@@ -17,14 +17,15 @@ import (
 var elevBehaviorChan = make(chan elevator.ElevatorBehavior)
 var sendElevDataChan = make(chan bool)
 var obschan = make(chan bool)
-var peerMsgChan = make(chan peers.PeersData)
+var bcastTransChan = make(chan peers.PeersData)
 var reqFinChan = make(chan elevio.ButtonEvent)
+var updateCabChan = make(chan []bool, 1)
 
 // variables
 // var d elevio.MotorDirection = elevio.MD_Up
 var numFloors = config.NumFloors
 var cuElevator elevator.Elevator
-var nodeElevator peers.PeersData
+var peersElevator peers.PeersData
 var peersUpdate peers.PeerUpdate
 var peersDataMap = make(map[int]peers.PeersData)
 
@@ -37,6 +38,12 @@ var peersDataMap = make(map[int]peers.PeersData)
 // 		request_list.SetFloor(a.Floor)
 // 	}
 // }
+
+func InitFms() {
+	fmt.Println("Staring FMS")
+	eventHandling(updateCabChan)
+	bcastTransChan <- peersElevator
+}
 
 func requestUpdates() {
 	var buttonpressed elevio.ButtonEvent
@@ -105,7 +112,7 @@ func StopFound(a bool) {
 	}
 }
 
-func fms(hallOrderChan chan config.OrdersHall, orderChan chan []bool) {
+func fms(hallOrderChan chan config.OrdersHall, cabOrderChan chan []bool) {
 
 	elevio.Init("localhost:15657", numFloors)
 
@@ -144,6 +151,27 @@ func fms(hallOrderChan chan config.OrdersHall, orderChan chan []bool) {
 				elevio.SetStopLamp(true)
 				elevio.SetMotorDirection(elevio.MD_Stop)
 			}
+		case hallorders := <-hallOrderChan:
+			hallRequestAssigner(hallorders)
+			requestUpdates()
+
+		case cabOrders := <-cabOrderChan:
+			cabRequestAssigner(cabOrders)
+			requestUpdates()
+		}
+	}
+}
+
+func cabRequestAssigner(orders []bool) {
+	for i, j := range orders {
+		cuElevator.Requests[i][2] = j
+	}
+}
+
+func hallRequestAssigner(orders config.OrdersHall) {
+	for i := 0; i < config.NumFloors; i++ {
+		for j := 0; j < 2; j++ {
+			cuElevator.Requests[i][j] = orders[i][j]
 		}
 	}
 }
@@ -158,34 +186,34 @@ func lampChange() {
 }
 
 func updateOrders(hallOrderChan chan config.OrdersHall) {
-	nodeElevator.SingleOrdersHall = cost.CostFunc(nodeElevator, peersDataMap, peersUpdate)
-	hallOrderChan <- nodeElevator.SingleOrdersHall
+	peersElevator.SingleOrdersHall = cost.CostFunc(peersElevator, peersDataMap, peersUpdate)
+	hallOrderChan <- peersElevator.SingleOrdersHall
 }
 
 func newPeersData(msg peers.PeersData) bool {
 	newOrder := false
 	peersDataMap[msg.Id] = msg
 	newOrderGlobal := make(config.OrdersHall, config.NumFloors)
-	for i := range nodeElevator.GlobalOrderHall {
+	for i := range peersElevator.GlobalOrderHall {
 		for j := 0; j < 2; j++ {
 			if msg.GlobalOrderHall[i][j] {
 				newOrderGlobal[i][j] = true
-				if !nodeElevator.GlobalOrderHall[i][j] {
+				if !peersElevator.GlobalOrderHall[i][j] {
 					newOrder = true
 				}
 			} else {
-				newOrderGlobal[i][j] = nodeElevator.GlobalOrderHall[i][j]
+				newOrderGlobal[i][j] = peersElevator.GlobalOrderHall[i][j]
 			}
 		}
 	}
-	nodeElevator.GlobalOrderHall = newOrderGlobal
+	peersElevator.GlobalOrderHall = newOrderGlobal
 	return newOrder
 }
 
-func btnEventHandler(btnEvent elevio.ButtonEvent, orderChan chan []bool, hallOrderChan chan config.OrdersHall) {
+func btnEventHandler(btnEvent elevio.ButtonEvent, cabOrderChan chan []bool, hallOrderChan chan config.OrdersHall) {
 	if btnEvent.Button == elevio.BT_Cab {
 		cuElevator.CabRequests[btnEvent.Floor] = true
-		orderChan <- cuElevator.CabRequests[:]
+		cabOrderChan <- cuElevator.CabRequests[:]
 	} else {
 		cuElevator.Requests[btnEvent.Floor][btnEvent.Button] = true
 		updateOrders(hallOrderChan)
@@ -205,19 +233,18 @@ func sendFinishedData(elevDataChan chan<- elevator.Elevator, finishedOrderchan c
 
 func orderCompleteHandler(orderComplete elevio.ButtonEvent) {
 	if orderComplete.Button == elevio.BT_Cab {
-		nodeElevator.Elevator.CabRequests[orderComplete.Floor] = false
+		peersElevator.Elevator.CabRequests[orderComplete.Floor] = false
 		//skrive til fil
 	} else {
-		nodeElevator.SingleOrdersHall[orderComplete.Floor][orderComplete.Button] = false
+		peersElevator.SingleOrdersHall[orderComplete.Floor][orderComplete.Button] = false
 	}
 }
 
-func eventHandling(orderChan chan []bool) {
+func eventHandling(cabOrderChan chan []bool) {
 	var (
 		hallOrderChan     = make(chan config.OrdersHall)
 		elevUpdateChan    = make(chan elevator.Elevator)
 		bcastReadChan     = make(chan peers.PeersData)
-		bcastTransChan    = make(chan peers.PeersData)
 		orderCompleteChan = make(chan elevio.ButtonEvent)
 		drv_buttons       = make(chan elevio.ButtonEvent)
 		timer             = time.NewTicker(300 * time.Millisecond)
@@ -227,7 +254,7 @@ func eventHandling(orderChan chan []bool) {
 	go elevio.PollButtons(drv_buttons)
 	go bcast.Transmitter(18297, bcastTransChan)
 	go bcast.Receiver(18923, bcastReadChan)
-	go fms(hallOrderChan, orderChan)
+	go fms(hallOrderChan, cabOrderChan)
 	go sendFinishedData(elevUpdateChan, orderCompleteChan)
 
 	for {
@@ -241,15 +268,16 @@ func eventHandling(orderChan chan []bool) {
 				updateOrders(hallOrderChan)
 			}
 		case btnEvent := <-drv_buttons:
-			btnEventHandler(btnEvent, orderChan, hallOrderChan)
+			btnEventHandler(btnEvent, cabOrderChan, hallOrderChan)
 
 		case elevData := <-elevUpdateChan:
-			nodeElevator.Elevator = elevData
+			peersElevator.Elevator = elevData
 
 		case orderComplete := <-orderCompleteChan:
 			orderCompleteHandler(orderComplete)
 		}
-
+		lampChange()
+		bcastTransChan <- peersElevator
 	}
 
 }

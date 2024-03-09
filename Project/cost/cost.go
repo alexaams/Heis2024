@@ -27,9 +27,11 @@ type HRAInput struct {
 }
 
 func OrderEmpty(order config.OrdersHall) bool {
+	fmt.Println("before", order)
 	for i := 0; i < config.NumFloors; i++ {
 		for j := 0; j < config.NumElevators; j++ {
-			if order[i][j] {
+			fmt.Println("later", order)
+			if bool(order[i][j]) {
 				return false
 			}
 		}
