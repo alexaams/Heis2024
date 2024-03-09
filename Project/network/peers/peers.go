@@ -3,13 +3,20 @@ package peers
 import (
 	"ProjectHeis/config"
 	"ProjectHeis/drivers/elevator"
+	"ProjectHeis/network/bcast"
 	"ProjectHeis/network/conn"
 	"ProjectHeis/network/localip"
 	"fmt"
 	"net"
 	"sort"
+	"strconv"
 	"time"
 )
+
+var G_PeersUpdate PeerUpdate
+var G_PeersData PeersData
+var G_Ch_PeersData_Tx = make(chan PeersData)
+var G_Ch_PeersData_Rx = make(chan PeersData)
 
 type PeerUpdate struct {
 	Peers []string
@@ -55,7 +62,6 @@ func Receiver(port int, peerUpdateCh chan<- PeerUpdate) {
 
 	for {
 		updated := false
-
 		conn.SetReadDeadline(time.Now().Add(interval))
 		n, _, _ := conn.ReadFrom(buf[0:])
 
@@ -104,4 +110,38 @@ func InitPeers() PeersData {
 		SingleOrdersHall: config.OrdersHall{},
 		GlobalOrderHall:  config.OrdersHall{},
 	}
+}
+
+func PeersHeartBeat() {
+	config.ElevatorID = localip.CreateID()
+
+	fmt.Printf("Our ID is: %d\n", config.ElevatorID)
+
+	peerUpdateCh := make(chan PeerUpdate)
+	peerTxEnable := make(chan bool)
+
+	go Transmitter(15647, strconv.Itoa(config.ElevatorID), peerTxEnable)
+	go Receiver(15647, peerUpdateCh)
+
+	fmt.Println("Heartbeat-sequency initiated")
+	for {
+		select {
+		case p := <-peerUpdateCh:
+			G_PeersUpdate = p
+			p.PrintPeersUpdate()
+			//Sende data videre til kostfunksjon
+		}
+	}
+}
+
+func (p PeerUpdate) PrintPeersUpdate() {
+	fmt.Printf("Peer update:\n")
+	fmt.Printf("  Peers:    %q\n", p.Peers)
+	fmt.Printf("  New:      %q\n", p.New)
+	fmt.Printf("  Lost:     %q\n", p.Lost)
+}
+
+func SendPeersData_init() {
+	go bcast.Transmitter(16569, G_Ch_PeersData_Tx)
+	go bcast.Receiver(16569, G_Ch_PeersData_Rx)
 }

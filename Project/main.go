@@ -3,38 +3,33 @@ package main
 import (
 	"ProjectHeis/config"
 	"ProjectHeis/drivers/elevio"
-	"ProjectHeis/network/localip"
 	"ProjectHeis/network/peers"
-	"fmt"
-	"strconv"
 )
 
 func main() {
+	//Initiating elevator
+	go elevio.Init("localhost:15657", config.NumFloors)
+	//Creating ID and initiating heartbeat
+	go peers.PeersHeartBeat()
+	//Initiate PeersData
+	go peers.SendPeersData_init()
 
-	//Create and asssign ID
-	id := localip.CreateID()
+	//Få i gang polling av alle knapper, etc
 
-	//ID-channel - updates (new and lost peers)
-	peerUpdateCh := make(chan peers.PeerUpdate)
-	//Enable-transmit-channel
-	peerTxEnable := make(chan bool)
-	//Transmit- and receive-threads
-	go peers.Transmitter(15647, strconv.Itoa(id), peerTxEnable)
-	go peers.Receiver(15647, peerUpdateCh)
+	//Disse knappene skal polles, og alt som endrer på status til en heis, skal sendes til peers.G_Ch_PeersData_Tx
 
-	fmt.Println("Started")
+	//peers.G_Ch_PeersData_Rx skal inn i kost-funksjon. Kostfunksjon skal da kjøre algoritmen sin, og returnere ordre,
+	//disse ordre sendes i annen kanal? samme kanal?
+
+	//alle heiser tar inn ordre fra over inn i sin heis-modul, og derfra kjøres en lokal algoritme?: finn ut av denne.
+
 	for {
-		select {
-		case p := <-peerUpdateCh:
-			fmt.Printf("Peer update:\n")
-			fmt.Printf("  Peers:    %q\n", p.Peers)
-			fmt.Printf("  New:      %q\n", p.New)
-			fmt.Printf("  Lost:     %q\n", p.Lost)
-		}
+		select {}
 	}
 }
 
 // Må flyttes senere
+/*
 func UpdatePeersdata(localPeersdata peers.PeersData) {
 	ch_hallBtn := make(chan elevio.ButtonEvent)
 	go elevio.PollButtons(ch_hallBtn)
@@ -52,3 +47,4 @@ func UpdatePeersdata(localPeersdata peers.PeersData) {
 		}
 	}
 }
+*/
