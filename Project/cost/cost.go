@@ -38,7 +38,7 @@ func OrderEmpty(order config.OrdersHall) bool {
 
 }
 
-func CostFunc(elevatorObject peers.PeersData, hallRequests config.OrdersHall, peers peers.PeerUpdate) config.OrdersHall {
+func CostFunc(elevatorObject peers.PeersData, dataPeers map[int]peers.PeersData, peers peers.PeerUpdate) config.OrdersHall {
 	if OrderEmpty(elevatorObject.OrdersHall) {
 		fmt.Println("No orders available in hall request")
 		return elevatorObject.OrdersHall
@@ -55,15 +55,18 @@ func CostFunc(elevatorObject peers.PeersData, hallRequests config.OrdersHall, pe
 
 	peersActive := len(peers.Peers)
 	statesElevators := make(map[string]HRAElevState, peersActive)
-	idstring := strconv.Itoa(elevatorObject.Id)
+	idstring := strconv.Itoa(config.ElevatorID)
+	dataPeers[config.ElevatorID] = elevatorObject
 
-	for range statesElevators {
-		id := elevatorObject.Id
-		statesElevators[strconv.Itoa(id)] = elevatorToHRAState(elevatorObject.Elevator)
+	//Mapping all elevators to the algorithm
+	for i := 0; i < peersActive; i++ {
+		id, _ := strconv.Atoi(peers.Peers[i])
+		data := dataPeers[id]
+		statesElevators[strconv.Itoa(id)] = elevatorToHRAState(data.Elevator)
 	}
 
 	input := HRAInput{
-		HallRequests: elevatorObject.OrdersHall,
+		HallRequests: elevatorObject.OrdersHall, //Dette skal være en globalt gjeldende liste, så vi må få på plass funksjonalitet for å sikre at denne er oppdatert!
 		States:       statesElevators,
 	}
 
@@ -99,5 +102,4 @@ func elevatorToHRAState(elev elevator.Elevator) HRAElevState {
 		Direction:   elevator.ElevatorDirectionToString(elev),
 		CabRequests: elev.CabRequests[:],
 	}
-
 }
