@@ -1,11 +1,8 @@
 package init
 
 import (
-	"ProjectHeis/config"
 	"ProjectHeis/config_folder/globals"
 	"ProjectHeis/config_folder/types"
-	"ProjectHeis/drivers/elevator"
-	"ProjectHeis/drivers/elevio"
 	"ProjectHeis/network/localip"
 )
 
@@ -19,18 +16,18 @@ func InitEmptyOrder() types.OrdersHall {
 
 func InitPeers() types.PeersData {
 	return types.PeersData{
-		Elevator:         elevator.InitElevator(),
+		Elevator:         InitElevator(),
 		Id:               localip.CreateID(),
 		SingleOrdersHall: InitEmptyOrder(),
 		GlobalOrderHall:  InitEmptyOrder(),
 	}
 }
 
-func InitElevator() elevator.Elevator {
-	return elevator.Elevator{
-		Direction:    elevio.MD_Stop,
-		Floor:        -1,
+func InitElevator() types.Elevator {
+	return types.Elevator{
+		Direction:    types.MD_Stop,
+		Floor:        globals.ElevatorInitID,
 		Behavior:     types.BehaviorIdle,
-		OpenDuration: config.DoorOpenDuration,
+		OpenDuration: globals.DoorOpenDuration,
 	}
 }

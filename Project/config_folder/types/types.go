@@ -2,8 +2,6 @@ package types
 
 import (
 	"ProjectHeis/config_folder/globals"
-	"ProjectHeis/drivers/elevator"
-	"ProjectHeis/drivers/elevio"
 )
 
 type ReqList map[int]bool
@@ -20,8 +18,8 @@ type MotorDirection int
 
 const (
 	MD_Up   MotorDirection = 1
-	MD_Down                = -1
-	MD_Stop                = 0
+	MD_Down MotorDirection = -1
+	MD_Stop MotorDirection = 0
 )
 
 type ButtonType int
@@ -60,12 +58,21 @@ type Order struct {
 
 type BehaviorAndDirection struct {
 	Behavior  ElevatorBehavior
-	Direction elevio.MotorDirection
+	Direction MotorDirection
 }
 
 type PeersData struct {
-	Elevator         elevator.Elevator
+	Elevator         Elevator
 	Id               int
 	SingleOrdersHall OrdersHall
 	GlobalOrderHall  OrdersHall
+}
+
+type Elevator struct {
+	Floor        int
+	Direction    MotorDirection
+	Behavior     ElevatorBehavior // 0:Idle, 1:Moving, 2:Open, 3: Obst
+	OpenDuration float64
+	CabRequests  OrdersCab
+	Requests     Requests // list default as false
 }
