@@ -34,6 +34,24 @@ type BehaviorAndDirection struct {
 
 // --------------------------------FUNCTIONS--------------------------------
 
+func InitElevator() Elevator {
+	return Elevator{
+		Direction:    elevio.MD_Stop,
+		Floor:        -1,
+		Behavior:     BehaviorIdle,
+		OpenDuration: config.DoorOpenDuration,
+	}
+}
+
+func (elev *Elevator) HasCabRequests() bool {
+	for _, hasRequest := range elev.CabRequests {
+		if hasRequest {
+			return true
+		}
+	}
+	return false
+}
+
 func ElevatorBehaviorToString(elev Elevator) string {
 	switch elev.Behavior {
 	case BehaviorIdle:
@@ -59,15 +77,6 @@ func ElevatorDirectionToString(elev Elevator) string {
 		return "down"
 	default:
 		return "undefined"
-	}
-}
-
-func InitElevator() Elevator {
-	return Elevator{
-		Direction:    elevio.MD_Stop,
-		Floor:        -1,
-		Behavior:     BehaviorIdle,
-		OpenDuration: config.DoorOpenDuration,
 	}
 }
 
