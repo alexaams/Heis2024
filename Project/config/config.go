@@ -29,3 +29,10 @@ type Order struct {
 }
 
 // -------------------------------FUNCTIONS--------------------------------
+func InitEmptyOrder() OrdersHall {
+	OrdersNull := make(OrdersHall, NumFloors)
+	for i := range NumFloors {
+		OrdersNull[i] = [2]bool{false, false}
+	}
+	return OrdersNull
+}

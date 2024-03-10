@@ -29,13 +29,14 @@ type HRAInput struct {
 func OrderEmpty(order config.OrdersHall) bool {
 	fmt.Println("before", order)
 	for i := 0; i < config.NumFloors; i++ {
-		for j := 0; j < config.NumElevators; j++ {
-			fmt.Println("later", order)
+		for j := 0; j < 2; j++ {
 			if bool(order[i][j]) {
+				fmt.Println("later", order)
 				return false
 			}
 		}
 	}
+	fmt.Println("later", order)
 	return true
 
 }
@@ -77,7 +78,7 @@ func CostFunc(elevatorObject peers.PeersData, dataPeers map[int]peers.PeersData,
 		fmt.Println("json.Marshal error: ", err)
 	}
 
-	ret, err := exec.Command("../hall_request_assigner/"+hraExecutable, "-i", string(jsonBytes)).CombinedOutput()
+	ret, err := exec.Command(hraExecutable, "-i", string(jsonBytes)).CombinedOutput()
 	if err != nil {
 		fmt.Println("exec.Command error: ", err)
 		fmt.Println(string(ret))

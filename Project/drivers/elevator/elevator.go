@@ -37,7 +37,7 @@ type BehaviorAndDirection struct {
 func InitElevator() Elevator {
 	return Elevator{
 		Direction:    elevio.MD_Stop,
-		Floor:        -1,
+		Floor:        0,
 		Behavior:     BehaviorIdle,
 		OpenDuration: config.DoorOpenDuration,
 	}
@@ -79,6 +79,8 @@ func ElevatorDirectionToString(elev Elevator) string {
 		return "undefined"
 	}
 }
+
+
 
 func SetElevatorFloor(elev *Elevator, floor int) {
 	elev.Floor = floor

@@ -18,6 +18,7 @@ type HelloMsg struct {
 }
 
 func main() {
+	go peers.PeersHeartBeat()
 	go peers.SendPeersData_init()
 	go fms.InitFms()
 
@@ -25,6 +26,7 @@ func main() {
 		select {
 		case a := <-peers.G_Ch_PeersData_Rx:
 			fmt.Printf("Message from ID: %d\n", a.Id)
+			fmt.Printf("Something: %d\n", a.Elevator.Floor)
 		}
 	}
 }

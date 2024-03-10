@@ -1,9 +1,11 @@
 package ticker
 
-import "time"
+import (
+	"time"
+)
 
 func TickerStart(waitDuration float64) {
-	waitDurations := time.Duration(waitDuration * 1e9)
+	waitDurations := time.Duration(waitDuration) * time.Second
 	startTime := time.Now()
 	ticker := time.NewTicker(1 * time.Second)
 	defer ticker.Stop()
