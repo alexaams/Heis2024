@@ -80,7 +80,6 @@ func RequestToElevatorMovement(elev elevator.Elevator) elevator.BehaviorAndDirec
 	requestAbove := IsRequestAbove(elev)
 	requestBelow := IsRequestBelow(elev)
 
-	// Common logic for opening doors if the elevator has arrived at a request.
 	if requestArrived {
 		return elevator.BehaviorAndDirection{Behavior: elevator.BehaviorOpen, Direction: elevio.MD_Stop}
 	}
@@ -93,7 +92,7 @@ func RequestToElevatorMovement(elev elevator.Elevator) elevator.BehaviorAndDirec
 			return elevator.BehaviorAndDirection{Behavior: elevator.BehaviorMoving, Direction: elevio.MD_Down}
 		}
 	case elevio.MD_Up, elevio.MD_Down:
-		// Handle movement direction based on existing direction and where requests are.
+
 		if requestAbove {
 			return elevator.BehaviorAndDirection{Behavior: elevator.BehaviorMoving, Direction: elevio.MD_Up}
 		} else if requestBelow {

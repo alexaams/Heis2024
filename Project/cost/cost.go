@@ -106,3 +106,41 @@ func elevatorToHRAState(elev elevator.Elevator) HRAElevState {
 		CabRequests: elev.CabRequests[:],
 	}
 }
+
+func specialCaseHandler(elevators []*elevator.Elevator, hallRequests []config.OrdersHall) bool {
+	// Map to keep track of what floors we have requests at
+	requestFloors := make(map[int]bool)
+	for floor := 0; floor < config.NumFloors; floor++ {
+		requestFloors[floor] = true
+	}
+
+	// check for elevators at those unassigned floors
+	for floor := range requestFloors {
+		elevatorAtFloorWithNoCabRequest := false
+		for _, elevator := range elevators {
+			if elevator.Floor == floor && elevator.HasCabRequests() {
+				elevatorAtFloorWithNoCabRequest = true
+				break
+			}
+		}
+		if !elevatorAtFloorWithNoCabRequest {
+			return false
+		}
+
+	}
+
+	for floor := 0; floor < config.NumFloors; floor++ {
+		for _, elevator := range elevators {
+			if elevator.Floor == floor {
+				assignHallRequest(elevator)
+				break
+			}
+		}
+	}
+	return true
+}
+
+// fiks så denne kan bare assigne en request.
+func assignHallRequest(elev *elevator.Elevator) {
+	fmt.Println("Just assign something!")
+}
