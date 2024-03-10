@@ -216,6 +216,9 @@ func lampChange() {
 }
 
 func updateOrders(hallOrderChan chan config.OrdersHall) {
+	fmt.Println("COST PEERSELEV INPUTS: ", peersElevator)
+	fmt.Println("COST PEERDATA INPUT: ", peersDataMap[peersElevator.Id])
+	fmt.Println("COST PEERS PEERSUPDATE: ", peers.G_PeersUpdate)
 	peersElevator.SingleOrdersHall = cost.CostFunc(peersElevator, peersDataMap, peers.G_PeersUpdate)
 	hallOrderChan <- peersElevator.SingleOrdersHall
 }
@@ -245,12 +248,12 @@ func btnEventHandler(btnEvent elevio.ButtonEvent, cabOrderChan chan []bool, hall
 		cuElevator.CabRequests[btnEvent.Floor] = true
 		cabOrderChan <- cuElevator.CabRequests[:]
 		updateOrders(hallOrderChan)
-		hallOrderChan <- peersElevator.GlobalOrderHall
+		hallOrderChan <- peersElevator.SingleOrdersHall
 	} else {
 		cuElevator.Requests[btnEvent.Floor][btnEvent.Button] = true
 		peersElevator.GlobalOrderHall[btnEvent.Floor][btnEvent.Button] = true
 		updateOrders(hallOrderChan)
-		hallOrderChan <- peersElevator.GlobalOrderHall
+		hallOrderChan <- peersElevator.SingleOrdersHall
 	}
 }
 
@@ -261,6 +264,8 @@ func orderCompleteHandler(orderComplete elevio.ButtonEvent) {
 	} else {
 		peersElevator.SingleOrdersHall[orderComplete.Floor][orderComplete.Button] = false
 		peersElevator.GlobalOrderHall[orderComplete.Floor][orderComplete.Button] = false
+		peersDataMap[peersElevator.Id] = peersElevator
+		fmt.Println("peersdata after ordercomplete -----------------------------------------------------------------------------------------------------------", peersDataMap[peersElevator.Id])
 	}
 }
 
