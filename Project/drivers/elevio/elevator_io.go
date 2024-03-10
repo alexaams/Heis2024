@@ -14,21 +14,6 @@ var _numFloors int = 4
 var _mtx sync.Mutex
 var _conn net.Conn
 
-// Our additional types
-var current_floor int = -1
-
-type Order struct {
-	Active   bool
-	BtnEvent ButtonEvent
-}
-
-var CurrentOrder Order
-
-// Our additional types over
-// Additional functions
-
-//End additional functions
-
 type MotorDirection int
 
 const (
@@ -203,15 +188,4 @@ func toBool(a byte) bool {
 		b = true
 	}
 	return b
-}
-
-// Additional functions
-func ProcessFloorOrder(request Order) {
-	if request.BtnEvent.Floor-GetFloor() > 0 {
-		SetMotorDirection(MD_Up)
-	} else if request.BtnEvent.Floor-GetFloor() < 0 {
-		SetMotorDirection(MD_Down)
-	} else {
-		SetMotorDirection(MD_Stop)
-	}
 }

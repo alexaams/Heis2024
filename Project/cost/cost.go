@@ -27,16 +27,13 @@ type HRAInput struct {
 }
 
 func OrderEmpty(order config.OrdersHall) bool {
-	fmt.Println("before", order)
 	for i := 0; i < config.NumFloors; i++ {
 		for j := 0; j < 2; j++ {
-			if bool(order[i][j]) {
-				fmt.Println("later", order)
+			if order[i][j] {
 				return false
 			}
 		}
 	}
-	fmt.Println("later", order)
 	return true
 
 }
@@ -72,6 +69,7 @@ func CostFunc(elevatorObject peers.PeersData, dataPeers map[int]peers.PeersData,
 		HallRequests: elevatorObject.GlobalOrderHall, //Dette skal være en globalt gjeldende liste, så vi må få på plass funksjonalitet for å sikre at denne er oppdatert!
 		States:       statesElevators,
 	}
+	fmt.Println("INPUT COST-------------------", input)
 
 	jsonBytes, err := json.Marshal(input)
 	if err != nil {

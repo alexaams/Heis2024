@@ -47,7 +47,7 @@ func ClearOneRequest(elev *elevator.Elevator, button elevio.ButtonEvent) elevato
 
 func ClearRequests(elev *elevator.Elevator, buttons []elevio.ButtonEvent) {
 	for _, button := range buttons {
-		elev.Requests[button.Floor][button.Button] = false
+		elev.Requests[elev.Floor][button.Button] = false
 	}
 }
 
@@ -99,6 +99,38 @@ func RequestToElevatorMovement(elev elevator.Elevator) elevator.BehaviorAndDirec
 	}
 	// Default case when no specific requests dictate movement.
 	return elevator.BehaviorAndDirection{Behavior: elevator.BehaviorIdle, Direction: elevio.MD_Stop}
+}
+
+func RequestReadyForClear(elev elevator.Elevator) []elevio.ButtonEvent {
+	btnToClear := make([]elevio.ButtonEvent, 0)
+
+	if elev.Requests[elev.Floor][elevio.BT_Cab] {
+		btnToClear = append(btnToClear, elevio.ButtonEvent{Floor: elev.Floor, Button: elevio.BT_Cab})
+	}
+
+	addBtnIfRequested := func(btnType elevio.ButtonType) {
+		if elev.Requests[elev.Floor][btnType] {
+			btnToClear = append(btnToClear, elevio.ButtonEvent{Floor: elev.Floor, Button: btnType})
+		}
+	}
+	switch elev.Direction {
+	case elevio.MD_Up:
+		if !IsRequestAbove(elev) {
+			addBtnIfRequested(elevio.BT_HallDown)
+		}
+		addBtnIfRequested(elevio.BT_HallUp)
+	case elevio.MD_Down:
+		if !IsRequestBelow(elev) {
+			addBtnIfRequested(elevio.BT_HallUp)
+		}
+		addBtnIfRequested(elevio.BT_HallDown)
+	case elevio.MD_Stop:
+		fallthrough
+	default:
+		addBtnIfRequested(elevio.BT_HallUp)
+		addBtnIfRequested(elevio.BT_HallDown)
+	}
+	return btnToClear
 }
 
 // ----------------- GIVEN ------------------------
