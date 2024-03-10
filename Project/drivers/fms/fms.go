@@ -47,14 +47,19 @@ func requestUpdates() {
 	var buttonpressed elevio.ButtonEvent
 	switch cuElevator.Behavior {
 	case elevator.BehaviorOpen:
+		fmt.Println("we updating while door open", cuElevator.Behavior, cuElevator.Floor, cuElevator.Direction)
+		floor, buttonType := requests.ClearRequestBtnReturn(cuElevator)
 		if floor, buttonType := requests.ClearRequestBtnReturn(cuElevator); floor < -1 {
+			fmt.Println("if was initiated")
 			ticker.TickerStart(cuElevator.OpenDuration)
 			buttonpressed.Button = buttonType
 			buttonpressed.Floor = floor
-			requests.ClearOneRequest(&cuElevator, buttonpressed)
+			cuElevator = requests.ClearOneRequest(&cuElevator, buttonpressed)
 		}
+		fmt.Print("outputs from clear btn: ", floor, buttonType)
 
 	case elevator.BehaviorIdle:
+		fmt.Println("Updates while idle")
 		set := requests.RequestToElevatorMovement(cuElevator)
 		cuElevator.Behavior = set.Behavior
 		cuElevator.Direction = set.Direction
@@ -62,7 +67,7 @@ func requestUpdates() {
 		case elevator.BehaviorOpen:
 			elevio.SetDoorOpenLamp(true)
 			ticker.TickerStart(cuElevator.OpenDuration)
-			requests.ClearOneRequest(&cuElevator, elevio.CurrentOrder.BtnEvent)
+			cuElevator = requests.ClearOneRequest(&cuElevator, elevio.CurrentOrder.BtnEvent)
 
 		case elevator.BehaviorMoving:
 			elevio.SetMotorDirection(cuElevator.Direction)
@@ -80,9 +85,7 @@ func FloorCurrent(a int) {
 			elevio.SetMotorDirection(elevio.MD_Stop)
 			ticker.TickerStart(cuElevator.OpenDuration)
 			elevio.SetDoorOpenLamp(true)
-			fmt.Println("ready to clear request")
 			cuElevator = requests.ClearOneRequest(&cuElevator, elevio.CurrentOrder.BtnEvent)
-			fmt.Println("request should be cleared", cuElevator.Requests)
 			cuElevator.Behavior = elevator.BehaviorOpen
 
 		}
