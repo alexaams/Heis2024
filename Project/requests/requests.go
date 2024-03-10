@@ -4,6 +4,7 @@ import (
 	"ProjectHeis/config"
 	"ProjectHeis/drivers/elevator"
 	"ProjectHeis/drivers/elevio"
+	"fmt"
 )
 
 // Checks current floor to top floor
@@ -22,6 +23,7 @@ func IsRequestAbove(elev elevator.Elevator) bool {
 func IsRequestBelow(elev elevator.Elevator) bool {
 	for floor := 0; floor < elev.Floor; floor++ {
 		for buttonType := 0; buttonType < config.NumButtonTypes; buttonType++ {
+			fmt.Println("elevator request: ", elev.Requests)
 			if elev.Requests[floor][buttonType] {
 				return true
 			}
@@ -40,8 +42,9 @@ func IsRequestArrived(elev elevator.Elevator) bool {
 	return false
 }
 
-func ClearOneRequest(elev *elevator.Elevator, button elevio.ButtonEvent) {
+func ClearOneRequest(elev *elevator.Elevator, button elevio.ButtonEvent) elevator.Elevator {
 	elev.Requests[button.Floor][button.Button] = false
+	return *elev
 }
 
 func ClearRequests(elev *elevator.Elevator, buttons []elevio.ButtonEvent) {

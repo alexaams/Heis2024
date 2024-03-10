@@ -65,7 +65,7 @@ func ElevatorDirectionToString(elev Elevator) string {
 func InitElevator() Elevator {
 	return Elevator{
 		Direction:    elevio.MD_Stop,
-		Floor:        -1,
+		Floor:        0,
 		Behavior:     BehaviorIdle,
 		OpenDuration: config.DoorOpenDuration,
 	}
