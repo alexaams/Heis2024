@@ -105,10 +105,10 @@ func elevatorToHRAState(elev elevator.Elevator) HRAElevState {
 	}
 }
 
-func specialCaseHandler(elevators []*elevator.Elevator, hallRequests []config.OrdersHall) bool {
+func specialCaseHandler(elevators []*elevator.Elevator, hallRequests config.OrdersHall) bool {
 	// Map to keep track of what floors we have requests at
 	requestFloors := make(map[int]bool)
-	for floor := 0; floor < config.NumFloors; floor++ {
+	for floor := 0; floor < len(hallRequests); floor++ {
 		requestFloors[floor] = true
 	}
 
