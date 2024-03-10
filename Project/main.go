@@ -23,11 +23,7 @@ func main() {
 	go fms.InitFms()
 
 	for {
-		select {
-		case a := <-peers.G_Ch_PeersData_Rx:
-			fmt.Printf("Message from ID: %d\n", a.Id)
-			fmt.Printf("Something: %d\n", a.Elevator.Floor)
-		}
+		select {}
 	}
 }
 

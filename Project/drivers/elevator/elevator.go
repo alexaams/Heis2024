@@ -39,7 +39,7 @@ func InitElevator() Elevator {
 		Direction:    elevio.MD_Stop,
 		Floor:        0,
 		Behavior:     BehaviorIdle,
-		OpenDuration: config.DoorOpenDuration,
+		OpenDuration: 3.0,
 	}
 }
 
@@ -80,8 +80,6 @@ func ElevatorDirectionToString(elev Elevator) string {
 	}
 }
 
-
-
 func SetElevatorFloor(elev *Elevator, floor int) {
 	elev.Floor = floor
 }
@@ -94,6 +92,6 @@ func SetElevatorBehaviour(elev *Elevator, behavior ElevatorBehavior) {
 	elev.Behavior = behavior
 }
 
-func SetElevatorOpenDuration(elev *Elevator, time_s float64) {
-	elev.OpenDuration = time_s
-}
+//func SetElevatorOpenDuration(elev *Elevator, time_s float64) {
+//elev.OpenDuration = time_s
+//}
