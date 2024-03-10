@@ -80,8 +80,6 @@ func ElevatorDirectionToString(elev Elevator) string {
 	}
 }
 
-
-
 func SetElevatorFloor(elev *Elevator, floor int) {
 	elev.Floor = floor
 }
