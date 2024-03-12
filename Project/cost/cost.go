@@ -69,7 +69,6 @@ func CostFunc(elevatorObject peers.PeersData, dataPeers map[int]peers.PeersData,
 		HallRequests: elevatorObject.GlobalOrderHall, //Dette skal være en globalt gjeldende liste, så vi må få på plass funksjonalitet for å sikre at denne er oppdatert!
 		States:       statesElevators,
 	}
-	fmt.Println("INPUT COST-------------------", input)
 
 	jsonBytes, err := json.Marshal(input)
 	if err != nil {

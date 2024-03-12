@@ -49,35 +49,22 @@ func requestUpdates() {
 	var buttonpressed elevio.ButtonEvent
 	switch cuElevator.Behavior {
 	case elevator.BehaviorOpen:
+		fmt.Println("before if opendoor")
 		if floor, buttonType := requests.ClearRequestBtnReturn(cuElevator); floor > -1 {
 			fmt.Println("if was initiated")
 			ticker.TickerStart(cuElevator.OpenDuration)
 			buttonpressed.Button = buttonType
 			buttonpressed.Floor = floor
-			cuElevator = requests.ClearOneRequest(&cuElevator, buttonpressed)
-			elevator := requests.RequestReadyForClear(cuElevator)
-			clearRequestsPeer(elevator)
-		}
-		set := requests.RequestToElevatorMovement(cuElevator)
-		cuElevator.Behavior = set.Behavior
-		cuElevator.Direction = set.Direction
-		switch set.Behavior {
-		case elevator.BehaviorOpen:
-			elevio.SetDoorOpenLamp(true)
-			ticker.TickerStart(cuElevator.OpenDuration)
-			cuElevator = requests.ClearOneRequest(&cuElevator, buttonpressed)
+			requests.ClearOneRequest(&cuElevator, buttonpressed)
 			clearElevator := requests.RequestReadyForClear(cuElevator)
 			clearRequestsPeer(clearElevator)
-			fmt.Println("Elevator request updates: ", cuElevator.Requests)
-		case elevator.BehaviorMoving:
-			elevio.SetDoorOpenLamp(false)
-			elevio.SetMotorDirection(cuElevator.Direction)
 		}
 
 	case elevator.BehaviorIdle:
 		set := requests.RequestToElevatorMovement(cuElevator)
 		cuElevator.Behavior = set.Behavior
 		cuElevator.Direction = set.Direction
+		fmt.Println("in idle not moving forward")
 		switch set.Behavior {
 		case elevator.BehaviorOpen:
 			elevio.SetDoorOpenLamp(true)
@@ -85,8 +72,10 @@ func requestUpdates() {
 			cuElevator = requests.ClearOneRequest(&cuElevator, buttonpressed)
 			clearElevator := requests.RequestReadyForClear(cuElevator)
 			clearRequestsPeer(clearElevator)
+			fmt.Println("stuck here?")
 
 		case elevator.BehaviorMoving:
+			fmt.Println("behavior moving", cuElevator.Direction)
 			elevio.SetDoorOpenLamp(false)
 			elevio.SetMotorDirection(cuElevator.Direction)
 		}
@@ -216,9 +205,6 @@ func lampChange() {
 }
 
 func updateOrders(hallOrderChan chan config.OrdersHall) {
-	fmt.Println("COST PEERSELEV INPUTS: ", peersElevator)
-	fmt.Println("COST PEERDATA INPUT: ", peersDataMap[peersElevator.Id])
-	fmt.Println("COST PEERS PEERSUPDATE: ", peers.G_PeersUpdate)
 	peersElevator.SingleOrdersHall = cost.CostFunc(peersElevator, peersDataMap, peers.G_PeersUpdate)
 	hallOrderChan <- peersElevator.SingleOrdersHall
 	peers.G_Ch_PeersData_Tx <- peersElevator
@@ -228,6 +214,9 @@ func newPeersData(msg peers.PeersData) bool {
 	newOrder := false
 	peersDataMap[msg.Id] = msg
 	newOrderGlobal := make(config.OrdersHall, config.NumFloors)
+	if msg.Id == peersElevator.Id {
+		return newOrder
+	}
 	for i := range peersElevator.GlobalOrderHall {
 		for j := 0; j < 2; j++ {
 			if msg.GlobalOrderHall[i][j] {
@@ -248,13 +237,10 @@ func btnEventHandler(btnEvent elevio.ButtonEvent, cabOrderChan chan []bool, hall
 	if btnEvent.Button == elevio.BT_Cab {
 		cuElevator.CabRequests[btnEvent.Floor] = true
 		cabOrderChan <- cuElevator.CabRequests[:]
-		updateOrders(hallOrderChan)
-		hallOrderChan <- peersElevator.SingleOrdersHall
 	} else {
 		cuElevator.Requests[btnEvent.Floor][btnEvent.Button] = true
 		peersElevator.GlobalOrderHall[btnEvent.Floor][btnEvent.Button] = true
 		updateOrders(hallOrderChan)
-		hallOrderChan <- peersElevator.SingleOrdersHall
 	}
 }
 
@@ -265,8 +251,6 @@ func orderCompleteHandler(orderComplete elevio.ButtonEvent) {
 	} else {
 		peersElevator.SingleOrdersHall[orderComplete.Floor][orderComplete.Button] = false
 		peersElevator.GlobalOrderHall[orderComplete.Floor][orderComplete.Button] = false
-		peersDataMap[peersElevator.Id] = peersElevator
-		fmt.Println("peersdata after ordercomplete -----------------------------------------------------------------------------------------------------------", peersDataMap[peersElevator.Id])
 	}
 }
 
