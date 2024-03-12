@@ -2,9 +2,9 @@ package types
 
 import (
 	"ProjectHeis/config_folder/globals"
-	"ProjectHeis/drivers/elevio"
 )
 
+// -------------------------------- TYPES --------------------------------
 type ReqList map[int]bool
 type AckList [globals.NumElevators]bool
 type OrdersAckTable []AckList
@@ -13,7 +13,7 @@ type OrdersCab [globals.NumFloors]bool
 type OrdersHall [][2]bool // [floor][False]: ned [floor][True]: OPP
 type Requests [globals.NumFloors][globals.NumButtonTypes]bool
 
-// -------------------------------- ENUM --------------------------------E
+// -------------------------------- ENUM --------------------------------
 
 type MotorDirection int
 
@@ -40,7 +40,7 @@ const (
 	BehaviorObst
 )
 
-// --------------------------------STRUCTS--------------------------------
+// -------------------------------- STRUCTS --------------------------------
 type ButtonEvent struct {
 	Floor  int
 	Button ButtonType
@@ -62,18 +62,12 @@ type BehaviorAndDirection struct {
 	Direction MotorDirection
 }
 
-type PeersData struct {
-	Elevator         Elevator
-	Id               int
-	SingleOrdersHall OrdersHall
-	GlobalOrderHall  OrdersHall
-}
+// -------------------------------- FUNC --------------------------------
 
-type Elevator struct {
-	Floor        int
-	Direction    elevio.MotorDirection
-	Behavior     ElevatorBehavior // 0:Idle, 1:Moving, 2:Open, 3: Obst
-	OpenDuration int
-	CabRequests  OrdersCab
-	Requests     Requests // list default as false
+func InitEmptyOrder() OrdersHall {
+	OrdersNull := make(OrdersHall, globals.NumFloors)
+	for i := range globals.NumFloors {
+		OrdersNull[i] = [2]bool{false, false}
+	}
+	return OrdersNull
 }

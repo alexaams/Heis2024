@@ -1,6 +1,7 @@
 package elevator
 
 import (
+	"ProjectHeis/config_folder/globals"
 	"ProjectHeis/config_folder/types"
 	"ProjectHeis/drivers/elevio"
 	"time"
@@ -19,12 +20,25 @@ import (
 
 // --------------------------------TYPES--------------------------------
 
-// USE THIS WRAPPER TO CREATE METHODS FROM TYPES
 type Elevator struct {
-	types.Elevator
+	Floor        int
+	Direction    types.MotorDirection
+	Behavior     types.ElevatorBehavior // 0:Idle, 1:Moving, 2:Open, 3: Obst
+	OpenDuration int
+	CabRequests  types.OrdersCab // list default as false
+	Requests     types.Requests  // list default as false
 }
 
 // --------------------------------FUNCTIONS--------------------------------
+
+func InitElevator() Elevator {
+	return Elevator{
+		Floor:        -1,
+		Direction:    types.MD_Stop,
+		Behavior:     types.BehaviorIdle,
+		OpenDuration: globals.DoorOpenDuration,
+	}
+}
 
 func (elev *Elevator) HasCabRequests() bool {
 	for _, hasRequest := range elev.CabRequests {
@@ -52,11 +66,11 @@ func (elev *Elevator) ElevatorBehaviorToString() string {
 
 func (elev *Elevator) ElevatorDirectionToString() string {
 	switch elev.Direction {
-	case elevio.MD_Stop:
+	case types.MD_Stop:
 		return "stop"
-	case elevio.MD_Up:
+	case types.MD_Up:
 		return "up"
-	case elevio.MD_Down:
+	case types.MD_Down:
 		return "down"
 	default:
 		return "undefined"
@@ -64,22 +78,22 @@ func (elev *Elevator) ElevatorDirectionToString() string {
 }
 
 func (elev *Elevator) MoveUp() {
-	elevio.SetMotorDirection(elevio.MD_Up)
+	elevio.SetMotorDirection(types.MD_Up)
 }
 
 func (elev *Elevator) MoveDown() {
-	elevio.SetMotorDirection(elevio.MD_Down)
+	elevio.SetMotorDirection(types.MD_Down)
 }
 
 func (elev *Elevator) Stop() {
-	elevio.SetMotorDirection(elevio.MD_Stop)
+	elevio.SetMotorDirection(types.MD_Stop)
 }
 
 func (elev *Elevator) SetElevatorFloor(floor int) {
 	elev.Floor = floor
 }
 
-func (elev *Elevator) SetElevatorDir(dir elevio.MotorDirection) {
+func (elev *Elevator) SetElevatorDir(dir types.MotorDirection) {
 	elev.Direction = dir
 }
 

@@ -2,6 +2,7 @@ package peers
 
 import (
 	"ProjectHeis/config"
+	"ProjectHeis/config_folder/types"
 	"ProjectHeis/drivers/elevator"
 	"ProjectHeis/network/bcast"
 	"ProjectHeis/network/conn"
@@ -27,8 +28,8 @@ type PeerUpdate struct {
 type PeersData struct {
 	Elevator         elevator.Elevator
 	Id               int
-	SingleOrdersHall config.OrdersHall
-	GlobalOrderHall  config.OrdersHall
+	SingleOrdersHall types.OrdersHall
+	GlobalOrderHall  types.OrdersHall
 }
 
 const interval = 15 * time.Millisecond
@@ -108,8 +109,8 @@ func InitPeers() PeersData {
 	return PeersData{
 		Elevator:         elevator.InitElevator(),
 		Id:               localip.CreateID(),
-		SingleOrdersHall: config.InitEmptyOrder(),
-		GlobalOrderHall:  config.InitEmptyOrder(),
+		SingleOrdersHall: types.InitEmptyOrder(),
+		GlobalOrderHall:  types.InitEmptyOrder(),
 	}
 }
 
