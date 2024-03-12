@@ -54,10 +54,11 @@ func requestUpdates() {
 			ticker.TickerStart(cuElevator.OpenDuration)
 			buttonpressed.Button = buttonType
 			buttonpressed.Floor = floor
-			cuElevator = requests.ClearOneRequest(&cuElevator, buttonpressed)
-			elevator := requests.RequestReadyForClear(cuElevator)
-			clearRequestsPeer(elevator)
+			requests.ClearOneRequest(&cuElevator, buttonpressed)
+			buttonOrdersToClear := requests.RequestReadyForClear(cuElevator)
+			clearRequestsPeer(buttonOrdersToClear)
 		}
+		//Dette under skal egentlig ikke være nødvendig, det er testing
 		set := requests.RequestToElevatorMovement(cuElevator)
 		cuElevator.Behavior = set.Behavior
 		cuElevator.Direction = set.Direction
@@ -82,9 +83,9 @@ func requestUpdates() {
 		case elevator.BehaviorOpen:
 			elevio.SetDoorOpenLamp(true)
 			ticker.TickerStart(cuElevator.OpenDuration)
-			cuElevator = requests.ClearOneRequest(&cuElevator, buttonpressed)
-			clearElevator := requests.RequestReadyForClear(cuElevator)
-			clearRequestsPeer(clearElevator)
+			requests.ClearOneRequest(&cuElevator, buttonpressed)
+			buttonOrdersToClear := requests.RequestReadyForClear(cuElevator)
+			clearRequestsPeer(buttonOrdersToClear)
 
 		case elevator.BehaviorMoving:
 			elevio.SetDoorOpenLamp(false)
@@ -123,6 +124,8 @@ func clearRequestsPeer(variable interface{}) {
 		for _, t := range types {
 			orderCompleteChan <- t
 		}
+	default:
+		break
 	}
 }
 
@@ -305,4 +308,24 @@ func eventHandling(cabOrderChan chan []bool) {
 		peers.G_Ch_PeersData_Tx <- peersElevator
 	}
 
+}
+
+func elevatorModule(hallOrders chan config.OrdersHall, cabOrders chan []bool) {
+	elevio.Init("localhost:15657", numFloors)
+
+	drv_floors := make(chan int)
+	drv_obstr := make(chan bool)
+	drv_stop := make(chan bool)
+
+	go elevio.PollFloorSensor(drv_floors)      //Channel receives which floor you are at
+	go elevio.PollObstructionSwitch(drv_obstr) //Channel receives state for obstruction switch when changed
+	go elevio.PollStopButton(drv_stop)         //Channel receives state of stop switch when changed
+
+	//Det er også tråder for fault her, men der er ikke vi helt enda
+
+	//For-select
+	//1.hallOrders
+	//2. floor-sensor
+	//3. Polltimer-channel: hva er dette?
+	//4. obstruction: da erre stopp.
 }

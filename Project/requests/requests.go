@@ -40,9 +40,8 @@ func IsRequestArrived(elev elevator.Elevator) bool {
 	return false
 }
 
-func ClearOneRequest(elev *elevator.Elevator, button elevio.ButtonEvent) elevator.Elevator {
+func ClearOneRequest(elev *elevator.Elevator, button elevio.ButtonEvent) {
 	elev.Requests[button.Floor][button.Button] = false
-	return *elev
 }
 
 func ClearRequests(elev *elevator.Elevator, buttons []elevio.ButtonEvent) {
@@ -101,13 +100,14 @@ func RequestToElevatorMovement(elev elevator.Elevator) elevator.BehaviorAndDirec
 	return elevator.BehaviorAndDirection{Behavior: elevator.BehaviorIdle, Direction: elevio.MD_Stop}
 }
 
+//Returns a buttonevent
 func RequestReadyForClear(elev elevator.Elevator) []elevio.ButtonEvent {
 	btnToClear := make([]elevio.ButtonEvent, 0)
-
+	//Checks current floor if there is a cab order?
 	if elev.Requests[elev.Floor][elevio.BT_Cab] {
 		btnToClear = append(btnToClear, elevio.ButtonEvent{Floor: elev.Floor, Button: elevio.BT_Cab})
 	}
-
+	//Local function-declaration
 	addBtnIfRequested := func(btnType elevio.ButtonType) {
 		if elev.Requests[elev.Floor][btnType] {
 			btnToClear = append(btnToClear, elevio.ButtonEvent{Floor: elev.Floor, Button: btnType})
