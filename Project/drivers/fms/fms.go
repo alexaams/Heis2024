@@ -19,6 +19,7 @@ var reqFinChan = make(chan elevio.ButtonEvent)
 var updateCabChan = make(chan []bool, 1)
 var orderCompleteChan = make(chan elevio.ButtonEvent)
 var elevUpdateChan = make(chan elevator.Elevator)
+var Ch_clear_orders = make(chan []elevio.ButtonEvent)
 
 // variables
 // var d elevio.MotorDirection = elevio.MD_Up
@@ -46,24 +47,26 @@ func InitFms() {
 }
 
 func requestUpdates() {
-	var buttonpressed elevio.ButtonEvent
+	//var buttonpressed elevio.ButtonEvent
 	switch cuElevator.Behavior {
-	case elevator.BehaviorOpen:
-		fmt.Println("before if opendoor", cuElevator.Floor)
-		if floor, buttonType := requests.ClearRequestBtnReturn(cuElevator); floor > -1 {
-			fmt.Println("if was initiated")
-			ticker.TickerStart(cuElevator.OpenDuration)
-			buttonpressed.Button = buttonType
-			buttonpressed.Floor = floor
-			requests.ClearOneRequest(&cuElevator, buttonpressed)
-			clearRequestsPeer(buttonpressed)
-		}
+	/*case elevator.BehaviorOpen:
+	//fmt.Println("before if opendoor", cuElevator.Floor)
+
+	if floor, buttonType := requests.ClearRequestBtnReturn(cuElevator); floor > -1 {
+		fmt.Println("if was initiated")
+		ticker.TickerStart(cuElevator.OpenDuration)
+		buttonpressed.Button = buttonType
+		buttonpressed.Floor = floor
+		requests.ClearOneRequest(&cuElevator, buttonpressed)
+		clearRequestsPeer(buttonpressed)
+	}*/
 
 	case elevator.BehaviorIdle:
-		set := requests.RequestToElevatorMovement(cuElevator)
+		requests.WhichWay(&cuElevator)
+		/*set := requests.RequestToElevatorMovement(cuElevator)
 		cuElevator.Behavior = set.Behavior
 		cuElevator.Direction = set.Direction
-		fmt.Println("in idle not moving forward")
+		//fmt.Println("in idle not moving forward")
 		switch set.Behavior {
 		case elevator.BehaviorOpen:
 			elevio.SetDoorOpenLamp(true)
@@ -71,46 +74,48 @@ func requestUpdates() {
 			requests.ClearOneRequest(&cuElevator, buttonpressed)
 			clearElevator := requests.RequestReadyForClear(cuElevator)
 			clearRequestsPeer(clearElevator)
-			fmt.Println("stuck here?")
+			//fmt.Println("stuck here?")
 
 		case elevator.BehaviorMoving:
-			fmt.Println("behavior moving", cuElevator.Direction)
+			//fmt.Println("behavior moving", cuElevator.Direction)
 			elevio.SetDoorOpenLamp(false)
 			elevio.SetMotorDirection(cuElevator.Direction)
-		}
+		}*/
 
-	}
-}
-func onDoorTimeout() {
-	switch cuElevator.Behavior {
-	case elevator.BehaviorOpen:
-		set := requests.RequestToElevatorMovement(cuElevator)
-		cuElevator.Direction = set.Direction
-		cuElevator.Behavior = set.Behavior
-
-		switch cuElevator.Behavior {
-		case elevator.BehaviorOpen:
-			ticker.TickerStart(cuElevator.OpenDuration)
-			requestsToClear := requests.RequestReadyForClear(cuElevator)
-			requests.ClearRequests(&cuElevator, requestsToClear)
-			clearRequestsPeer(requestsToClear)
-
-		case elevator.BehaviorMoving:
-			elevio.SetDoorOpenLamp(false)
-			elevio.SetMotorDirection(cuElevator.Direction)
-
-		case elevator.BehaviorIdle:
-			elevio.SetDoorOpenLamp(false)
-			elevio.SetMotorDirection(cuElevator.Direction)
-		}
 	}
 }
 
 func FloorCurrent(a int) {
 	cuElevator.Floor = a
 	elevio.SetFloorIndicator(cuElevator.Floor)
-	switch cuElevator.Behavior {
-	case elevator.BehaviorMoving:
+	StopFlag := requests.IsThisOurStop(&cuElevator)
+	switch StopFlag {
+	case true:
+		//Stop sequence
+		elevio.SetMotorDirection(elevio.MD_Stop)
+		ticker.TickerStart(cuElevator.OpenDuration)
+		elevio.SetDoorOpenLamp(true)
+		//Clearing order sequence
+
+		/*
+			Vi bytter ut det her, i stedet kjører vi en funksjon basert på RequestReadyForClear,
+			denne skal pushe array av button-events som kan cleares inn i en clear-kanal
+		*/
+		requests.ClearOneRequest(cuElevator)
+
+		//Continue stop sequence
+		cuElevator.Behavior = elevator.BehaviorOpen
+		ticker.TickerStart(cuElevator.OpenDuration)
+		elevio.SetDoorOpenLamp(false)
+
+		cuElevator.Behavior = elevator.BehaviorIdle
+
+	default:
+
+	}
+	//[NumFloors][NumButtonTypes]
+	//cuElevator.Requests[cu.Elevator.Floor][0]
+	/*
 		if requests.RequestsShouldStop(cuElevator) {
 			elevio.SetMotorDirection(elevio.MD_Stop)
 			ticker.TickerStart(cuElevator.OpenDuration)
@@ -121,8 +126,8 @@ func FloorCurrent(a int) {
 			requests.ClearRequests(&cuElevator, clearElevator)
 			cuElevator.Behavior = elevator.BehaviorOpen
 			fmt.Println("requests floor current: ", cuElevator.Requests)
-		}
-	}
+
+		}*/
 }
 
 func clearRequestsPeer(variable interface{}) {
@@ -145,7 +150,7 @@ func ObstFound() {
 }
 
 func StopFound(a bool) {
-	fmt.Printf("%+v\n", a)
+	//fmt.Printf("%+v\n", a)
 	for f := 0; f < numFloors; f++ {
 		for b := elevio.ButtonType(0); b < 3; b++ {
 			elevio.SetButtonLamp(b, f, false)
@@ -164,7 +169,6 @@ func fms(hallOrderChan chan config.OrdersHall, cabOrderChan chan []bool) {
 	drv_floors := make(chan int)
 	drv_obstr := make(chan bool)
 	drv_stop := make(chan bool)
-	drv_timer := make(chan bool)
 	//awaiting_orders := make(chan elevio.Order)
 	//Channel receives all buttonevents on every floor
 	go elevio.PollFloorSensor(drv_floors)      //Channel receives which floor you are at
@@ -173,9 +177,6 @@ func fms(hallOrderChan chan config.OrdersHall, cabOrderChan chan []bool) {
 
 	for {
 		select {
-		case <-drv_timer:
-			ticker.TimerStop()
-			onDoorTimeout()
 		case a := <-drv_floors:
 			FloorCurrent(a)
 
@@ -197,6 +198,7 @@ func fms(hallOrderChan chan config.OrdersHall, cabOrderChan chan []bool) {
 				elevio.SetMotorDirection(elevio.MD_Stop)
 			}
 		case hallorders := <-hallOrderChan:
+			fmt.Print(hallorders)
 			hallRequestAssigner(hallorders)
 			requestUpdates()
 
@@ -266,8 +268,23 @@ func btnEventHandler(btnEvent elevio.ButtonEvent, cabOrderChan chan []bool, hall
 	} else {
 		cuElevator.Requests[btnEvent.Floor][btnEvent.Button] = true
 		peersElevator.GlobalOrderHall[btnEvent.Floor][btnEvent.Button] = true
-		updateOrders(hallOrderChan)
+		updateOrders(hallOrderChan) //Cost-funksjon inni her?
 	}
+}
+
+func clearRequestHandler(btnToClear []elevio.ButtonEvent) {
+	for x, y := range btnToClear {
+		switch y.Button {
+		case elevio.BT_Cab:
+			cuElevator.CabRequests[y.Floor] = false
+			cuElevator.Requests[y.Floor][y.Button] = false
+		default:
+			cuElevator.Requests[y.Floor][y.Button] = false
+		}
+	}
+	cabOrderChan <- cuElevator.CabRequests[:]
+	updateOrders(hallOrderChan) //updateOrders må endres, kan den bare ta inn peersData, altså det som skal sendes til kost?
+	//updateORders trenger egentlig bare peersData som input-argument. Får vi fikset dette, så er ting litt mer isolert.
 }
 
 func orderCompleteHandler(orderComplete elevio.ButtonEvent) {
@@ -282,9 +299,10 @@ func orderCompleteHandler(orderComplete elevio.ButtonEvent) {
 
 func eventHandling(cabOrderChan chan []bool) {
 	var (
-		hallOrderChan = make(chan config.OrdersHall)
-		drv_buttons   = make(chan elevio.ButtonEvent)
-		timer         = time.NewTicker(300 * time.Millisecond)
+		hallOrderChan  = make(chan config.OrdersHall)
+		drv_buttons    = make(chan elevio.ButtonEvent)
+		clearOrderChan = make(chan elevio.ButtonEvent)
+		timer          = time.NewTicker(300 * time.Millisecond)
 	)
 
 	defer timer.Stop()
@@ -309,8 +327,8 @@ func eventHandling(cabOrderChan chan []bool) {
 		case elevData := <-elevUpdateChan:
 			peersElevator.Elevator = elevData
 
-		case orderComplete := <-orderCompleteChan:
-			orderCompleteHandler(orderComplete)
+		case orderComplete := <-Ch_clear_orders:
+			clearRequestHandler(orderComplete)
 		}
 		lampChange()
 	}

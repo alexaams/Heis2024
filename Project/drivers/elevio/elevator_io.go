@@ -1,7 +1,6 @@
 package elevio
 
 import (
-	"ProjectHeis/ticker"
 	"fmt"
 	"net"
 	"sync"
@@ -83,16 +82,6 @@ func PollButtons(receiver chan<- ButtonEvent) {
 				}
 				prev[f][b] = v
 			}
-		}
-	}
-}
-
-func PollTimer(receiver chan<- bool) {
-	for {
-		time.Sleep(_pollRate)
-		if ticker.TimerTimedOut() {
-			// fmt.Println("Timer has timed out")
-			receiver <- true
 		}
 	}
 }
