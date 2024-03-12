@@ -59,7 +59,7 @@ type Order struct {
 
 type BehaviorAndDirection struct {
 	Behavior  ElevatorBehavior
-	Direction elevio.MotorDirection
+	Direction MotorDirection
 }
 
 type PeersData struct {

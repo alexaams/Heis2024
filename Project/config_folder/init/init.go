@@ -1,7 +1,6 @@
 package init
 
 import (
-	"ProjectHeis/config"
 	"ProjectHeis/config_folder/globals"
 	"ProjectHeis/config_folder/types"
 	"ProjectHeis/drivers/elevator"
@@ -26,3 +25,11 @@ func InitPeers() types.PeersData {
 	}
 }
 
+func InitElevator() elevator.Elevator {
+	return elevator.Elevator{
+		Floor:        -1,
+		Direction:    types.MD_Stop,
+		Behavior:     types.BehaviorIdle,
+		OpenDuration: globals.DoorOpenDuration,
+	}
+}

@@ -8,14 +8,14 @@ import (
 
 // --------------------------------VALUES--------------------------------
 
-type ElevatorBehavior int
+// type ElevatorBehavior int
 
-// const (
-// 	BehaviorIdle ElevatorBehavior = iota
-// 	BehaviorMoving
-// 	BehaviorOpen
-// 	BehaviorObst
-// )
+// // const (
+// // 	BehaviorIdle ElevatorBehavior = iota
+// // 	BehaviorMoving
+// // 	BehaviorOpen
+// // 	BehaviorObst
+// // )
 
 // --------------------------------TYPES--------------------------------
 
@@ -25,14 +25,6 @@ type Elevator struct {
 }
 
 // --------------------------------FUNCTIONS--------------------------------
-func InitElevator() Elevator {
-	return Elevator{
-		Floor:        -1,
-		Direction:    elevio.MD_Stop,
-		Behavior:     types.BehaviorIdle,
-		OpenDuration: DoorOpenDuration,
-	}
-}
 
 func (elev *Elevator) HasCabRequests() bool {
 	for _, hasRequest := range elev.CabRequests {
@@ -91,7 +83,7 @@ func (elev *Elevator) SetElevatorDir(dir elevio.MotorDirection) {
 	elev.Direction = dir
 }
 
-func (elev *Elevator) SetElevatorBehaviour(behavior ElevatorBehavior) {
+func (elev *Elevator) SetElevatorBehaviour(behavior types.ElevatorBehavior) {
 	elev.Behavior = behavior
 }
 

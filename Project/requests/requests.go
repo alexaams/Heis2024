@@ -1,9 +1,10 @@
 package requests
 
 import (
+	"ProjectHeis/config"
 	"ProjectHeis/config_folder/globals"
+	"ProjectHeis/config_folder/types"
 	"ProjectHeis/drivers/elevator"
-	"ProjectHeis/drivers/elevio"
 )
 
 // Checks current floor to top floor
@@ -40,94 +41,94 @@ func IsRequestArrived(elev elevator.Elevator) bool {
 	return false
 }
 
-func ClearOneRequest(elev elevator.Elevator, button elevio.ButtonEvent) {
+func ClearOneRequest(elev *elevator.Elevator, button types.ButtonEvent) {
 	elev.Requests[button.Floor][button.Button] = false
 }
 
-func ClearRequests(elev *elevator.Elevator, buttons []elevio.ButtonEvent) {
+func ClearRequests(elev *elevator.Elevator, buttons []types.ButtonEvent) {
 	for _, button := range buttons {
 		elev.Requests[elev.Floor][button.Button] = false
 	}
 }
 
 func ClearAllRequests(elev *elevator.Elevator) {
-	var tempEmptyRequests config.Requests // initialized as default false
+	var tempEmptyRequests types.Requests // initialized as default false
 	elev.Requests = tempEmptyRequests
 }
 
-func ClearRequestBtnReturn(elev elevator.Elevator) (int, elevio.ButtonType) {
-	for buttonType := elevio.BT_HallUp; buttonType < elevio.ButtonType(config.NumButtonTypes); buttonType++ {
+func ClearRequestBtnReturn(elev elevator.Elevator) (int, types.ButtonType) {
+	for buttonType := types.BT_HallUp; buttonType < types.ButtonType(globals.NumButtonTypes); buttonType++ {
 		isRequested := elev.Requests[elev.Floor][buttonType]
-		isDirectionMatch := (elev.Direction == elevio.MD_Up && buttonType == elevio.BT_HallUp) ||
-			(elev.Direction == elevio.MD_Down && buttonType == elevio.BT_HallDown)
-		isCabButton := buttonType == elevio.BT_Cab
-		isStopped := elev.Direction == elevio.MD_Stop
+		isDirectionMatch := (elev.Direction == types.MD_Up && buttonType == types.BT_HallUp) ||
+			(elev.Direction == types.MD_Down && buttonType == types.BT_HallDown)
+		isCabButton := buttonType == types.BT_Cab
+		isStopped := elev.Direction == types.MD_Stop
 
 		if isRequested && (isDirectionMatch || isCabButton || isStopped) {
 			return elev.Floor, buttonType
 		}
 	}
 	// defaults to this as an error indicating that it is stuck at the bottom
-	return -1, elevio.BT_HallUp
+	return -1, types.BT_HallUp
 }
 
-func RequestToElevatorMovement(elev elevator.Elevator) elevator.BehaviorAndDirection {
+func RequestToElevatorMovement(elev elevator.Elevator) types.BehaviorAndDirection {
 	// Determine request locations relative to the elevator once.
 	requestArrived := IsRequestArrived(elev)
 	requestAbove := IsRequestAbove(elev)
 	requestBelow := IsRequestBelow(elev)
 
 	if requestArrived {
-		return elevator.BehaviorAndDirection{Behavior: elevator.BehaviorOpen, Direction: elevio.MD_Stop}
+		return types.BehaviorAndDirection{Behavior: types.BehaviorOpen, Direction: types.MD_Stop}
 	}
 
 	switch elev.Direction {
-	case elevio.MD_Stop:
+	case types.MD_Stop:
 		if requestAbove {
-			return elevator.BehaviorAndDirection{Behavior: elevator.BehaviorMoving, Direction: elevio.MD_Up}
+			return types.BehaviorAndDirection{Behavior: types.BehaviorMoving, Direction: types.MD_Up}
 		} else if requestBelow {
-			return elevator.BehaviorAndDirection{Behavior: elevator.BehaviorMoving, Direction: elevio.MD_Down}
+			return types.BehaviorAndDirection{Behavior: types.BehaviorMoving, Direction: types.MD_Down}
 		}
-	case elevio.MD_Up, elevio.MD_Down:
+	case types.MD_Up, types.MD_Down:
 
 		if requestAbove {
-			return elevator.BehaviorAndDirection{Behavior: elevator.BehaviorMoving, Direction: elevio.MD_Up}
+			return types.BehaviorAndDirection{Behavior: types.BehaviorMoving, Direction: types.MD_Up}
 		} else if requestBelow {
-			return elevator.BehaviorAndDirection{Behavior: elevator.BehaviorMoving, Direction: elevio.MD_Down}
+			return types.BehaviorAndDirection{Behavior: types.BehaviorMoving, Direction: types.MD_Down}
 		}
 	}
 	// Default case when no specific requests dictate movement.
-	return elevator.BehaviorAndDirection{Behavior: elevator.BehaviorIdle, Direction: elevio.MD_Stop}
+	return types.BehaviorAndDirection{Behavior: types.BehaviorIdle, Direction: types.MD_Stop}
 }
 
-func RequestReadyForClear(elev elevator.Elevator) []elevio.ButtonEvent {
-	btnToClear := make([]elevio.ButtonEvent, 0)
+func RequestReadyForClear(elev elevator.Elevator) []types.ButtonEvent {
+	btnToClear := make([]types.ButtonEvent, 0)
 
-	if elev.Requests[elev.Floor][elevio.BT_Cab] {
-		btnToClear = append(btnToClear, elevio.ButtonEvent{Floor: elev.Floor, Button: elevio.BT_Cab})
+	if elev.Requests[elev.Floor][types.BT_Cab] {
+		btnToClear = append(btnToClear, types.ButtonEvent{Floor: elev.Floor, Button: types.BT_Cab})
 	}
 
-	addBtnIfRequested := func(btnType elevio.ButtonType) {
+	addBtnIfRequested := func(btnType types.ButtonType) {
 		if elev.Requests[elev.Floor][btnType] {
-			btnToClear = append(btnToClear, elevio.ButtonEvent{Floor: elev.Floor, Button: btnType})
+			btnToClear = append(btnToClear, types.ButtonEvent{Floor: elev.Floor, Button: btnType})
 		}
 	}
 	switch elev.Direction {
-	case elevio.MD_Up:
+	case types.MD_Up:
 		if !IsRequestAbove(elev) {
-			addBtnIfRequested(elevio.BT_HallDown)
+			addBtnIfRequested(types.BT_HallDown)
 		}
-		addBtnIfRequested(elevio.BT_HallUp)
-	case elevio.MD_Down:
+		addBtnIfRequested(types.BT_HallUp)
+	case types.MD_Down:
 		if !IsRequestBelow(elev) {
-			addBtnIfRequested(elevio.BT_HallUp)
+			addBtnIfRequested(types.BT_HallUp)
 		}
-		addBtnIfRequested(elevio.BT_HallDown)
-	case elevio.MD_Stop:
+		addBtnIfRequested(types.BT_HallDown)
+	case types.MD_Stop:
 		fallthrough
 	default:
-		addBtnIfRequested(elevio.BT_HallUp)
-		addBtnIfRequested(elevio.BT_HallDown)
+		addBtnIfRequested(types.BT_HallUp)
+		addBtnIfRequested(types.BT_HallDown)
 	}
 	return btnToClear
 }
