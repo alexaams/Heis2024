@@ -1,7 +1,7 @@
 package elevator
 
 import (
-	"ProjectHeis/config"
+	"ProjectHeis/config_folder/types"
 	"ProjectHeis/drivers/elevio"
 	"time"
 )
@@ -10,43 +10,27 @@ import (
 
 type ElevatorBehavior int
 
-const (
-	BehaviorIdle ElevatorBehavior = iota
-	BehaviorMoving
-	BehaviorOpen
-	BehaviorObst
-)
+// const (
+// 	BehaviorIdle ElevatorBehavior = iota
+// 	BehaviorMoving
+// 	BehaviorOpen
+// 	BehaviorObst
+// )
 
 // --------------------------------TYPES--------------------------------
 
 // USE THIS WRAPPER TO CREATE METHODS FROM TYPES
-
-// type Elevator struct{
-// 	types.Elevator
-// }
-
 type Elevator struct {
-	Floor        int
-	Direction    elevio.MotorDirection
-	Behavior     ElevatorBehavior // 0:Idle, 1:Moving, 2:Open, 3: Obst
-	OpenDuration float64
-	CabRequests  config.OrdersCab
-	Requests     config.Requests // list default as false
-}
-
-type BehaviorAndDirection struct {
-	Behavior  ElevatorBehavior
-	Direction elevio.MotorDirection
+	types.Elevator
 }
 
 // --------------------------------FUNCTIONS--------------------------------
-
 func InitElevator() Elevator {
 	return Elevator{
+		Floor:        -1,
 		Direction:    elevio.MD_Stop,
-		Floor:        0,
-		Behavior:     BehaviorIdle,
-		OpenDuration: 3.0,
+		Behavior:     types.BehaviorIdle,
+		OpenDuration: DoorOpenDuration,
 	}
 }
 
@@ -61,13 +45,13 @@ func (elev *Elevator) HasCabRequests() bool {
 
 func (elev *Elevator) ElevatorBehaviorToString() string {
 	switch elev.Behavior {
-	case BehaviorIdle:
+	case types.BehaviorIdle:
 		return "idle"
-	case BehaviorMoving:
+	case types.BehaviorMoving:
 		return "moving"
-	case BehaviorOpen:
+	case types.BehaviorOpen:
 		return "open"
-	case BehaviorObst:
+	case types.BehaviorObst:
 		return "obst"
 	default:
 		return "undefined"

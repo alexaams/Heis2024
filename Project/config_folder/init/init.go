@@ -19,18 +19,10 @@ func InitEmptyOrder() types.OrdersHall {
 
 func InitPeers() types.PeersData {
 	return types.PeersData{
-		Elevator:         elevator.InitElevator(),
+		Elevator:         InitElevator(),
 		Id:               localip.CreateID(),
 		SingleOrdersHall: InitEmptyOrder(),
 		GlobalOrderHall:  InitEmptyOrder(),
 	}
 }
 
-func InitElevator() elevator.Elevator {
-	return elevator.Elevator{
-		Direction:    elevio.MD_Stop,
-		Floor:        -1,
-		Behavior:     types.BehaviorIdle,
-		OpenDuration: config.DoorOpenDuration,
-	}
-}

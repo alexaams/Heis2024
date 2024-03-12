@@ -1,15 +1,15 @@
 package requests
 
 import (
-	"ProjectHeis/config"
+	"ProjectHeis/config_folder/globals"
 	"ProjectHeis/drivers/elevator"
 	"ProjectHeis/drivers/elevio"
 )
 
 // Checks current floor to top floor
 func IsRequestAbove(elev elevator.Elevator) bool {
-	for floor := elev.Floor; floor < config.NumFloors; floor++ {
-		for buttonType := 0; buttonType < config.NumButtonTypes; buttonType++ {
+	for floor := elev.Floor; floor < globals.NumFloors; floor++ {
+		for buttonType := 0; buttonType < globals.NumButtonTypes; buttonType++ {
 			if elev.Requests[floor][buttonType] {
 				return true
 			}
@@ -21,7 +21,7 @@ func IsRequestAbove(elev elevator.Elevator) bool {
 // Check request from 0 to current floor
 func IsRequestBelow(elev elevator.Elevator) bool {
 	for floor := 0; floor < elev.Floor; floor++ {
-		for buttonType := 0; buttonType < config.NumButtonTypes; buttonType++ {
+		for buttonType := 0; buttonType < globals.NumButtonTypes; buttonType++ {
 			if elev.Requests[floor][buttonType] {
 				return true
 			}
@@ -32,7 +32,7 @@ func IsRequestBelow(elev elevator.Elevator) bool {
 
 // Checks current floor
 func IsRequestArrived(elev elevator.Elevator) bool {
-	for buttonType := 0; buttonType < config.NumButtonTypes; buttonType++ {
+	for buttonType := 0; buttonType < globals.NumButtonTypes; buttonType++ {
 		if elev.Requests[elev.Floor][buttonType] {
 			return true
 		}
