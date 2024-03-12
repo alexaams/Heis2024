@@ -221,6 +221,7 @@ func updateOrders(hallOrderChan chan config.OrdersHall) {
 	fmt.Println("COST PEERS PEERSUPDATE: ", peers.G_PeersUpdate)
 	peersElevator.SingleOrdersHall = cost.CostFunc(peersElevator, peersDataMap, peers.G_PeersUpdate)
 	hallOrderChan <- peersElevator.SingleOrdersHall
+	peers.G_Ch_PeersData_Tx <- peersElevator
 }
 
 func newPeersData(msg peers.PeersData) bool {
@@ -302,7 +303,6 @@ func eventHandling(cabOrderChan chan []bool) {
 			orderCompleteHandler(orderComplete)
 		}
 		lampChange()
-		peers.G_Ch_PeersData_Tx <- peersElevator
 	}
 
 }
