@@ -4,6 +4,7 @@ import (
 	"ProjectHeis/config"
 	"ProjectHeis/drivers/elevator"
 	"ProjectHeis/drivers/elevio"
+	"fmt"
 )
 
 // Checks current floor to top floor
@@ -56,6 +57,25 @@ func ClearAllRequests(elev *elevator.Elevator) {
 	elev.Requests = tempEmptyRequests
 }
 
+func RequestsShouldStop(e elevator.Elevator) bool {
+	if e.Requests[e.Floor][elevio.BT_Cab] {
+		return true
+	}
+	switch e.Direction {
+	case elevio.MD_Down:
+		if e.Requests[e.Floor][elevio.BT_HallDown] || !IsRequestBelow(e) {
+			return true
+		}
+	case elevio.MD_Up:
+		if e.Requests[e.Floor][elevio.BT_HallUp] || !IsRequestAbove(e) {
+			return true
+		}
+	case elevio.MD_Stop:
+		return true
+	}
+	return false
+}
+
 func ClearRequestBtnReturn(elev elevator.Elevator) (int, elevio.ButtonType) {
 	for buttonType := elevio.BT_HallUp; buttonType < elevio.ButtonType(config.NumButtonTypes); buttonType++ {
 		isRequested := elev.Requests[elev.Floor][buttonType]
@@ -63,14 +83,21 @@ func ClearRequestBtnReturn(elev elevator.Elevator) (int, elevio.ButtonType) {
 			(elev.Direction == elevio.MD_Down && buttonType == elevio.BT_HallDown)
 		isCabButton := buttonType == elevio.BT_Cab
 		isStopped := elev.Direction == elevio.MD_Stop
+		fmt.Println("is requested value: ", isRequested)
+		fmt.Println("is direction value: ", isDirectionMatch)
+		fmt.Println("is cab value: ", isCabButton)
+		fmt.Println("is stopped value", isStopped)
 
 		if isRequested && (isDirectionMatch || isCabButton || isStopped) {
+			fmt.Println("clear btn values", elev.Floor, buttonType)
 			return elev.Floor, buttonType
 		}
 	}
 	// defaults to this as an error indicating that it is stuck at the bottom
+	fmt.Println("clear btn values")
 	return -1, elevio.BT_HallUp
 }
+
 
 func RequestToElevatorMovement(elev elevator.Elevator) elevator.BehaviorAndDirection {
 	// Determine request locations relative to the elevator once.
@@ -78,23 +105,38 @@ func RequestToElevatorMovement(elev elevator.Elevator) elevator.BehaviorAndDirec
 	requestAbove := IsRequestAbove(elev)
 	requestBelow := IsRequestBelow(elev)
 
-	if requestArrived {
-		return elevator.BehaviorAndDirection{Behavior: elevator.BehaviorOpen, Direction: elevio.MD_Stop}
-	}
-
 	switch elev.Direction {
 	case elevio.MD_Stop:
 		if requestAbove {
 			return elevator.BehaviorAndDirection{Behavior: elevator.BehaviorMoving, Direction: elevio.MD_Up}
 		} else if requestBelow {
 			return elevator.BehaviorAndDirection{Behavior: elevator.BehaviorMoving, Direction: elevio.MD_Down}
+		} else if requestArrived {
+			return elevator.BehaviorAndDirection{Behavior: elevator.BehaviorOpen, Direction: elevio.MD_Down}
+		} else {
+			return elevator.BehaviorAndDirection{Behavior: elevator.BehaviorIdle, Direction: elevio.MD_Stop}
 		}
-	case elevio.MD_Up, elevio.MD_Down:
+	case elevio.MD_Down:
 
 		if requestAbove {
 			return elevator.BehaviorAndDirection{Behavior: elevator.BehaviorMoving, Direction: elevio.MD_Up}
 		} else if requestBelow {
 			return elevator.BehaviorAndDirection{Behavior: elevator.BehaviorMoving, Direction: elevio.MD_Down}
+		} else if requestArrived {
+			return elevator.BehaviorAndDirection{Behavior: elevator.BehaviorOpen, Direction: elevio.MD_Up}
+		} else {
+			return elevator.BehaviorAndDirection{Behavior: elevator.BehaviorIdle, Direction: elevio.MD_Stop}
+		}
+	case elevio.MD_Up:
+
+		if requestAbove {
+			return elevator.BehaviorAndDirection{Behavior: elevator.BehaviorMoving, Direction: elevio.MD_Up}
+		} else if requestBelow {
+			return elevator.BehaviorAndDirection{Behavior: elevator.BehaviorMoving, Direction: elevio.MD_Down}
+		} else if requestArrived {
+			return elevator.BehaviorAndDirection{Behavior: elevator.BehaviorOpen, Direction: elevio.MD_Stop}
+		} else {
+			return elevator.BehaviorAndDirection{Behavior: elevator.BehaviorIdle, Direction: elevio.MD_Stop}
 		}
 	}
 	// Default case when no specific requests dictate movement.

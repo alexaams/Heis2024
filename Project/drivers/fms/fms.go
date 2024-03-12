@@ -49,15 +49,14 @@ func requestUpdates() {
 	var buttonpressed elevio.ButtonEvent
 	switch cuElevator.Behavior {
 	case elevator.BehaviorOpen:
-		fmt.Println("before if opendoor")
+		fmt.Println("before if opendoor", cuElevator.Floor)
 		if floor, buttonType := requests.ClearRequestBtnReturn(cuElevator); floor > -1 {
 			fmt.Println("if was initiated")
 			ticker.TickerStart(cuElevator.OpenDuration)
 			buttonpressed.Button = buttonType
 			buttonpressed.Floor = floor
 			requests.ClearOneRequest(&cuElevator, buttonpressed)
-			clearElevator := requests.RequestReadyForClear(cuElevator)
-			clearRequestsPeer(clearElevator)
+			clearRequestsPeer(buttonpressed)
 		}
 
 	case elevator.BehaviorIdle:
@@ -69,7 +68,7 @@ func requestUpdates() {
 		case elevator.BehaviorOpen:
 			elevio.SetDoorOpenLamp(true)
 			ticker.TickerStart(cuElevator.OpenDuration)
-			cuElevator = requests.ClearOneRequest(&cuElevator, buttonpressed)
+			requests.ClearOneRequest(&cuElevator, buttonpressed)
 			clearElevator := requests.RequestReadyForClear(cuElevator)
 			clearRequestsPeer(clearElevator)
 			fmt.Println("stuck here?")
@@ -82,13 +81,37 @@ func requestUpdates() {
 
 	}
 }
+func onDoorTimeout() {
+	switch cuElevator.Behavior {
+	case elevator.BehaviorOpen:
+		set := requests.RequestToElevatorMovement(cuElevator)
+		cuElevator.Direction = set.Direction
+		cuElevator.Behavior = set.Behavior
+
+		switch cuElevator.Behavior {
+		case elevator.BehaviorOpen:
+			ticker.TickerStart(cuElevator.OpenDuration)
+			requestsToClear := requests.RequestReadyForClear(cuElevator)
+			requests.ClearRequests(&cuElevator, requestsToClear)
+			clearRequestsPeer(requestsToClear)
+
+		case elevator.BehaviorMoving:
+			elevio.SetDoorOpenLamp(false)
+			elevio.SetMotorDirection(cuElevator.Direction)
+
+		case elevator.BehaviorIdle:
+			elevio.SetDoorOpenLamp(false)
+			elevio.SetMotorDirection(cuElevator.Direction)
+		}
+	}
+}
 
 func FloorCurrent(a int) {
 	cuElevator.Floor = a
 	elevio.SetFloorIndicator(cuElevator.Floor)
 	switch cuElevator.Behavior {
 	case elevator.BehaviorMoving:
-		if requests.IsRequestArrived(cuElevator) {
+		if requests.RequestsShouldStop(cuElevator) {
 			elevio.SetMotorDirection(elevio.MD_Stop)
 			ticker.TickerStart(cuElevator.OpenDuration)
 			elevio.SetDoorOpenLamp(true)
@@ -96,7 +119,6 @@ func FloorCurrent(a int) {
 			clearRequestsPeer(clearElevator)
 			fmt.Println("clear elevator values: ", clearElevator)
 			requests.ClearRequests(&cuElevator, clearElevator)
-			cuElevator.Direction = elevio.MD_Stop
 			cuElevator.Behavior = elevator.BehaviorOpen
 			fmt.Println("requests floor current: ", cuElevator.Requests)
 		}
@@ -142,6 +164,7 @@ func fms(hallOrderChan chan config.OrdersHall, cabOrderChan chan []bool) {
 	drv_floors := make(chan int)
 	drv_obstr := make(chan bool)
 	drv_stop := make(chan bool)
+	drv_timer := make(chan bool)
 	//awaiting_orders := make(chan elevio.Order)
 	//Channel receives all buttonevents on every floor
 	go elevio.PollFloorSensor(drv_floors)      //Channel receives which floor you are at
@@ -150,6 +173,9 @@ func fms(hallOrderChan chan config.OrdersHall, cabOrderChan chan []bool) {
 
 	for {
 		select {
+		case <-drv_timer:
+			ticker.TimerStop()
+			onDoorTimeout()
 		case a := <-drv_floors:
 			FloorCurrent(a)
 
