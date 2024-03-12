@@ -2,6 +2,7 @@ package cost
 
 import (
 	"ProjectHeis/config"
+	"ProjectHeis/config_folder/types"
 	"ProjectHeis/drivers/elevator"
 	"ProjectHeis/network/peers"
 	"encoding/json"
@@ -22,11 +23,11 @@ type HRAElevState struct {
 }
 
 type HRAInput struct {
-	HallRequests config.OrdersHall       `json:"hallRequests"`
+	HallRequests types.OrdersHall        `json:"hallRequests"`
 	States       map[string]HRAElevState `json:"states"`
 }
 
-func OrderEmpty(order config.OrdersHall) bool {
+func OrderEmpty(order types.OrdersHall) bool {
 	for i := 0; i < config.NumFloors; i++ {
 		for j := 0; j < 2; j++ {
 			if order[i][j] {
@@ -38,7 +39,7 @@ func OrderEmpty(order config.OrdersHall) bool {
 
 }
 
-func CostFunc(elevatorObject peers.PeersData, dataPeers map[int]peers.PeersData, peers peers.PeerUpdate) config.OrdersHall {
+func CostFunc(elevatorObject peers.PeersData, dataPeers map[int]peers.PeersData, peers peers.PeerUpdate) types.OrdersHall {
 	if OrderEmpty(elevatorObject.GlobalOrderHall) {
 		fmt.Println("No orders available in hall request")
 		return elevatorObject.GlobalOrderHall
@@ -97,9 +98,9 @@ func CostFunc(elevatorObject peers.PeersData, dataPeers map[int]peers.PeersData,
 
 func elevatorToHRAState(elev elevator.Elevator) HRAElevState {
 	return HRAElevState{
-		Behavior:    elevator.ElevatorBehaviorToString(elev),
+		Behavior:    elev.ElevatorBehaviorToString(),
 		Floor:       elev.Floor,
-		Direction:   elevator.ElevatorDirectionToString(elev),
+		Direction:   elev.ElevatorDirectionToString(),
 		CabRequests: elev.CabRequests[:],
 	}
 }
