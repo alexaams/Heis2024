@@ -14,6 +14,11 @@ var _numFloors int = 4
 var _mtx sync.Mutex
 var _conn net.Conn
 
+var G_Ch_drv_buttons = make(chan ButtonEvent)
+var G_Ch_drv_floors = make(chan int)
+var G_Ch_drv_obstr = make(chan bool)
+var G_Ch_stop = make(chan bool)
+
 type MotorDirection int
 
 const (
@@ -48,6 +53,13 @@ func Init(addr string, numFloors int) {
 		panic(err.Error())
 	}
 	_initialized = true
+}
+
+func Init_elevator_IO() {
+	go PollButtons(G_Ch_drv_buttons)
+	go PollFloorSensor(G_Ch_drv_floors)
+	go PollObstructionSwitch(G_Ch_drv_obstr)
+	go PollStopButton(G_Ch_stop)
 }
 
 func SetMotorDirection(dir MotorDirection) {
@@ -189,3 +201,4 @@ func toBool(a byte) bool {
 	}
 	return b
 }
+

@@ -4,7 +4,6 @@ import (
 	"ProjectHeis/config"
 	"ProjectHeis/drivers/elevator"
 	"ProjectHeis/drivers/elevio"
-	"ProjectHeis/drivers/fms"
 	"fmt"
 )
 
@@ -165,6 +164,11 @@ func RequestToElevatorMovement(elev elevator.Elevator) elevator.BehaviorAndDirec
 	return elevator.BehaviorAndDirection{Behavior: elevator.BehaviorIdle, Direction: elevio.MD_Stop}
 }
 
+func addBtnIfRequested(btnType elevio.ButtonType, cuElevator elevator.Elevator, btnToClear []elevio.ButtonEvent) {
+	if cuElevator.Requests[cuElevator.Floor][btnType] {
+		btnToClear = append(btnToClear, elevio.ButtonEvent{Floor: cuElevator.Floor, Button: btnType})
+	}
+}
 func ClearOrders(cuElevator elevator.Elevator) {
 	btnToClear := make([]elevio.ButtonEvent, 0)
 
@@ -172,31 +176,41 @@ func ClearOrders(cuElevator elevator.Elevator) {
 		btnToClear = append(btnToClear, elevio.ButtonEvent{Floor: cuElevator.Floor, Button: elevio.BT_Cab})
 	}
 
-	addBtnIfRequested := func(btnType elevio.ButtonType) {
-		if cuElevator.Requests[cuElevator.Floor][btnType] {
-			btnToClear = append(btnToClear, elevio.ButtonEvent{Floor: cuElevator.Floor, Button: btnType})
-		}
-	}
-
 	switch cuElevator.Direction {
 	case elevio.MD_Up:
 		if !IsRequestAbove(cuElevator) {
-			addBtnIfRequested(elevio.BT_HallDown)
+			if cuElevator.Requests[cuElevator.Floor][elevio.BT_HallDown] {
+				btnToClear = append(btnToClear, elevio.ButtonEvent{Floor: cuElevator.Floor, Button: elevio.BT_HallDown})
+			}
 		}
-		addBtnIfRequested(elevio.BT_HallUp)
+
+		if cuElevator.Requests[cuElevator.Floor][elevio.BT_HallUp] {
+			btnToClear = append(btnToClear, elevio.ButtonEvent{Floor: cuElevator.Floor, Button: elevio.BT_HallUp})
+		}
 	case elevio.MD_Down:
 		if !IsRequestBelow(cuElevator) {
-			addBtnIfRequested(elevio.BT_HallUp)
+			if cuElevator.Requests[cuElevator.Floor][elevio.BT_HallUp] {
+				btnToClear = append(btnToClear, elevio.ButtonEvent{Floor: cuElevator.Floor, Button: elevio.BT_HallUp})
+			}
+
 		}
-		addBtnIfRequested(elevio.BT_HallDown)
+		if cuElevator.Requests[cuElevator.Floor][elevio.BT_HallDown] {
+			btnToClear = append(btnToClear, elevio.ButtonEvent{Floor: cuElevator.Floor, Button: elevio.BT_HallDown})
+		}
+
 	case elevio.MD_Stop:
 		fallthrough
 	default:
-		addBtnIfRequested(elevio.BT_HallUp)
-		addBtnIfRequested(elevio.BT_HallDown)
+		if cuElevator.Requests[cuElevator.Floor][elevio.BT_HallUp] {
+			btnToClear = append(btnToClear, elevio.ButtonEvent{Floor: cuElevator.Floor, Button: elevio.BT_HallUp})
+		}
+		if cuElevator.Requests[cuElevator.Floor][elevio.BT_HallDown] {
+			btnToClear = append(btnToClear, elevio.ButtonEvent{Floor: cuElevator.Floor, Button: elevio.BT_HallDown})
+		}
+
 	}
 
-	fms.Ch_clear_orders <- btnToClear
+	config.G_Ch_clear_orders <- btnToClear
 }
 
 func RequestReadyForClear(elev elevator.Elevator) []elevio.ButtonEvent {

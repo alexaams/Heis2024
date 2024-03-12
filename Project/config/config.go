@@ -1,5 +1,7 @@
 package config
 
+import "ProjectHeis/drivers/elevio"
+
 // --------------------------------GLOBALS--------------------------------
 const NumElevators int = 3
 const NumFloors int = 4
@@ -11,6 +13,9 @@ const BackupDir string = "BackupFiles"
 
 var ElevatorID int = -1
 
+var G_Ch_clear_orders = make(chan []elevio.ButtonEvent)
+var G_Ch_cab_orders = make(chan []bool)
+var G_Ch_hall_orders = make(chan OrdersHall)
 // --------------------------------TYPES--------------------------------
 
 type ReqList map[int]bool

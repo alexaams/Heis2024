@@ -18,9 +18,12 @@ type HelloMsg struct {
 }
 
 func main() {
-	go peers.PeersHeartBeat()
-	go peers.SendPeersData_init()
-	go fms.InitFms()
+	//go peers.PeersHeartBeat()
+	//go peers.SendPeersData_init()
+	//go fms.InitFms()
+
+	go fms.Fms()
+	go fms.OrdersFirstStep()
 
 	for {
 		select {}
