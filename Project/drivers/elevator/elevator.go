@@ -3,6 +3,7 @@ package elevator
 import (
 	"ProjectHeis/config"
 	"ProjectHeis/drivers/elevio"
+	"time"
 )
 
 // --------------------------------VALUES--------------------------------
@@ -17,6 +18,12 @@ const (
 )
 
 // --------------------------------TYPES--------------------------------
+
+// USE THIS WRAPPER TO CREATE METHODS FROM TYPES
+
+// type Elevator struct{
+// 	types.Elevator
+// }
 
 type Elevator struct {
 	Floor        int
@@ -52,7 +59,7 @@ func (elev *Elevator) HasCabRequests() bool {
 	return false
 }
 
-func ElevatorBehaviorToString(elev Elevator) string {
+func (elev *Elevator) ElevatorBehaviorToString() string {
 	switch elev.Behavior {
 	case BehaviorIdle:
 		return "idle"
@@ -67,7 +74,7 @@ func ElevatorBehaviorToString(elev Elevator) string {
 	}
 }
 
-func ElevatorDirectionToString(elev Elevator) string {
+func (elev *Elevator) ElevatorDirectionToString() string {
 	switch elev.Direction {
 	case elevio.MD_Stop:
 		return "stop"
@@ -80,18 +87,49 @@ func ElevatorDirectionToString(elev Elevator) string {
 	}
 }
 
-func SetElevatorFloor(elev *Elevator, floor int) {
+func (elev *Elevator) MoveUp() {
+	elevio.SetMotorDirection(elevio.MD_Up)
+}
+
+func (elev *Elevator) MoveDown() {
+	elevio.SetMotorDirection(elevio.MD_Down)
+}
+
+func (elev *Elevator) Stop() {
+	elevio.SetMotorDirection(elevio.MD_Stop)
+}
+
+func (elev *Elevator) SetElevatorFloor(floor int) {
 	elev.Floor = floor
 }
 
-func SetElevatorDir(elev *Elevator, dir elevio.MotorDirection) {
+func (elev *Elevator) SetElevatorDir(dir elevio.MotorDirection) {
 	elev.Direction = dir
 }
 
-func SetElevatorBehaviour(elev *Elevator, behavior ElevatorBehavior) {
+func (elev *Elevator) SetElevatorBehaviour(behavior ElevatorBehavior) {
 	elev.Behavior = behavior
 }
 
-//func SetElevatorOpenDuration(elev *Elevator, time_s float64) {
-//elev.OpenDuration = time_s
-//}
+func (elev *Elevator) OpenDoor(doorOpenCh, obstCh chan bool) {
+	timer := time.NewTicker(500 * time.Millisecond)
+	timerCounter := 0
+	for {
+		select {
+		case obst := <-obstCh:
+			if obst {
+
+				timer.Stop()
+			} else {
+				timer.Reset(1 * time.Second)
+			}
+		case <-timer.C:
+			timerCounter++
+			if timerCounter <= 6 {
+				elevio.SetDoorOpenLamp(false)
+				doorOpenCh <- true
+				return
+			}
+		}
+	}
+}

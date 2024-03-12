@@ -69,7 +69,7 @@ func requestUpdates() {
 		case elevator.BehaviorOpen:
 			elevio.SetDoorOpenLamp(true)
 			ticker.TickerStart(cuElevator.OpenDuration)
-			cuElevator = requests.ClearOneRequest(&cuElevator, buttonpressed)
+			requests.ClearOneRequest(&cuElevator, buttonpressed)
 			clearElevator := requests.RequestReadyForClear(cuElevator)
 			clearRequestsPeer(clearElevator)
 			fmt.Println("stuck here?")

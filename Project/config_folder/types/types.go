@@ -2,7 +2,6 @@ package types
 
 import (
 	"ProjectHeis/config_folder/globals"
-	"ProjectHeis/drivers/elevator"
 	"ProjectHeis/drivers/elevio"
 )
 
@@ -63,9 +62,18 @@ type BehaviorAndDirection struct {
 	Direction elevio.MotorDirection
 }
 
-type PeersData struct {
-	Elevator         elevator.Elevator
-	Id               int
-	SingleOrdersHall OrdersHall
-	GlobalOrderHall  OrdersHall
-}
+// type PeersData struct {
+// 	Elevator         Elevator
+// 	Id               int
+// 	SingleOrdersHall OrdersHall
+// 	GlobalOrderHall  OrdersHall
+// }
+
+// type Elevator struct {
+// 	Floor        int
+// 	Direction    elevio.MotorDirection
+// 	Behavior     ElevatorBehavior // 0:Idle, 1:Moving, 2:Open, 3: Obst
+// 	OpenDuration float64
+// 	CabRequests  OrdersCab
+// 	Requests     Requests // list default as false
+// }

@@ -40,9 +40,8 @@ func IsRequestArrived(elev elevator.Elevator) bool {
 	return false
 }
 
-func ClearOneRequest(elev *elevator.Elevator, button elevio.ButtonEvent) elevator.Elevator {
+func ClearOneRequest(elev elevator.Elevator, button elevio.ButtonEvent) {
 	elev.Requests[button.Floor][button.Button] = false
-	return *elev
 }
 
 func ClearRequests(elev *elevator.Elevator, buttons []elevio.ButtonEvent) {
