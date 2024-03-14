@@ -66,12 +66,7 @@ func Receiver(port int, peerUpdateCh chan<- PeerUpdate) {
 	for {
 		updated := false
 
-		conn.SetReadDeadline(time.Now().Add(interval))func hallRequestAssigner(orders types.OrdersHall) {
-			for i := 0; i < globals.NumFloors; i++ {
-				for j := 0; j < 2; j++ {
-					cuElevator.Requests[i][j] = orders[i][j]
-				}
-			}
+		conn.SetReadDeadline(time.Now().Add(interval))
 		n, _, _ := conn.ReadFrom(buf[0:])
 
 		id := string(buf[:n])
@@ -100,7 +95,7 @@ func Receiver(port int, peerUpdateCh chan<- PeerUpdate) {
 		// Sending update
 		if updated {
 			p.Peers = make([]string, 0, len(lastSeen))
-			uElevator.OpenDuratio
+
 			for k, _ := range lastSeen {
 				p.Peers = append(p.Peers, k)
 			}
