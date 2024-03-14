@@ -107,6 +107,7 @@ func (elev *Elevator) SetElevatorBehaviour(behavior types.ElevatorBehavior) {
 func (elev *Elevator) OpenDoor(doorOpenCh, obstCh chan bool) {
 	timer := time.NewTicker(500 * time.Millisecond)
 	timerCounter := 0
+	elevio.SetDoorOpenLamp(true)
 	for {
 		select {
 		case obst := <-obstCh:
@@ -118,7 +119,7 @@ func (elev *Elevator) OpenDoor(doorOpenCh, obstCh chan bool) {
 			}
 		case <-timer.C:
 			timerCounter++
-			if timerCounter <= 6 {
+			if timerCounter >= 6 {
 				elevio.SetDoorOpenLamp(false)
 				doorOpenCh <- true
 				return
