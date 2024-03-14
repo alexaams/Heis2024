@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func eventHandling() {
+func EventHandling() {
 	var (
 		timer = time.NewTicker(300 * time.Millisecond)
 	)
