@@ -110,7 +110,7 @@ func btnEventHandler(btnEvent types.ButtonEvent) {
 	} else {
 		peers.G_PeersElevator.GlobalOrderHall[btnEvent.Floor][btnEvent.Button] = true
 		peers.G_PeersElevator.SingleOrdersHall[btnEvent.Floor][btnEvent.Button] = true
-		//updateOrders(peers.G_PeersElevator)
+		updateOrders(peers.G_PeersElevator)
 		peers.G_Ch_PeersData_Tx <- peers.G_PeersElevator //new
 	}
 }
