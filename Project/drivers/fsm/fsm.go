@@ -65,6 +65,10 @@ func Fsm(ch_requests chan types.Requests) {
 		select {
 		case <-timer.C:
 			elevator.G_Ch_elevator_update <- elevator.G_this_Elevator
+			if elevator.G_this_Elevator.Behavior != types.BehaviorOpen {
+				requestUpdates()
+			}
+
 		case a := <-drv_floors:
 			CheckFloorCurrent(a)
 
@@ -88,6 +92,7 @@ func Fsm(ch_requests chan types.Requests) {
 				elevio.SetStopLamp(false)
 			}
 		case requests := <-ch_requests:
+			fmt.Print(requests)
 			mapNewRequests(requests)
 			requestUpdates()
 			CheckFloorCurrent(elevator.G_this_Elevator.Floor)
@@ -117,6 +122,7 @@ func StateMachineBehavior() { //Hold the door (3 seconds)
 			time.Sleep(10 * time.Millisecond)
 		case types.BehaviorIdle:
 			//Usikker på om det er behov for noe her
+			//requestUpdates()
 			time.Sleep(10 * time.Millisecond)
 		case types.BehaviorMoving:
 			//litt usikker på hva som skal skje her egentlig, men lar den stå
