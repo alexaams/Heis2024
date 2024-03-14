@@ -6,7 +6,7 @@ const (
 	NumFloors        int = 4
 	NumButtonTypes   int = 3
 	DoorOpenDuration int = 4 // [s] open door duration
-
+	
 	BackupFile string = "SystemBackup.txt"
 	BackupDir  string = "BackupFiles"
 )

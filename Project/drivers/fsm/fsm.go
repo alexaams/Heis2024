@@ -11,10 +11,12 @@ import (
 )
 
 func requestUpdates() {
-
+	BevAndDir := requests.RequestToElevatorMovement(elevator.G_this_Elevator)
+	elevator.G_this_Elevator.SetMotorDirection(BevAndDir.Direction)
+	elevator.G_this_Elevator.SetElevatorBehaviour(BevAndDir.Behavior)
 }
 
-func FloorCurrent(a int) {
+func CheckFloorCurrent(a int) {
 	elevator.G_this_Elevator.Floor = a
 	elevio.SetFloorIndicator(elevator.G_this_Elevator.Floor)
 	if requests.IsThisOurStop(elevator.G_this_Elevator) {
@@ -64,7 +66,7 @@ func Fsm(ch_requests chan types.Requests) {
 		case <-timer.C:
 			elevator.G_Ch_elevator_update <- elevator.G_this_Elevator
 		case a := <-drv_floors:
-			FloorCurrent(a)
+			CheckFloorCurrent(a)
 
 		case a := <-drv_obstr:
 			fmt.Printf("%+v\n", a)
@@ -88,25 +90,33 @@ func Fsm(ch_requests chan types.Requests) {
 		case requests := <-ch_requests:
 			mapNewRequests(requests)
 			requestUpdates()
-			FloorCurrent(elevator.G_this_Elevator.Floor)
+			CheckFloorCurrent(elevator.G_this_Elevator.Floor)
 			lampChange()
 		}
 	}
 }
 
-func StateMachineBehavior() {
+func StateMachineBehavior() {//Hold the door (3 seconds)
+	//Close the door
+	elevator.G_door_open_counter := 0
+	clearOrderFlag := true
+
 	for {
 		switch elevator.G_this_Elevator.Behavior {
 		case types.BehaviorOpen:
-			requests.ClearOrders(elevator.G_this_Elevator)
-			//Hold the door (3 seconds)
-			//Close the door
-			elevio.SetDoorOpenLamp(false)
-			elevator.G_this_Elevator.SetElevatorBehaviour(types.BehaviorIdle)
-			continue
+			if clearOrderFlag {
+				requests.ClearOrders(elevator.G_this_Elevator)
+			}
+			elevator.G_door_open_counter++
+			if elevator.G_door_open_counter > elevator.G_ticks {
+				elevio.SetDoorOpenLamp(false)
+				elevator.G_this_Elevator.SetElevatorBehaviour(types.BehaviorIdle)
+				elevator.G_door_open_counter = 0
+				clearOrderFlag = false
+			}
+			time.Sleep(10*time.Millisecond)
 		case types.BehaviorIdle:
-			//requestUpdates
-			//set behavior to moving if we have orders to move to, check requestUpdates()
+			//Usikker på om det er behov for noe her
 			time.Sleep(10 * time.Millisecond)
 		case types.BehaviorMoving:
 			//litt usikker på hva som skal skje her egentlig, men lar den stå

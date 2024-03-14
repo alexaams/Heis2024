@@ -17,6 +17,8 @@ var (
 	G_Ch_requests        = make(chan types.Requests)
 	G_Ch_elevator_update = make(chan Elevator)
 	G_this_Elevator      = InitElevator()
+	G_ticks				= config.DoorOpenDuration/0.01
+	G_door_open_counter = 0
 )
 
 // --------------------------------VALUES--------------------------------
