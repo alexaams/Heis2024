@@ -50,14 +50,11 @@ func updateOrders(someElevator peers.PeersData) {
 		someElevator.SingleOrdersHall = cost.CostFunc(someElevator)
 		peers.G_Ch_PeersData_Tx <- someElevator
 		fmt.Println("runs cost as master")
-
 	}
-	if someElevator.Id == peers.G_PeersElevator.Id {
-		orderToRequest := OrdersHallToRequest(peers.G_PeersElevator.SingleOrdersHall)
-		elevator.G_Ch_requests <- orderToRequest
-		peers.G_Ch_PeersData_Tx <- someElevator
-		fmt.Println("sent request to fsm")
-	}
+	orderToRequest := OrdersHallToRequest(peers.G_PeersElevator.SingleOrdersHall)
+	elevator.G_Ch_requests <- orderToRequest
+	peers.G_Ch_PeersData_Tx <- someElevator
+	fmt.Println("sent request to fsm")
 }
 
 func OrdersHallToRequest(order types.OrdersHall) types.Requests {
