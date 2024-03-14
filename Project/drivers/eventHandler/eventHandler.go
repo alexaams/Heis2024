@@ -37,7 +37,7 @@ func eventHandling(cabOrderChan chan []bool) {
 		case btnEvent := <-elevator.G_Ch_drv_buttons:
 			btnEventHandler(btnEvent)
 
-		case elevData := <-elevUpdateChan:
+		case elevData := <-elevator.G_Ch_elevator_update:
 			peers.G_PeersElevator.Elevator = elevData
 
 		case orderComplete := <-elevator.G_Ch_clear_orders:
@@ -50,7 +50,7 @@ func eventHandling(cabOrderChan chan []bool) {
 func updateOrders() {
 	peers.G_PeersElevator.SingleOrdersHall = cost.CostFunc(peers.G_PeersElevator)
 	orderToRequest := OrdersHallToRequest(peers.G_PeersElevator.SingleOrdersHall)
-	requests <- orderToRequest
+	elevator.G_Ch_requests <- orderToRequest
 	peers.G_Ch_PeersData_Tx <- peers.G_PeersElevator
 }
 
@@ -99,7 +99,7 @@ func newPeersData(msg peers.PeersData) bool {
 func btnEventHandler(btnEvent types.ButtonEvent) {
 	if btnEvent.Button == types.BT_Cab {
 		peers.G_PeersElevator.Elevator.Requests.CabFloor[btnEvent.Button] = true
-		requests <- peers.G_PeersElevator.Elevator.Requests
+		elevator.G_Ch_requests <- peers.G_PeersElevator.Elevator.Requests
 	} else {
 		peers.G_PeersElevator.GlobalOrderHall[btnEvent.Floor][btnEvent.Button] = true
 		peers.G_PeersElevator.SingleOrdersHall[btnEvent.Floor][btnEvent.Button] = true
