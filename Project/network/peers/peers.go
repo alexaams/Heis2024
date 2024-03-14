@@ -31,6 +31,7 @@ type PeersData struct {
 	Id               int
 	SingleOrdersHall types.OrdersHall
 	GlobalOrderHall  types.OrdersHall
+	GlobalAckOrders  types.OrdersHall
 }
 
 const interval = 15 * time.Millisecond
@@ -112,6 +113,7 @@ func InitPeers() PeersData {
 		Id:               localip.CreateID(),
 		SingleOrdersHall: types.InitEmptyOrder(),
 		GlobalOrderHall:  types.InitEmptyOrder(),
+		GlobalAckOrders:  types.InitEmptyOrder(),
 	}
 }
 

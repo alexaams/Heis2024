@@ -26,7 +26,7 @@ type ButtonType int
 const (
 	BT_HallUp ButtonType = iota
 	BT_HallDown
-	BT_CabnumFloors
+	BT_Cab
 )
 
 type ElevatorBehavior int
