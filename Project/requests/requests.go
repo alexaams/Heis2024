@@ -155,7 +155,7 @@ func RequestToElevatorMovement(elev elevator.Elevator) types.BehaviorAndDirectio
 	return types.BehaviorAndDirection{Behavior: types.BehaviorIdle, Direction: types.MD_Stop}
 }
 
-func ClearOrders(cuElevator elevator.Elevator) []types.ButtonEvent {
+func ClearOrders(cuElevator elevator.Elevator) {
 	btnToClear := make([]types.ButtonEvent, 0)
 
 	if cuElevator.Requests.CabFloor[cuElevator.Floor] {
@@ -195,5 +195,4 @@ func ClearOrders(cuElevator elevator.Elevator) []types.ButtonEvent {
 	}
 
 	elevator.G_Ch_clear_orders <- btnToClear
-	return btnToClear
 }

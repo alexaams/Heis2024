@@ -2,76 +2,21 @@ package fsm
 
 import (
 	"ProjectHeis/config_folder/config"
-	"ProjectHeis/config_folder/globals"
 	"ProjectHeis/config_folder/types"
 	"ProjectHeis/drivers/elevator"
 	"ProjectHeis/drivers/elevio"
-	"ProjectHeis/network/peers"
 	"ProjectHeis/requests"
 	"fmt"
+	"time"
 )
 
-// channels
-var sendElevDataChan = make(chan bool)
-var obschan = make(chan bool)
-var reqFinChan = make(chan types.ButtonEvent)
-var updateCabChan = make(chan []bool, 1)
-var orderCompleteChan = make(chan types.ButtonEvent)
-var elevUpdateChan = make(chan elevator.Elevator)
-
-// variables
-var cuElevator elevator.Elevator
-var peersElevator peers.PeersData
-var peersUpdate peers.PeerUpdate
-var peersDataMap = make(map[int]peers.PeersData)
-
-func InitFms() {
-	peersElevator = peers.InitPeers()
-	fmt.Println("Starting FMS")
-	peers.G_Ch_PeersData_Tx <- peersElevator
-}
-
 func requestUpdates() {
-	var buttonpressed types.ButtonEvent
-	switch elevator.G_this_Elevator.Behavior {
-	case types.BehaviorOpen:
-		fmt.Println("before if opendoor")
-		if floor, buttonType := requests.ClearRequestBtnReturn(cuElevator); floor > -1 {
-			fmt.Println("if was initiated")
-			ticker.TickerStart(cuElevator.OpenDuration)
-			buttonpressed.Button = buttonType
-			buttonpressed.Floor = floor
-			requests.ClearOneRequest(&cuElevator, buttonpressed)
-			clearElevator := requests.RequestReadyForClear(cuElevator)
-			clearRequestsPeer(clearElevator)
-		}
 
-	case elevator.BehaviorIdle:
-		set := requests.RequestToElevatorMovement(cuElevator)
-		cuElevator.Behavior = set.Behavior
-		cuElevator.Direction = set.Direction
-		fmt.Println("in idle not moving forward")
-		switch set.Behavior {
-		case elevator.BehaviorOpen:
-			elevio.SetDoorOpenLamp(true)
-			ticker.TickerStart(cuElevator.OpenDuration)
-			requests.ClearOneRequest(&cuElevator, buttonpressed)
-			clearElevator := requests.RequestReadyForClear(cuElevator)
-			clearRequestsPeer(clearElevator)
-			fmt.Println("stuck here?")
-
-		case elevator.BehaviorMoving:
-			fmt.Println("behavior moving", cuElevator.Direction)
-			elevio.SetDoorOpenLamp(false)
-			elevio.SetMotorDirection(cuElevator.Direction)
-		}
-
-	}
 }
 
 func FloorCurrent(a int) {
-	cuElevator.Floor = a
-	elevio.SetFloorIndicator(cuElevator.Floor)
+	elevator.G_this_Elevator.Floor = a
+	elevio.SetFloorIndicator(elevator.G_this_Elevator.Floor)
 	if requests.IsThisOurStop(elevator.G_this_Elevator) {
 		elevator.G_this_Elevator.Stop()
 		elevio.SetDoorOpenLamp(true)
@@ -98,7 +43,7 @@ func lampChange() {
 
 func Fsm(ch_requests chan types.Requests) {
 
-	elevio.Init("localhost:15657", globals.NumFloors) //Kan vi legge inn portnumber som en variabel fra config i stedet? God kodeskikk
+	elevio.Init("localhost:15657", config.NumFloors) //Kan vi legge inn portnumber som en variabel fra config i stedet? God kodeskikk
 
 	drv_floors := make(chan int)
 	drv_obstr := make(chan bool)
@@ -110,8 +55,14 @@ func Fsm(ch_requests chan types.Requests) {
 	//State-machine for elevator-behavior
 	go StateMachineBehavior()
 
+	//Ticker for frequent update of elevator-states
+	var timer = time.NewTicker(300 * time.Millisecond)
+	defer timer.Stop()
+
 	for {
 		select {
+		case <-timer.C:
+			elevator.G_Ch_elevator_update <- elevator.G_this_Elevator
 		case a := <-drv_floors:
 			FloorCurrent(a)
 
@@ -119,6 +70,10 @@ func Fsm(ch_requests chan types.Requests) {
 			fmt.Printf("%+v\n", a)
 			if a {
 				fmt.Print("Obstruction\n")
+				elevator.G_this_Elevator.SetElevatorBehaviour(types.BehaviorObst)
+			} else {
+				fmt.Print("Obstruction removed\n")
+				elevator.G_this_Elevator.SetElevatorBehaviour(types.BehaviorIdle)
 			}
 
 		case a := <-drv_stop:
@@ -127,36 +82,37 @@ func Fsm(ch_requests chan types.Requests) {
 			if a {
 				elevio.SetStopLamp(true)
 				elevio.SetMotorDirection(types.MD_Stop)
+			} else {
+				elevio.SetStopLamp(false)
 			}
 		case requests := <-ch_requests:
 			mapNewRequests(requests)
 			requestUpdates()
 			FloorCurrent(elevator.G_this_Elevator.Floor)
+			lampChange()
 		}
 	}
 }
 
 func StateMachineBehavior() {
-	switch elevator.G_this_Elevator.Behavior {
-	case types.BehaviorOpen:
-		//Clear orders
-		//lampChange()
-		//Hold the door (3 seconds)
-		//Close the door
-		//Set door-lamp to false
-		//Set behavior to idle
-		//Continue
-	case types.BehaviorIdle:
-		//requestUpdates
-		//lampChange
-		//set behavior to moving if we have orders to move to, check requestUpdates()
-		//time.sleep(10ms)
-	case types.BehaviorMoving:
-		//litt usikker på hva som skal skje her egentlig
-		//time.sleep(10ms)
-	case types.BehaviorObst:
-		//stay here, there is an obstruction!
-		//Return hall-orders
-		//Inform that you have a problem
+	for {
+		switch elevator.G_this_Elevator.Behavior {
+		case types.BehaviorOpen:
+			requests.ClearOrders(elevator.G_this_Elevator)
+			//Hold the door (3 seconds)
+			//Close the door
+			elevio.SetDoorOpenLamp(false)
+			elevator.G_this_Elevator.SetElevatorBehaviour(types.BehaviorIdle)
+			continue
+		case types.BehaviorIdle:
+			//requestUpdates
+			//set behavior to moving if we have orders to move to, check requestUpdates()
+			time.Sleep(10 * time.Millisecond)
+		case types.BehaviorMoving:
+			//litt usikker på hva som skal skje her egentlig, men lar den stå
+			time.Sleep(10 * time.Millisecond)
+		case types.BehaviorObst:
+			fmt.Print("obstruction - state machine!")
+		}
 	}
 }
