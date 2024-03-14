@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-func eventHandling(cabOrderChan chan []bool) {
+func eventHandling() {
 	var (
 		requests = make(chan types.Requests)
 		timer    = time.NewTicker(300 * time.Millisecond)
