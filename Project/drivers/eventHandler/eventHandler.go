@@ -57,11 +57,18 @@ func updateOrders(someElevator peers.PeersData) {
 	if lastID == peers.G_PeersElevator.Id {
 		someElevator.SingleOrdersHall = cost.CostFunc(someElevator)
 		peers.G_Ch_PeersData_Tx <- someElevator
+		if someElevator.Id == peers.G_PeersElevator.Id {
+			orderToRequest := OrdersHallToRequest(peers.G_PeersElevator.SingleOrdersHall)
+			elevator.G_Ch_requests <- orderToRequest
+			fmt.Println(orderToRequest)
+		}
 	}
 	if someElevator.Id == peers.G_PeersElevator.Id {
 		orderToRequest := OrdersHallToRequest(peers.G_PeersElevator.SingleOrdersHall)
 		elevator.G_Ch_requests <- orderToRequest
 	}
+	orderToRequest := OrdersHallToRequest(peers.G_PeersElevator.SingleOrdersHall)
+	elevator.G_Ch_requests <- orderToRequest
 }
 
 func OrdersHallToRequest(order types.OrdersHall) types.Requests {

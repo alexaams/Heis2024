@@ -138,6 +138,7 @@ func PeersHeartBeat() {
 		case p := <-peerUpdateCh:
 			G_PeersUpdate = p
 			p.PrintPeersUpdate()
+
 			//Sende data videre til kostfunksjon
 		}
 	}
