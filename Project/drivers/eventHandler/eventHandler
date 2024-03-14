@@ -1,0 +1,129 @@
+package eventHandler
+
+import (
+	"ProjectHeis/config_folder/types"
+	"ProjectHeis/cost"
+	"ProjectHeis/network/peers"
+	"time"
+)
+
+func eventHandling(cabOrderChan chan []bool) {
+	var (
+		requests = make(chan types.Requests)
+		timer    = time.NewTicker(300 * time.Millisecond)
+	)
+
+	defer timer.Stop()
+
+	go elevio.PollButtons(G_Ch_drv_buttons)
+
+	go fms(requests)
+
+	for {
+		select {
+		case <-timer.C:
+			if len(peersUpdate.Lost) > 0 {
+				updateOrders(hallOrderChan)
+			}
+		case msg := <-peers.G_Ch_PeersData_Rx:
+			removeAcknowledgedOrder(msg)
+			if newPeersData(msg) {
+				updateOrders(hallOrderChan)
+			}
+		case btnEvent := <-G_Ch_drv_buttons:
+			btnEventHandler(btnEvent)
+
+		case elevData := <-elevUpdateChan:
+			peersElevator.Elevator = elevData
+
+		case orderComplete := <-G_Ch_clear_orders:
+			orderCompleteHandler(orderComplete)
+		}
+		lampChange()
+	}
+
+}
+
+func lampChange() {
+	for floors := range globals.NumFloors {
+		for buttons := range globals.NumButtonTypes - 1 {
+			elevio.SetButtonLamp(elevio.ButtonType(buttons), floors, peersElevator.Requests[floors][buttons])
+		}
+		elevio.SetButtonLamp(elevio.BT_Cab, floors, cuElevator.CabRequests[floors])
+	}
+}
+
+func updateOrders() {
+	peersElevator.SingleOrdersHall = cost.CostFunc(peersElevator)
+	orderToRequest := OrdersHallToRequest(peersElevator.SingleOrdersHall)
+	requests <- orderToRequest
+	peers.G_Ch_PeersData_Tx <- peersElevator
+}
+
+func OrdersHallToRequest(order OrdersHall) Requests {
+	req := InitRequests()
+	for i, ord := range order {
+		req.HallUp[i] = ord[0]
+		req.HallDown[i] = ord[1]
+	}
+	return req
+}
+
+func removeAcknowledgedOrder(msg peers.PeersData) {
+	for acks := range msg.GlobalAckOrders {
+		for j := 0; j < 2; j++ {
+			if msg.GlobalAckOrders[i][j] == peersElevator.GlobalOrderHall[i][j] {
+				peersElevator.GlobalOrderHall[i][j] = false
+			}
+		}
+	}
+}
+
+func newPeersData(msg peers.PeersData) bool {
+	newOrder := false
+	peersDataMap[msg.Id] = msg
+	newOrderGlobal := make(types.OrdersHall, globals.NumFloors)
+	if msg.Id == peersElevator.Id {
+		return newOrder
+	}
+	for i := range peersElevator.GlobalOrderHall {
+		for j := 0; j < 2; j++ {
+			if msg.GlobalOrderHall[i][j] {
+				newOrderGlobal[i][j] = true
+				if !peersElevator.GlobalOrderHall[i][j] {
+					newOrder = true
+				}
+			} else {
+				newOrderGlobal[i][j] = peersElevator.GlobalOrderHall[i][j]
+			}
+		}
+	}
+	peersElevator.GlobalOrderHall = newOrderGlobal
+	return newOrder
+}
+
+func btnEventHandler(btnEvent types.ButtonEvent) {
+	if btnEvent.Button == types.BT_Cab {
+		peersElevator.Elevator.Requests.CabFloor[btnEvent] = true
+		requests <- peersElevator.Elevator.Requests
+	} else {
+		peersElevator.GlobalOrderHall[btnEvent.Floor][btnEvent.Button] = true
+		peersElevator.SingleOrdersHall[btnEvent.Floor][btnEvent.Button] = true
+		updateOrders()
+	}
+}
+
+func orderCompleteHandler(orderComplete []types.ButtonEvent) {
+	for _, order := range orderComplete {
+		if order.Button == types.BT_Cab {
+			peersElevator.Elevator.Requests.CabFloor[order.Floor] = false
+			//skrive til fil
+		} else {
+			peersElevator.SingleOrdersHall[order.Floor][order.Button] = false
+			peersElevator.GlobalOrderHall[order.Floor][order.Button] = false
+			peersElevator.GlobalAckOrders[order.floor][order.button] = true
+			peers.G_Ch_PeersData_Tx <- peersElevator
+			peersElevator.GlobalAckOrders[order.floor][order.button] = false
+		}
+	}
+}
