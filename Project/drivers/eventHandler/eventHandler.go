@@ -30,10 +30,11 @@ func EventHandling() {
 			peers.G_Ch_PeersData_Tx <- peers.G_PeersElevator
 		case msg := <-peers.G_Ch_PeersData_Rx:
 			removeAcknowledgedOrder(msg)
-			fmt.Println(".")
 			if newPeersData(msg) {
 				updateOrders(msg)
 			}
+
+			time.Sleep(10 * time.Millisecond)
 		case btnEvent := <-elevator.G_Ch_drv_buttons:
 			btnEventHandler(btnEvent)
 
@@ -49,6 +50,7 @@ func EventHandling() {
 func updateOrders(someElevator peers.PeersData) {
 	if peers.G_isMaster {
 		someElevator.SingleOrdersHall = cost.CostFunc(someElevator)
+		fmt.Print(someElevator.SingleOrdersHall)
 		peers.G_Ch_PeersData_Tx <- someElevator
 		fmt.Println("runs cost as master")
 	}
@@ -89,7 +91,7 @@ func newPeersData(msg peers.PeersData) bool {
 			if msg.GlobalOrderHall[i][j] {
 				newOrderGlobal[i][j] = true
 				if !peers.G_PeersElevator.GlobalOrderHall[i][j] {
-					newOrder = true
+					newOrder = true //Kan vel strengt tatt bare returne true her
 				}
 			} else {
 				newOrderGlobal[i][j] = peers.G_PeersElevator.GlobalOrderHall[i][j]
@@ -104,10 +106,12 @@ func btnEventHandler(btnEvent types.ButtonEvent) {
 	if btnEvent.Button == types.BT_Cab {
 		peers.G_PeersElevator.Elevator.Requests.CabFloor[btnEvent.Floor] = true
 		elevator.G_Ch_requests <- peers.G_PeersElevator.Elevator.Requests
+		peers.G_Ch_PeersData_Tx <- peers.G_PeersElevator //new
 	} else {
 		peers.G_PeersElevator.GlobalOrderHall[btnEvent.Floor][btnEvent.Button] = true
 		peers.G_PeersElevator.SingleOrdersHall[btnEvent.Floor][btnEvent.Button] = true
-		updateOrders(peers.G_PeersElevator)
+		//updateOrders(peers.G_PeersElevator)
+		peers.G_Ch_PeersData_Tx <- peers.G_PeersElevator //new
 	}
 }
 
