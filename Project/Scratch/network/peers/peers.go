@@ -2,7 +2,6 @@ package peers
 
 import (
 	"ProjectHeis/Scratch/config_folder/types"
-	"ProjectHeis/Scratch/config_folder/globals"
 	"ProjectHeis/drivers/elevator"
 	"ProjectHeis/network/bcast"
 	"ProjectHeis/network/conn"

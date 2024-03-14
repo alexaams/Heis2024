@@ -1,8 +1,8 @@
-package fms
+package fsm
 
 import (
-	"ProjectHeis/config_folder/types"
-	"ProjectHeis/cost"
+	"ProjectHeis/Scratch/config_folder/types"
+	"ProjectHeis/Scratch/cost"
 	"ProjectHeis/drivers/elevator"
 	"ProjectHeis/drivers/elevio"
 	"ProjectHeis/network/peers"
@@ -21,22 +21,10 @@ var orderCompleteChan = make(chan types.ButtonEvent)
 var elevUpdateChan = make(chan elevator.Elevator)
 
 // variables
-// var d types.MotorDirection = types.MD_Up
-var numFloors = globals.NumFloors
 var cuElevator elevator.Elevator
 var peersElevator peers.PeersData
 var peersUpdate peers.PeerUpdate
 var peersDataMap = make(map[int]peers.PeersData)
-
-// func ButtonSelected(a types.ButtonEvent) {
-// 	request_list := requests.MakeReqList(4, 0)
-// 	types.SetButtonLamp(a.Button, a.Floor, true)
-// 	//Test
-// 	if a.Button == types.BT_Cab {
-// 		types.SetDoorOpenLamp(false)
-// 		request_list.SetFloor(a.Floor)
-// 	}
-// }
 
 func InitFms() {
 	peersElevator = peers.InitPeers()
@@ -67,7 +55,7 @@ func requestUpdates() {
 		fmt.Println("in idle not moving forward")
 		switch set.Behavior {
 		case elevator.BehaviorOpen:
-			types.SetDoorOpenLamp(true)
+			elevio.SetDoorOpenLamp(true)
 			ticker.TickerStart(cuElevator.OpenDuration)
 			requests.ClearOneRequest(&cuElevator, buttonpressed)
 			clearElevator := requests.RequestReadyForClear(cuElevator)
@@ -76,8 +64,8 @@ func requestUpdates() {
 
 		case elevator.BehaviorMoving:
 			fmt.Println("behavior moving", cuElevator.Direction)
-			types.SetDoorOpenLamp(false)
-			types.SetMotorDirection(cuElevator.Direction)
+			elevio.SetDoorOpenLamp(false)
+			elevio.SetMotorDirection(cuElevator.Direction)
 		}
 
 	}
@@ -85,13 +73,13 @@ func requestUpdates() {
 
 func FloorCurrent(a int) {
 	cuElevator.Floor = a
-	types.SetFloorIndicator(cuElevator.Floor)
+	elevio.SetFloorIndicator(cuElevator.Floor)
 	switch cuElevator.Behavior {
 	case elevator.BehaviorMoving:
 		if requests.IsRequestArrived(cuElevator) {
-			types.SetMotorDirection(types.MD_Stop)
+			elevio.SetMotorDirection(types.MD_Stop)
 			ticker.TickerStart(cuElevator.OpenDuration)
-			types.SetDoorOpenLamp(true)
+			elevio.SetDoorOpenLamp(true)
 			clearElevator := requests.RequestReadyForClear(cuElevator)
 			clearRequestsPeer(clearElevator)
 			fmt.Println("clear elevator values: ", clearElevator)
