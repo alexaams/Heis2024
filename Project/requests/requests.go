@@ -30,7 +30,7 @@ func IsRequestBelow(elev elevator.Elevator) bool {
 
 // Checks current floor
 func IsThisOurStop(elev elevator.Elevator) bool {
-	return elev.Requests.HallUp[elev.Floor] || elev.Requests.HallDown[elev.Floor] || elev.Requests.HallUp[elev.Floor]
+	return elev.Requests.HallUp[elev.Floor] || elev.Requests.HallDown[elev.Floor] || elev.Requests.CabFloor[elev.Floor]
 }
 
 func ClearOneRequest(elev *elevator.Elevator, button types.ButtonEvent) {
