@@ -30,6 +30,7 @@ func EventHandling() {
 			peers.G_Ch_PeersData_Tx <- peers.G_PeersElevator
 		case msg := <-peers.G_Ch_PeersData_Rx:
 			removeAcknowledgedOrder(msg)
+			fmt.Println(".")
 			if newPeersData(msg) {
 				updateOrders(msg)
 			}
