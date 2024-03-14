@@ -1,8 +1,6 @@
 package peers
 
 import (
-
-	"ProjectHeis/config_folder/config"
 	"ProjectHeis/config_folder/types"
 	"ProjectHeis/drivers/elevator"
 	"ProjectHeis/network/bcast"
@@ -15,11 +13,12 @@ import (
 	"time"
 )
 
-// ___________Global variables___________ 
+// ___________Global variables___________
 var G_Ch_PeersData_Tx = make(chan PeersData)
 var G_Ch_PeersData_Rx = make(chan PeersData)
 var G_PeersUpdate PeerUpdate
 var G_Datamap = make(map[int]PeersData)
+var G_PeersElevator PeersData //Keeps track of itself, it's ID, it's assigned orders and all global orders
 
 type PeerUpdate struct {
 	Peers []string
@@ -122,14 +121,13 @@ func SendPeersData_init() {
 }
 
 func PeersHeartBeat() {
-	globals.ElevatorID = localip.CreateID()
 
-	fmt.Printf("Our ID is: %d\n", globals.ElevatorID)
+	fmt.Printf("Our ID is: %d\n", G_PeersElevator.Id)
 
 	peerUpdateCh := make(chan PeerUpdate)
 	peerTxEnable := make(chan bool)
 
-	go Transmitter(15659, strconv.Itoa(globals.ElevatorID), peerTxEnable)
+	go Transmitter(15659, strconv.Itoa(G_PeersElevator.Id), peerTxEnable)
 	go Receiver(15659, peerUpdateCh)
 
 	fmt.Println("Heartbeat-sequency initiated")
