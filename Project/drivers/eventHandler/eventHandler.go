@@ -27,6 +27,7 @@ func EventHandling() {
 			if len(peers.G_PeersUpdate.Lost) > 0 {
 				updateOrders(peers.G_PeersElevator) //må lage logikk
 			}
+			peers.G_Ch_PeersData_Tx <- peers.G_PeersElevator
 		case msg := <-peers.G_Ch_PeersData_Rx:
 			removeAcknowledgedOrder(msg)
 			if newPeersData(msg) {
@@ -41,7 +42,6 @@ func EventHandling() {
 		case orderComplete := <-elevator.G_Ch_clear_orders:
 			orderCompleteHandler(orderComplete)
 		}
-		peers.G_Ch_PeersData_Tx <- peers.G_PeersElevator
 	}
 }
 
@@ -50,10 +50,12 @@ func updateOrders(someElevator peers.PeersData) {
 		someElevator.SingleOrdersHall = cost.CostFunc(someElevator)
 		peers.G_Ch_PeersData_Tx <- someElevator
 		fmt.Println("runs cost as master")
+
 	}
 	if someElevator.Id == peers.G_PeersElevator.Id {
 		orderToRequest := OrdersHallToRequest(peers.G_PeersElevator.SingleOrdersHall)
 		elevator.G_Ch_requests <- orderToRequest
+		peers.G_Ch_PeersData_Tx <- someElevator
 		fmt.Println("sent request to fsm")
 	}
 }
