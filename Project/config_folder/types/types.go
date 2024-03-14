@@ -1,14 +1,14 @@
 package types
 
 import (
-	globals "ProjectHeis/config_folder/config"
+	"ProjectHeis/config_folder/config"
 )
 
 // -------------------------------- TYPES --------------------------------
 type ReqList map[int]bool
-type AckList [globals.NumElevators]bool
+type AckList [config.NumElevators]bool
 type OrdersAckTable []AckList
-type OrdersCab [globals.NumFloors]bool
+type OrdersCab [config.NumFloors]bool
 type OrdersHall [][2]bool // [floor][False]: ned [floor][True]: OPP
 
 // -------------------------------- ENUM --------------------------------
@@ -26,7 +26,7 @@ type ButtonType int
 const (
 	BT_HallUp ButtonType = iota
 	BT_HallDown
-	BT_Cab
+	BT_CabnumFloors
 )
 
 type ElevatorBehavior int
@@ -69,9 +69,17 @@ type BehaviorAndDirection struct {
 // -------------------------------- FUNC --------------------------------
 
 func InitEmptyOrder() OrdersHall {
-	OrdersNull := make(OrdersHall, globals.NumFloors)
-	for i := range globals.NumFloors {
+	OrdersNull := make(OrdersHall, config.NumFloors)
+	for i := range config.NumFloors {
 		OrdersNull[i] = [2]bool{false, false}
 	}
 	return OrdersNull
+}
+
+func InitRequests() Requests {
+	return Requests{
+		HallUp:   make([]bool, config.NumFloors), // Top floor has no up button
+		HallDown: make([]bool, config.NumFloors), // Ground floor has no down button
+		CabFloor: make([]bool, config.NumFloors),
+	}
 }

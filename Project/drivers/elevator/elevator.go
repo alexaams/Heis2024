@@ -35,7 +35,8 @@ func InitElevator() Elevator {
 		Floor:        -1,
 		Direction:    types.MD_Stop,
 		Behavior:     types.BehaviorIdle,
-		OpenDuration: globals.DoorOpenDuration,
+		OpenDuration: config.DoorOpenDuration,
+		Requests:     types.InitRequests(),
 	}
 }
 
