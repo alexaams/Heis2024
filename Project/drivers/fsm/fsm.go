@@ -12,7 +12,7 @@ import (
 
 func requestUpdates() {
 	BevAndDir := requests.RequestToElevatorMovement(elevator.G_this_Elevator)
-	elevator.G_this_Elevator.SetMotorDirection(BevAndDir.Direction)
+	elevio.SetMotorDirection(BevAndDir.Direction)
 	elevator.G_this_Elevator.SetElevatorBehaviour(BevAndDir.Behavior)
 }
 
@@ -46,7 +46,7 @@ func lampChange() {
 func Fsm(ch_requests chan types.Requests) {
 
 	elevio.Init("localhost:15657", config.NumFloors) //Kan vi legge inn portnumber som en variabel fra config i stedet? God kodeskikk
-
+	fmt.Print("Initiating FSM...")
 	drv_floors := make(chan int)
 	drv_obstr := make(chan bool)
 	drv_stop := make(chan bool)
@@ -96,9 +96,9 @@ func Fsm(ch_requests chan types.Requests) {
 	}
 }
 
-func StateMachineBehavior() {//Hold the door (3 seconds)
+func StateMachineBehavior() { //Hold the door (3 seconds)
 	//Close the door
-	elevator.G_door_open_counter := 0
+	elevator.G_door_open_counter = 0
 	clearOrderFlag := true
 
 	for {
@@ -114,7 +114,7 @@ func StateMachineBehavior() {//Hold the door (3 seconds)
 				elevator.G_door_open_counter = 0
 				clearOrderFlag = false
 			}
-			time.Sleep(10*time.Millisecond)
+			time.Sleep(10 * time.Millisecond)
 		case types.BehaviorIdle:
 			//Usikker på om det er behov for noe her
 			time.Sleep(10 * time.Millisecond)

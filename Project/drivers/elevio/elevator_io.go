@@ -1,6 +1,7 @@
 package elevio
 
 import (
+	"ProjectHeis/config_folder/config"
 	"ProjectHeis/config_folder/types"
 	"fmt"
 	"net"
@@ -8,12 +9,9 @@ import (
 	"time"
 )
 
-
-
 const _pollRate = 20 * time.Millisecond
 
 var _initialized bool = false
-var _numFloors int
 var _mtx sync.Mutex
 var _conn net.Conn
 
@@ -22,7 +20,6 @@ func Init(addr string, numFloors int) {
 		fmt.Println("Driver already initialized!")
 		return
 	}
-	_numFloors = numFloors
 	_mtx = sync.Mutex{}
 	var err error
 	_conn, err = net.Dial("tcp", addr)
@@ -53,10 +50,10 @@ func SetStopLamp(value bool) {
 }
 
 func PollButtons(receiver chan<- types.ButtonEvent) {
-	prev := make([][3]bool, _numFloors)
+	prev := make([][3]bool, config.NumFloors)
 	for {
 		time.Sleep(_pollRate)
-		for f := 0; f < _numFloors; f++ {
+		for f := 0; f < config.NumFloors; f++ {
 			for b := types.ButtonType(0); b < 3; b++ {
 				v := GetButton(b, f)
 				if v != prev[f][b] && v != false {

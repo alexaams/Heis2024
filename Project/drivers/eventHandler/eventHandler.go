@@ -8,6 +8,7 @@ import (
 	"ProjectHeis/drivers/elevio"
 	"ProjectHeis/network/peers"
 	"ProjectHeis/requests"
+	"fmt"
 	"strconv"
 	"time"
 )
@@ -16,7 +17,7 @@ func EventHandling() {
 	var (
 		timer = time.NewTicker(300 * time.Millisecond)
 	)
-
+	fmt.Print("Eventhandler starting...\n")
 	defer timer.Stop()
 
 	go elevio.PollButtons(elevator.G_Ch_drv_buttons)
