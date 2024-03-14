@@ -1,10 +1,10 @@
 package cost
 
 import (
-	"ProjectHeis/Scratch/config_folder/globals"
-	"ProjectHeis/Scratch/config_folder/types"
-	"ProjectHeis/Scratch/drivers/elevator"
-	"ProjectHeis/Scratch/network/peers"
+	"ProjectHeis/config_folder/config"
+	"ProjectHeis/config_folder/types"
+	"ProjectHeis/drivers/elevator"
+	"ProjectHeis/network/peers"
 	"encoding/json"
 	"fmt"
 	"os/exec"

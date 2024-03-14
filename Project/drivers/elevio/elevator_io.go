@@ -1,7 +1,7 @@
 package elevio
 
 import (
-	"ProjectHeis/Scratch/config_folder/types"
+	"ProjectHeis/config_folder/types"
 	"fmt"
 	"net"
 	"sync"

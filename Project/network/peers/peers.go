@@ -2,12 +2,12 @@ package peers
 
 import (
 
-	"ProjectHeis/Scratch/config_folder/globals"
-	"ProjectHeis/Scratch/config_folder/types"
-	"ProjectHeis/Scratch/drivers/elevator"
-	"ProjectHeis/Scratch/network/bcast"
-	"ProjectHeis/Scratch/network/conn"
-	"ProjectHeis/Scratch/network/localip"
+	"ProjectHeis/config_folder/config"
+	"ProjectHeis/config_folder/types"
+	"ProjectHeis/drivers/elevator"
+	"ProjectHeis/network/bcast"
+	"ProjectHeis/network/conn"
+	"ProjectHeis/network/localip"
 	"fmt"
 	"net"
 	"sort"

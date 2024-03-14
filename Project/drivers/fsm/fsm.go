@@ -1,14 +1,13 @@
 package fsm
 
 import (
-	"ProjectHeis/Scratch/config_folder/globals"
-	"ProjectHeis/Scratch/config_folder/types"
-	"ProjectHeis/Scratch/cost"
+	"ProjectHeis/config_folder/config"
+	"ProjectHeis/config_folder/types"
+	"ProjectHeis/cost"
 	"ProjectHeis/drivers/elevator"
 	"ProjectHeis/drivers/elevio"
 	"ProjectHeis/network/peers"
 	"ProjectHeis/requests"
-	"ProjectHeis/ticker"
 	"fmt"
 	"time"
 )

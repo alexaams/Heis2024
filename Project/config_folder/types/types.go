@@ -1,7 +1,7 @@
 package types
 
 import (
-	"ProjectHeis/Scratch/config_folder/globals"
+	globals "ProjectHeis/config_folder/config"
 )
 
 // -------------------------------- TYPES --------------------------------

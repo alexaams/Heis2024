@@ -1,9 +1,8 @@
 package main
 
 import (
-	"ProjectHeis/config"
 	"ProjectHeis/drivers/elevio"
-	"ProjectHeis/drivers/fms"
+	"ProjectHeis/drivers/fsm"
 	"ProjectHeis/network/peers"
 	"fmt"
 )
@@ -22,8 +21,8 @@ func main() {
 	//go peers.SendPeersData_init()
 	//go fms.InitFms()
 
-	go fms.Fms()
-	go fms.OrdersFirstStep()
+	go fsm.Fsm()
+	go fsm.OrdersFirstStep()
 
 	for {
 		select {}

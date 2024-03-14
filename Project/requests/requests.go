@@ -1,9 +1,9 @@
 package requests
 
 import (
-	"ProjectHeis/Scratch/config_folder/globals"
-	"ProjectHeis/Scratch/config_folder/types"
-	"ProjectHeis/Scratch/drivers/elevator"
+	globals "ProjectHeis/config_folder/config"
+	"ProjectHeis/config_folder/types"
+	"ProjectHeis/drivers/elevator"
 )
 
 // Checks current floor to top floor
@@ -234,7 +234,7 @@ func ClearOrders(cuElevator elevator.Elevator) []types.ButtonEvent {
 		}
 	}
 
-	globals.G_Ch_clear_orders <- btnToClear
+	elevator.G_Ch_clear_orders <- btnToClear
 	return btnToClear
 }
 
