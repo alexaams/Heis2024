@@ -1,12 +1,12 @@
 package peers
 
 import (
-	"ProjectHeis/Scratch/config_folder/types"
 	"ProjectHeis/Scratch/config_folder/globals"
-	"ProjectHeis/drivers/elevator"
-	"ProjectHeis/network/bcast"
-	"ProjectHeis/network/conn"
-	"ProjectHeis/network/localip"
+	"ProjectHeis/Scratch/config_folder/types"
+	"ProjectHeis/Scratch/drivers/elevator"
+	"ProjectHeis/Scratch/network/bcast"
+	"ProjectHeis/Scratch/network/conn"
+	"ProjectHeis/Scratch/network/localip"
 	"fmt"
 	"net"
 	"sort"
@@ -18,6 +18,7 @@ import (
 var G_Ch_PeersData_Tx = make(chan PeersData)
 var G_Ch_PeersData_Rx = make(chan PeersData)
 var G_PeersUpdate PeerUpdate
+var G_Datamap = make(map[int]PeersData)
 
 type PeerUpdate struct {
 	Peers []string
@@ -120,14 +121,14 @@ func SendPeersData_init() {
 }
 
 func PeersHeartBeat() {
-	config.ElevatorID = localip.CreateID()
+	globals.ElevatorID = localip.CreateID()
 
-	fmt.Printf("Our ID is: %d\n", config.ElevatorID)
+	fmt.Printf("Our ID is: %d\n", globals.ElevatorID)
 
 	peerUpdateCh := make(chan PeerUpdate)
 	peerTxEnable := make(chan bool)
 
-	go Transmitter(15659, strconv.Itoa(config.ElevatorID), peerTxEnable)
+	go Transmitter(15659, strconv.Itoa(globals.ElevatorID), peerTxEnable)
 	go Receiver(15659, peerUpdateCh)
 
 	fmt.Println("Heartbeat-sequency initiated")
