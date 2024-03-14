@@ -6,7 +6,6 @@ import (
 	"ProjectHeis/cost"
 	"ProjectHeis/drivers/elevator"
 	"ProjectHeis/drivers/elevio"
-	"ProjectHeis/drivers/fsm"
 	"ProjectHeis/network/peers"
 	"ProjectHeis/requests"
 	"strconv"
@@ -15,15 +14,12 @@ import (
 
 func eventHandling() {
 	var (
-		requests = make(chan types.Requests)
-		timer    = time.NewTicker(300 * time.Millisecond)
+		timer = time.NewTicker(300 * time.Millisecond)
 	)
 
 	defer timer.Stop()
 
 	go elevio.PollButtons(elevator.G_Ch_drv_buttons)
-
-	go fsm.Fsm(requests)
 
 	for {
 		select {
