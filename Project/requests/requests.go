@@ -116,6 +116,7 @@ func RequestToElevatorMovement(elev elevator.Elevator) types.BehaviorAndDirectio
 	requestArrived := IsThisOurStop(elev)
 	requestAbove := IsRequestAbove(elev)
 	requestBelow := IsRequestBelow(elev)
+	
 
 	switch elev.Direction {
 	case types.MD_Stop:
