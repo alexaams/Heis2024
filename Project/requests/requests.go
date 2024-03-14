@@ -1,7 +1,7 @@
 package requests
 
 import (
-	globals "ProjectHeis/config_folder/config"
+	"ProjectHeis/config_folder/config"
 	"ProjectHeis/config_folder/types"
 	"ProjectHeis/drivers/elevator"
 )
@@ -9,7 +9,7 @@ import (
 // Checks current floor to top floor
 func IsRequestAbove(elev elevator.Elevator) bool {
 	requests := elev.Requests
-	for floor := elev.Floor + 1; floor < globals.NumFloors; floor++ {
+	for floor := elev.Floor + 1; floor < config.NumFloors; floor++ {
 		if requests.HallUp[floor] || requests.HallDown[floor] || requests.CabFloor[floor] {
 			return true
 		}
@@ -58,7 +58,7 @@ func ClearRequests(elev *elevator.Elevator, buttons []types.ButtonEvent) {
 }
 
 func ClearAllRequests(elev *elevator.Elevator) {
-	for floor := range globals.NumFloors {
+	for floor := range config.NumFloors {
 		elev.Requests.CabFloor[floor] = false
 		elev.Requests.HallUp[floor] = false
 		elev.Requests.HallDown[floor] = false
@@ -84,29 +84,13 @@ func RequestsShouldStop(elev elevator.Elevator) bool {
 	return false
 }
 
-// func ClearRequestBtnReturn(elev elevator.Elevator) (int, types.ButtonType) {
-// 	for buttonType := elevio.BT_HallUp; buttonType < types.ButtonType(globals.NumButtonTypes); buttonType++ {
-// 		isRequested := elev.Requests[elev.Floor][buttonType]
-// 		isDirectionMatch := (elev.Direction == elevio.MD_Up && buttonType == elevio.BT_HallUp) ||
-// 			(elev.Direction == elevio.MD_Down && buttonType == elevio.BT_HallDown)
-// 		isCabButton := buttonType == elevio.BT_Cab
-// 		isStopped := elev.Direction == elevio.MD_Stop
-// 		if isRequested && (isDirectionMatch || isCabButton || isStopped) {
-// 			return elev.Floor, buttonType
-// 		}
-// 	}
-// 	// defaults to this as an error indicating that it is stuck at the bottom
-// 	fmt.Println("clear btn values")
-// 	return -1, elevio.BT_HallUp
-// }
-
 func GiveButtonToClear(elev elevator.Elevator) types.ButtonEvent {
 	var isRequested bool
 	var isDirectionMatch bool
 	var isStopped bool
 	var isCabButton bool
 
-	for buttonType := range globals.NumButtonTypes {
+	for buttonType := range config.NumButtonTypes {
 		switch types.ButtonType(buttonType) {
 		case types.BT_HallUp:
 			isRequested = elev.Requests.HallUp[elev.Floor]
@@ -126,24 +110,6 @@ func GiveButtonToClear(elev elevator.Elevator) types.ButtonEvent {
 	}
 	return types.ButtonEvent{Floor: -1, Button: types.BT_HallUp}
 }
-
-// // Decides where to
-// func WhichWay(cuElevator *elevator.Elevator) {
-// 	ReqestsAbove := IsRequestAbove(*cuElevator)
-// 	RequestsBelow := IsRequestBelow(*cuElevator)
-
-// 	switch {
-// 	case ReqestsAbove:
-// 		elevio.SetMotorDirection(elevio.MD_Up)
-// 		cuElevator.Direction = elevio.MD_Up
-// 	case RequestsBelow:
-// 		elevio.SetMotorDirection(elevio.MD_Down)
-// 		cuElevator.Direction = elevio.MD_Down
-// 	default:
-// 		elevio.SetMotorDirection(elevio.MD_Stop)
-// 		cuElevator.Direction = elevio.MD_Stop
-// 	}
-// }
 
 func RequestToElevatorMovement(elev elevator.Elevator) types.BehaviorAndDirection {
 	// Determine request locations relative to the elevator once.
@@ -189,12 +155,6 @@ func RequestToElevatorMovement(elev elevator.Elevator) types.BehaviorAndDirectio
 	return types.BehaviorAndDirection{Behavior: types.BehaviorIdle, Direction: types.MD_Stop}
 }
 
-// func addBtnIfRequested(btnType types.ButtonType, cuElevator elevator.Elevator, btnToClear []types.ButtonEvent) {
-// 	if cuElevator.Requests[cuElevator.Floor][btnType] {
-// 		btnToClear = append(btnToClear, types.ButtonEvent{Floor: cuElevator.Floor, Button: btnType})
-// 	}
-// }
-
 func ClearOrders(cuElevator elevator.Elevator) []types.ButtonEvent {
 	btnToClear := make([]types.ButtonEvent, 0)
 
@@ -237,45 +197,3 @@ func ClearOrders(cuElevator elevator.Elevator) []types.ButtonEvent {
 	elevator.G_Ch_clear_orders <- btnToClear
 	return btnToClear
 }
-
-// func RequestReadyForClear(elev elevator.Elevator) []types.ButtonEvent {
-// 	btnToClear := make([]types.ButtonEvent, 0)
-
-// 	if elev.Requests.CabFloor[elev.Floor] {
-// 		btnToClear = append(btnToClear, types.ButtonEvent{Floor: elev.Floor, Button: types.BT_Cab})
-// 	}
-
-// 	addBtnIfRequested := func(btnType types.ButtonType) {
-// 		if elev.Requests[elev.Floor][btnType] {
-// 			btnToClear = append(btnToClear, types.ButtonEvent{Floor: elev.Floor, Button: btnType})
-// 		}
-// 	}
-
-// 	switch elev.Direction {
-// 	case types.MD_Up:
-// 		if !IsRequestAbove(elev) {
-// 			addBtnIfRequested(types.BT_HallDown)
-// 		}
-// 		addBtnIfRequested(types.BT_HallUp)
-// 	case types.MD_Down:
-// 		if !IsRequestBelow(elev) {
-// 			addBtnIfRequested(types.BT_HallUp)
-// 		}
-// 		addBtnIfRequested(types.BT_HallDown)
-// 	case types.MD_Stop:
-// 		fallthrough
-// 	default:
-// 		addBtnIfRequested(types.BT_HallUp)
-// 		addBtnIfRequested(types.BT_HallDown)
-// 	}
-// 	return btnToClear
-// }
-
-// ----------------- GIVEN ------------------------
-// func MakeReqList(amountFloors, botFloor int) config.ReqList {
-// 	listFloor := make(map[int]bool)
-// 	for x := 0; x < amountFloors; x++ {
-// 		listFloor[x+botFloor] = false
-// 	}
-// 	return listFloor
-// }
