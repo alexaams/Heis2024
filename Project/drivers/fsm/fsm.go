@@ -12,7 +12,7 @@ import (
 
 func requestUpdates() {
 	BevAndDir := requests.RequestToElevatorMovement(elevator.G_this_Elevator)
-	if elevator.G_this_Elevator.Behavior != types.BehaviorOpen || elevator.G_this_Elevator.Behavior != types.BehaviorObst {
+	if elevator.G_this_Elevator.Behavior != types.BehaviorOpen && elevator.G_this_Elevator.Behavior != types.BehaviorObst {
 		elevio.SetMotorDirection(BevAndDir.Direction)
 		elevator.G_this_Elevator.SetElevatorBehaviour(BevAndDir.Behavior)
 	} else {
