@@ -19,6 +19,7 @@ var G_Ch_PeersData_Rx = make(chan PeersData)
 var G_PeersUpdate PeerUpdate
 var G_Datamap = make(map[int]PeersData)
 var G_PeersElevator PeersData //Keeps track of itself, it's ID, it's assigned orders and all global orders
+var G_isMaster bool
 
 type PeerUpdate struct {
 	Peers []string
@@ -138,7 +139,20 @@ func PeersHeartBeat() {
 		case p := <-peerUpdateCh:
 			G_PeersUpdate = p
 			p.PrintPeersUpdate()
-
+			lowestID := 256 //må være større en største mulige id før løkka kjøres
+			for i := range G_PeersUpdate.Peers {
+				iDs, _ := strconv.Atoi(G_PeersUpdate.Peers[i])
+				if iDs < lowestID {
+					lowestID = iDs
+				}
+			}
+			if lowestID == G_PeersElevator.Id {
+				G_isMaster = true
+				fmt.Println("This elevator is now master")
+			} else {
+				G_isMaster = false
+				fmt.Println("This elevator is a slave")
+			}
 			//Sende data videre til kostfunksjon
 		}
 	}

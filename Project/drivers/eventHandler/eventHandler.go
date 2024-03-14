@@ -9,7 +9,6 @@ import (
 	"ProjectHeis/network/peers"
 	"ProjectHeis/requests"
 	"fmt"
-	"strconv"
 	"time"
 )
 
@@ -47,28 +46,16 @@ func EventHandling() {
 }
 
 func updateOrders(someElevator peers.PeersData) {
-	lastID := 256 //må være større en største mulige id før løkka kjøres
-	for i := range peers.G_PeersUpdate.Peers {
-		iDs, _ := strconv.Atoi(peers.G_PeersUpdate.Peers[i])
-		if iDs < lastID {
-			lastID = iDs
-		}
-	}
-	if lastID == peers.G_PeersElevator.Id {
+	if peers.G_isMaster {
 		someElevator.SingleOrdersHall = cost.CostFunc(someElevator)
 		peers.G_Ch_PeersData_Tx <- someElevator
-		if someElevator.Id == peers.G_PeersElevator.Id {
-			orderToRequest := OrdersHallToRequest(peers.G_PeersElevator.SingleOrdersHall)
-			elevator.G_Ch_requests <- orderToRequest
-			fmt.Println(orderToRequest)
-		}
+		fmt.Println("runs cost as master")
 	}
 	if someElevator.Id == peers.G_PeersElevator.Id {
 		orderToRequest := OrdersHallToRequest(peers.G_PeersElevator.SingleOrdersHall)
 		elevator.G_Ch_requests <- orderToRequest
+		fmt.Println("sent request to fsm")
 	}
-	orderToRequest := OrdersHallToRequest(peers.G_PeersElevator.SingleOrdersHall)
-	elevator.G_Ch_requests <- orderToRequest
 }
 
 func OrdersHallToRequest(order types.OrdersHall) types.Requests {
