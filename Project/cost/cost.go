@@ -56,8 +56,8 @@ func CostFunc(elevatorObject peers.PeersData) types.OrdersHall {
 
 	peersActive := len(peers.G_PeersUpdate.Peers)
 	statesElevators := make(map[string]HRAElevState, peersActive)
-	idstring := strconv.Itoa(globals.ElevatorID)
-	peers.G_Datamap[globals.ElevatorID] = elevatorObject
+	idstring := strconv.Itoa(config.ElevatorID)
+	peers.G_Datamap[config.ElevatorID] = elevatorObject
 
 	//Mapping all elevators to the algorithm
 	for i := 0; i < peersActive; i++ {
