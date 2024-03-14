@@ -6,13 +6,13 @@ const (
 	NumFloors        int = 4
 	NumButtonTypes   int = 3
 	DoorOpenDuration int = 4 // [s] open door duration
+	ElevatorIDInit   int = -1
 
 	BackupFile string = "SystemBackup.txt"
 	BackupDir  string = "BackupFiles"
 )
 
 // ------------------ VARIABLES ------------------
-var ElevatorID int = -1
 
 // ------------------ CHANNELS ------------------
 
