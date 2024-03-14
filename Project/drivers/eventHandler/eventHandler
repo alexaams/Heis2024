@@ -31,7 +31,7 @@ func eventHandling(cabOrderChan chan []bool) {
 				updateOrders(hallOrderChan)
 			}
 		case btnEvent := <-G_Ch_drv_buttons:
-			btnEventHandler(btnEvent, cabOrderChan, hallOrderChan)
+			btnEventHandler(btnEvent)
 
 		case elevData := <-elevUpdateChan:
 			peersElevator.Elevator = elevData
@@ -47,7 +47,7 @@ func eventHandling(cabOrderChan chan []bool) {
 func lampChange() {
 	for floors := range globals.NumFloors {
 		for buttons := range globals.NumButtonTypes - 1 {
-			elevio.SetButtonLamp(elevio.ButtonType(buttons), floors, cuElevator.Requests[floors][buttons])
+			elevio.SetButtonLamp(elevio.ButtonType(buttons), floors, peersElevator.Requests[floors][buttons])
 		}
 		elevio.SetButtonLamp(elevio.BT_Cab, floors, cuElevator.CabRequests[floors])
 	}
@@ -102,26 +102,28 @@ func newPeersData(msg peers.PeersData) bool {
 	return newOrder
 }
 
-func btnEventHandler(btnEvent types.ButtonEvent, cabOrderChan chan []bool, hallOrderChan chan types.OrdersHall) {
+func btnEventHandler(btnEvent types.ButtonEvent) {
 	if btnEvent.Button == types.BT_Cab {
 		peersElevator.Elevator.Requests.CabFloor[btnEvent] = true
-		cabOrderChan <- peersElevator.Elevator.Requests
+		requests <- peersElevator.Elevator.Requests
 	} else {
 		peersElevator.GlobalOrderHall[btnEvent.Floor][btnEvent.Button] = true
 		peersElevator.SingleOrdersHall[btnEvent.Floor][btnEvent.Button] = true
-		updateOrders(hallOrderChan)
+		updateOrders()
 	}
 }
 
 func orderCompleteHandler(orderComplete []types.ButtonEvent) {
-	if orderComplete.Button == types.BT_Cab {
-		peersElevator.Elevator.Requests.CabFloor[orderComplete.Floor] = false
-		//skrive til fil
-	} else {
-		peersElevator.SingleOrdersHall[orderComplete.Floor][orderComplete.Button] = false
-		peersElevator.GlobalOrderHall[orderComplete.Floor][orderComplete.Button] = false
-		peersElevator.GlobalAckOrders[orderComplete.floor][orderComplete.button] = true
-		peers.G_Ch_PeersData_Tx <- peersElevator
-		peersElevator.GlobalAckOrders[orderComplete.floor][orderComplete.button] = false
+	for _, order := range orderComplete {
+		if order.Button == types.BT_Cab {
+			peersElevator.Elevator.Requests.CabFloor[order.Floor] = false
+			//skrive til fil
+		} else {
+			peersElevator.SingleOrdersHall[order.Floor][order.Button] = false
+			peersElevator.GlobalOrderHall[order.Floor][order.Button] = false
+			peersElevator.GlobalAckOrders[order.floor][order.button] = true
+			peers.G_Ch_PeersData_Tx <- peersElevator
+			peersElevator.GlobalAckOrders[order.floor][order.button] = false
+		}
 	}
 }
