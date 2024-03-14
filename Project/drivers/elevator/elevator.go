@@ -14,6 +14,7 @@ var (
 	G_Ch_drv_floors   = make(chan int)
 	G_Ch_drv_obstr    = make(chan bool)
 	G_Ch_stop         = make(chan bool)
+	G_this_Elevator   = InitElevator()
 )
 
 // --------------------------------VALUES--------------------------------

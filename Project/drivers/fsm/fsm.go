@@ -2,14 +2,13 @@ package fsm
 
 import (
 	"ProjectHeis/config_folder/config"
+	"ProjectHeis/config_folder/globals"
 	"ProjectHeis/config_folder/types"
-	"ProjectHeis/cost"
 	"ProjectHeis/drivers/elevator"
 	"ProjectHeis/drivers/elevio"
 	"ProjectHeis/network/peers"
 	"ProjectHeis/requests"
 	"fmt"
-	"time"
 )
 
 // channels
@@ -29,14 +28,13 @@ var peersDataMap = make(map[int]peers.PeersData)
 func InitFms() {
 	peersElevator = peers.InitPeers()
 	fmt.Println("Starting FMS")
-	eventHandling(updateCabChan)
 	peers.G_Ch_PeersData_Tx <- peersElevator
 }
 
 func requestUpdates() {
 	var buttonpressed types.ButtonEvent
-	switch cuElevator.Behavior {
-	case elevator.BehaviorOpen:
+	switch elevator.G_this_Elevator.Behavior {
+	case types.BehaviorOpen:
 		fmt.Println("before if opendoor")
 		if floor, buttonType := requests.ClearRequestBtnReturn(cuElevator); floor > -1 {
 			fmt.Println("if was initiated")
@@ -74,54 +72,43 @@ func requestUpdates() {
 func FloorCurrent(a int) {
 	cuElevator.Floor = a
 	elevio.SetFloorIndicator(cuElevator.Floor)
-	switch cuElevator.Behavior {
-	case elevator.BehaviorMoving:
-		if requests.IsRequestArrived(cuElevator) {
-			elevio.SetMotorDirection(types.MD_Stop)
-			ticker.TickerStart(cuElevator.OpenDuration)
-			elevio.SetDoorOpenLamp(true)
-			clearElevator := requests.RequestReadyForClear(cuElevator)
-			clearRequestsPeer(clearElevator)
-			fmt.Println("clear elevator values: ", clearElevator)
-			requests.ClearRequests(&cuElevator, clearElevator)
-			cuElevator.Direction = types.MD_Stop
-			cuElevator.Behavior = elevator.BehaviorOpen
-			fmt.Println("requests floor current: ", cuElevator.Requests)
-		}
+	if requests.IsThisOurStop(elevator.G_this_Elevator) {
+		elevator.G_this_Elevator.Stop()
+		elevio.SetDoorOpenLamp(true)
+		elevator.G_this_Elevator.SetElevatorBehaviour(types.BehaviorOpen)
 	}
 }
 
-func clearRequestsPeer(variable interface{}) {
-	switch types := variable.(type) {
-	case types.ButtonEvent:
-		orderCompleteChan <- types
+func mapNewRequests(reqs types.Requests) {
+	for i := 0; i < config.NumFloors; i++ {
+		elevator.G_this_Elevator.Requests.HallUp[i] = reqs.HallUp[i]
+		elevator.G_this_Elevator.Requests.HallDown[i] = reqs.HallDown[i]
+		elevator.G_this_Elevator.Requests.CabFloor[i] = reqs.CabFloor[i]
 
-	case []types.ButtonEvent:
-		for _, t := range types {
-			orderCompleteChan <- t
-		}
 	}
 }
 
-func ObstFound() {
-	if cuElevator.Behavior == elevator.BehaviorOpen {
-		ticker.TickerStart(cuElevator.OpenDuration)
-		obschan <- true
+func lampChange() {
+	for floor := range config.NumFloors {
+		elevio.SetButtonLamp(types.BT_Cab, floor, elevator.G_this_Elevator.Requests.CabFloor[floor])
+		elevio.SetButtonLamp(types.BT_HallUp, floor, elevator.G_this_Elevator.Requests.HallUp[floor])
+		elevio.SetButtonLamp(types.BT_HallDown, floor, elevator.G_this_Elevator.Requests.HallDown[floor])
 	}
 }
 
-func Fsm(requests types.Requests) {
+func Fsm(ch_requests chan types.Requests) {
 
-	elevio.Init("localhost:15657", globals.NumFloors)//Kan vi legge inn portnumber som en variabel fra config i stedet? God kodeskikk
+	elevio.Init("localhost:15657", globals.NumFloors) //Kan vi legge inn portnumber som en variabel fra config i stedet? God kodeskikk
 
 	drv_floors := make(chan int)
 	drv_obstr := make(chan bool)
 	drv_stop := make(chan bool)
-	//awaiting_orders := make(chan types.Order)
-	//Channel receives all buttonevents on every floor
-	go elevio.PollFloorSensor(drv_floors)      //Channel receives which floor you are at
-	go elevio.PollObstructionSwitch(drv_obstr) //Channel receives state for obstruction switch when changed
-	go elevio.PollStopButton(drv_stop)         //Channel receives state of stop switch when changed
+	//Initiate elevator IO (buttons are read in the event-handler)
+	go elevio.PollFloorSensor(drv_floors)
+	go elevio.PollObstructionSwitch(drv_obstr)
+	go elevio.PollStopButton(drv_stop)
+	//State-machine for elevator-behavior
+	go StateMachineBehavior()
 
 	for {
 		select {
@@ -131,133 +118,45 @@ func Fsm(requests types.Requests) {
 		case a := <-drv_obstr:
 			fmt.Printf("%+v\n", a)
 			if a {
-				ObstFound()
+				fmt.Print("Obstruction\n")
 			}
 
 		case a := <-drv_stop:
 			fmt.Printf("Stopbutton: %+v\n", a)
-			}
+
 			if a {
-				types.SetStopLamp(true)
-				types.SetMotorDirection(types.MD_Stop)
+				elevio.SetStopLamp(true)
+				elevio.SetMotorDirection(types.MD_Stop)
 			}
-		case hallorders := <-hallOrderChan:
-			hallRequestAssigner(hallorders)
+		case requests := <-ch_requests:
+			mapNewRequests(requests)
 			requestUpdates()
-
-		case cabOrders := <-cabOrderChan:
-			cabRequestAssigner(cabOrders)
-			requestUpdates()
+			FloorCurrent(elevator.G_this_Elevator.Floor)
 		}
 	}
 }
 
-func cabRequestAssigner(orders []bool) {
-	for i, j := range orders {
-		cuElevator.Requests[i][2] = j
+func StateMachineBehavior() {
+	switch elevator.G_this_Elevator.Behavior {
+	case types.BehaviorOpen:
+		//Clear orders
+		//lampChange()
+		//Hold the door (3 seconds)
+		//Close the door
+		//Set door-lamp to false
+		//Set behavior to idle
+		//Continue
+	case types.BehaviorIdle:
+		//requestUpdates
+		//lampChange
+		//set behavior to moving if we have orders to move to, check requestUpdates()
+		//time.sleep(10ms)
+	case types.BehaviorMoving:
+		//litt usikker på hva som skal skje her egentlig
+		//time.sleep(10ms)
+	case types.BehaviorObst:
+		//stay here, there is an obstruction!
+		//Return hall-orders
+		//Inform that you have a problem
 	}
-}
-
-func hallRequestAssigner(orders types.OrdersHall) {
-	for i := 0; i < globals.NumFloors; i++ {
-		for j := 0; j < 2; j++ {
-			cuElevator.Requests[i][j] = orders[i][j]
-		}
-	}
-}
-
-func lampChange() {
-	for floors := range globals.NumFloors {
-		for buttons := range globals.NumButtonTypes - 1 {
-			elevio.SetButtonLamp(elevio.ButtonType(buttons), floors, cuElevator.Requests[floors][buttons])
-		}
-		elevio.SetButtonLamp(elevio.BT_Cab, floors, cuElevator.CabRequests[floors])
-	}
-}
-
-func updateOrders(hallOrderChan chan types.OrdersHall) {
-	peersElevator.SingleOrdersHall = cost.CostFunc(peersElevator, peersDataMap, peers.G_PeersUpdate)
-	hallOrderChan <- peersElevator.SingleOrdersHall
-	peers.G_Ch_PeersData_Tx <- peersElevator
-}
-
-func newPeersData(msg peers.PeersData) bool {
-	newOrder := false
-	peersDataMap[msg.Id] = msg
-	newOrderGlobal := make(types.OrdersHall, globals.NumFloors)
-	if msg.Id == peersElevator.Id {
-		return newOrder
-	}
-	for i := range peersElevator.GlobalOrderHall {
-		for j := 0; j < 2; j++ {
-			if msg.GlobalOrderHall[i][j] {
-				newOrderGlobal[i][j] = true
-				if !peersElevator.GlobalOrderHall[i][j] {
-					newOrder = true
-				}
-			} else {
-				newOrderGlobal[i][j] = peersElevator.GlobalOrderHall[i][j]
-			}
-		}
-	}
-	peersElevator.GlobalOrderHall = newOrderGlobal
-	return newOrder
-}
-
-func btnEventHandler(btnEvent types.ButtonEvent, cabOrderChan chan []bool, hallOrderChan chan types.OrdersHall) {
-	if btnEvent.Button == types.BT_Cab {
-		cuElevator.CabRequests[btnEvent.Floor] = true
-		cabOrderChan <- cuElevator.CabRequests[:]
-	} else {
-		cuElevator.Requests[btnEvent.Floor][btnEvent.Button] = true
-		peersElevator.GlobalOrderHall[btnEvent.Floor][btnEvent.Button] = true
-		updateOrders(hallOrderChan)
-	}
-}
-
-func orderCompleteHandler(orderComplete types.ButtonEvent) {
-	if orderComplete.Button == types.BT_Cab {
-		peersElevator.Elevator.CabRequests[orderComplete.Floor] = false
-		//skrive til fil
-	} else {
-		peersElevator.SingleOrdersHall[orderComplete.Floor][orderComplete.Button] = false
-		peersElevator.GlobalOrderHall[orderComplete.Floor][orderComplete.Button] = false
-	}
-}
-
-func eventHandling(cabOrderChan chan []bool) {
-	var (
-		hallOrderChan = make(chan types.OrdersHall)
-		drv_buttons   = make(chan types.ButtonEvent)
-		timer         = time.NewTicker(300 * time.Millisecond)
-	)
-
-	defer timer.Stop()
-
-	go elevio.PollButtons(drv_buttons)
-
-	go fms(hallOrderChan, cabOrderChan)
-
-	for {
-		select {
-		case <-timer.C:
-			if len(peersUpdate.Lost) > 0 {
-				updateOrders(hallOrderChan)
-			}
-		case msg := <-peers.G_Ch_PeersData_Rx:
-			if newPeersData(msg) {
-				updateOrders(hallOrderChan)
-			}
-		case btnEvent := <-drv_buttons:
-			btnEventHandler(btnEvent, cabOrderChan, hallOrderChan)
-
-		case elevData := <-elevUpdateChan:
-			peersElevator.Elevator = elevData
-
-		case orderComplete := <-orderCompleteChan:
-			orderCompleteHandler(orderComplete)
-		}
-		lampChange()
-	}
-
 }
