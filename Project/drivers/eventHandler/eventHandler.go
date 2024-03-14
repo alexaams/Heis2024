@@ -8,10 +8,12 @@ import (
 	"ProjectHeis/drivers/elevio"
 	"ProjectHeis/drivers/fsm"
 	"ProjectHeis/network/peers"
+	"ProjectHeis/requests"
+	"strconv"
 	"time"
 )
 
-func eventHandling(cabOrderChan chan []bool) {
+func eventHandling() {
 	var (
 		requests = make(chan types.Requests)
 		timer    = time.NewTicker(300 * time.Millisecond)
@@ -27,12 +29,12 @@ func eventHandling(cabOrderChan chan []bool) {
 		select {
 		case <-timer.C:
 			if len(peers.G_PeersUpdate.Lost) > 0 {
-				updateOrders()
+				updateOrders(peers.G_PeersElevator) //må lage logikk
 			}
 		case msg := <-peers.G_Ch_PeersData_Rx:
 			removeAcknowledgedOrder(msg)
 			if newPeersData(msg) {
-				updateOrders()
+				updateOrders(msg)
 			}
 		case btnEvent := <-elevator.G_Ch_drv_buttons:
 			btnEventHandler(btnEvent)
@@ -43,15 +45,26 @@ func eventHandling(cabOrderChan chan []bool) {
 		case orderComplete := <-elevator.G_Ch_clear_orders:
 			orderCompleteHandler(orderComplete)
 		}
+		peers.G_Ch_PeersData_Tx <- peers.G_PeersElevator
 	}
-
 }
 
-func updateOrders() {
-	peers.G_PeersElevator.SingleOrdersHall = cost.CostFunc(peers.G_PeersElevator)
-	orderToRequest := OrdersHallToRequest(peers.G_PeersElevator.SingleOrdersHall)
-	elevator.G_Ch_requests <- orderToRequest
-	peers.G_Ch_PeersData_Tx <- peers.G_PeersElevator
+func updateOrders(someElevator peers.PeersData) {
+	lastID := 256 //må være større en største mulige id før løkka kjøres
+	for i := range peers.G_PeersUpdate.Peers {
+		iDs, _ := strconv.Atoi(peers.G_PeersUpdate.Peers[i])
+		if iDs < lastID {
+			lastID = iDs
+		}
+	}
+	if lastID == peers.G_PeersElevator.Id {
+		someElevator.SingleOrdersHall = cost.CostFunc(someElevator)
+		peers.G_Ch_PeersData_Tx <- someElevator
+	}
+	if someElevator.Id == peers.G_PeersElevator.Id {
+		orderToRequest := OrdersHallToRequest(peers.G_PeersElevator.SingleOrdersHall)
+		elevator.G_Ch_requests <- orderToRequest
+	}
 }
 
 func OrdersHallToRequest(order types.OrdersHall) types.Requests {
@@ -103,11 +116,13 @@ func btnEventHandler(btnEvent types.ButtonEvent) {
 	} else {
 		peers.G_PeersElevator.GlobalOrderHall[btnEvent.Floor][btnEvent.Button] = true
 		peers.G_PeersElevator.SingleOrdersHall[btnEvent.Floor][btnEvent.Button] = true
-		updateOrders()
+		updateOrders(peers.G_PeersElevator)
 	}
 }
 
 func orderCompleteHandler(orderComplete []types.ButtonEvent) {
+	requests.ClearRequests(&peers.G_PeersElevator.Elevator, orderComplete)
+	requests.ClearRequests(&elevator.G_this_Elevator, orderComplete)
 	for _, order := range orderComplete {
 		if order.Button == types.BT_Cab {
 			peers.G_PeersElevator.Elevator.Requests.CabFloor[order.Floor] = false
