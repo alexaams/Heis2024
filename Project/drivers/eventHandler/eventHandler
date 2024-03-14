@@ -53,11 +53,20 @@ func lampChange() {
 	}
 }
 
-func updateOrders(hallOrderChan chan types.OrdersHall) {
+func updateOrders() {
 	peersElevator.SingleOrdersHall = cost.CostFunc(peersElevator)
-
-	requests <- peersElevator.SingleOrdersHall
+	orderToRequest := OrdersHallToRequest(peersElevator.SingleOrdersHall)
+	requests <- orderToRequest
 	peers.G_Ch_PeersData_Tx <- peersElevator
+}
+
+func OrdersHallToRequest(order OrdersHall) Requests {
+	req := InitRequests()
+	for i, ord := range order {
+		req.HallUp[i] = ord[0]
+		req.HallDown[i] = ord[1]
+	}
+	return req
 }
 
 func removeAcknowledgedOrder(msg peers.PeersData) {
