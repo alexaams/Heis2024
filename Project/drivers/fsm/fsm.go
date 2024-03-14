@@ -12,8 +12,13 @@ import (
 
 func requestUpdates() {
 	BevAndDir := requests.RequestToElevatorMovement(elevator.G_this_Elevator)
-	elevio.SetMotorDirection(BevAndDir.Direction)
-	elevator.G_this_Elevator.SetElevatorBehaviour(BevAndDir.Behavior)
+	if elevator.G_this_Elevator.Behavior != types.BehaviorOpen || elevator.G_this_Elevator.Behavior != types.BehaviorObst {
+		elevio.SetMotorDirection(BevAndDir.Direction)
+		elevator.G_this_Elevator.SetElevatorBehaviour(BevAndDir.Behavior)
+	} else {
+		elevio.SetMotorDirection(types.MD_Stop)
+	}
+
 }
 
 func CheckFloorCurrent(a int) {
@@ -68,6 +73,7 @@ func Fsm(ch_requests chan types.Requests) {
 			if elevator.G_this_Elevator.Behavior != types.BehaviorOpen {
 				requestUpdates()
 			}
+			lampChange()
 
 		case a := <-drv_floors:
 			CheckFloorCurrent(a)
@@ -96,7 +102,6 @@ func Fsm(ch_requests chan types.Requests) {
 			mapNewRequests(requests)
 			requestUpdates()
 			CheckFloorCurrent(elevator.G_this_Elevator.Floor)
-			lampChange()
 		}
 	}
 }
@@ -111,13 +116,14 @@ func StateMachineBehavior() { //Hold the door (3 seconds)
 		case types.BehaviorOpen:
 			if clearOrderFlag {
 				requests.ClearOrders(elevator.G_this_Elevator)
+				clearOrderFlag = false
 			}
 			elevator.G_door_open_counter++
 			if elevator.G_door_open_counter > elevator.G_ticks {
 				elevio.SetDoorOpenLamp(false)
 				elevator.G_this_Elevator.SetElevatorBehaviour(types.BehaviorIdle)
 				elevator.G_door_open_counter = 0
-				clearOrderFlag = false
+				clearOrderFlag = true
 			}
 			time.Sleep(10 * time.Millisecond)
 		case types.BehaviorIdle:
