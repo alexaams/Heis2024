@@ -7,6 +7,15 @@ import (
 	"time"
 )
 
+// --------------------------------Globals--------------------------------
+var (
+	G_Ch_clear_orders = make(chan []types.ButtonEvent)
+	G_Ch_drv_buttons  = make(chan types.ButtonEvent)
+	G_Ch_drv_floors   = make(chan int)
+	G_Ch_drv_obstr    = make(chan bool)
+	G_Ch_stop         = make(chan bool)
+)
+
 // --------------------------------VALUES--------------------------------
 
 // --------------------------------TYPES--------------------------------

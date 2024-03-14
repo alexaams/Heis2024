@@ -9,7 +9,6 @@ type ReqList map[int]bool
 type AckList [globals.NumElevators]bool
 type OrdersAckTable []AckList
 type OrdersCab [globals.NumFloors]bool
-
 type OrdersHall [][2]bool // [floor][False]: ned [floor][True]: OPP
 
 // -------------------------------- ENUM --------------------------------

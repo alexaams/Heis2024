@@ -1,6 +1,7 @@
 package fsm
 
 import (
+	"ProjectHeis/Scratch/config_folder/globals"
 	"ProjectHeis/Scratch/config_folder/types"
 	"ProjectHeis/Scratch/cost"
 	"ProjectHeis/drivers/elevator"
@@ -110,31 +111,18 @@ func ObstFound() {
 	}
 }
 
-func StopFound(a bool) {
-	fmt.Printf("%+v\n", a)
-	for f := 0; f < numFloors; f++ {
-		for b := types.ButtonType(0); b < 3; b++ {
-			types.SetButtonLamp(b, f, false)
-		}
-	}
-	if a {
-		types.SetStopLamp(true)
-		types.SetMotorDirection(types.MD_Stop)
-	}
-}
+func Fsm(requests types.Requests) {
 
-func fms(hallOrderChan chan globals.OrdersHall, cabOrderChan chan []bool) {
-
-	types.Init("localhost:15657", numFloors)
+	elevio.Init("localhost:15657", globals.NumFloors)//Kan vi legge inn portnumber som en variabel fra config i stedet? God kodeskikk
 
 	drv_floors := make(chan int)
 	drv_obstr := make(chan bool)
 	drv_stop := make(chan bool)
 	//awaiting_orders := make(chan types.Order)
 	//Channel receives all buttonevents on every floor
-	go types.PollFloorSensor(drv_floors)      //Channel receives which floor you are at
-	go types.PollObstructionSwitch(drv_obstr) //Channel receives state for obstruction switch when changed
-	go types.PollStopButton(drv_stop)         //Channel receives state of stop switch when changed
+	go elevio.PollFloorSensor(drv_floors)      //Channel receives which floor you are at
+	go elevio.PollObstructionSwitch(drv_obstr) //Channel receives state for obstruction switch when changed
+	go elevio.PollStopButton(drv_stop)         //Channel receives state of stop switch when changed
 
 	for {
 		select {
@@ -148,11 +136,7 @@ func fms(hallOrderChan chan globals.OrdersHall, cabOrderChan chan []bool) {
 			}
 
 		case a := <-drv_stop:
-			fmt.Printf("%+v\n", a)
-			for f := 0; f < numFloors; f++ {
-				for b := types.ButtonType(0); b < 3; b++ {
-					types.SetButtonLamp(b, f, false)
-				}
+			fmt.Printf("Stopbutton: %+v\n", a)
 			}
 			if a {
 				types.SetStopLamp(true)

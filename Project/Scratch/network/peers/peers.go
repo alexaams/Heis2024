@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-// ___________Global variables___________ <<<<<<< HEAD og =======
+// ___________Global variables___________ 
 var G_Ch_PeersData_Tx = make(chan PeersData)
 var G_Ch_PeersData_Rx = make(chan PeersData)
 var G_PeersUpdate PeerUpdate
