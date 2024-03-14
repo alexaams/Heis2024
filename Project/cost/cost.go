@@ -28,7 +28,7 @@ type HRAInput struct {
 }
 
 func OrderEmpty(order types.OrdersHall) bool {
-	for i := 0; i < globals.NumFloors; i++ {
+	for i := 0; i < config.NumFloors; i++ {
 		for j := 0; j < 2; j++ {
 			if order[i][j] {
 				return false
@@ -56,8 +56,8 @@ func CostFunc(elevatorObject peers.PeersData) types.OrdersHall {
 
 	peersActive := len(peers.G_PeersUpdate.Peers)
 	statesElevators := make(map[string]HRAElevState, peersActive)
-	idstring := strconv.Itoa(config.ElevatorID)
-	peers.G_Datamap[config.ElevatorID] = elevatorObject
+	idstring := strconv.Itoa(elevatorObject.Id)
+	peers.G_Datamap[elevatorObject.Id] = elevatorObject
 
 	//Mapping all elevators to the algorithm
 	for i := 0; i < peersActive; i++ {
