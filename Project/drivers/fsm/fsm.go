@@ -78,7 +78,7 @@ func initFloorReading(drv_floors chan int) {
 
 func Fsm(ch_requests chan types.Requests) {
 
-	elevio.Init("localhost:15659", config.NumFloors) //Kan vi legge inn portnumber som en variabel fra config i stedet? God kodeskikk
+	elevio.Init("localhost:15657", config.NumFloors) //Kan vi legge inn portnumber som en variabel fra config i stedet? God kodeskikk
 	fmt.Print("Initiating FSM...")
 	drv_floors := make(chan int)
 	drv_obstr := make(chan bool)
@@ -130,19 +130,14 @@ func Fsm(ch_requests chan types.Requests) {
 			fmt.Println(requests)
 			mapNewRequests(requests)
 			fmt.Println("New orders")
-			//if elevator.G_this_Elevator.Behavior != types.BehaviorOpen && elevator.G_this_Elevator.Behavior != types.BehaviorMoving {
-			//	requestUpdates()
-			//}
-			//CheckFloorCurrent(elevator.G_this_Elevator.Floor)
+
 		}
 	}
 }
 
-func StateMachineBehavior() { //Hold the door (3 seconds)
-	//Close the door
+func StateMachineBehavior() {
 	elevator.G_door_open_counter = 0
 	clearOrderFlag := true
-	//testpush
 	for {
 		switch elevator.G_this_Elevator.Behavior {
 		case types.BehaviorOpen:
@@ -161,8 +156,6 @@ func StateMachineBehavior() { //Hold the door (3 seconds)
 			}
 			time.Sleep(10 * time.Millisecond)
 		case types.BehaviorIdle:
-			//Usikker på om det er behov for noe her
-			//requestUpdates()
 			time.Sleep(10 * time.Millisecond)
 		case types.BehaviorMoving:
 			time.Sleep(10 * time.Millisecond)

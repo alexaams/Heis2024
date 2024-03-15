@@ -29,6 +29,7 @@ func EventHandling() {
 			if len(peers.G_PeersUpdate.Lost) > 0 {
 				updateOrders()
 			}
+			peers.G_Ch_PeersData_Tx <- peers.G_PeersElevator
 		case msg := <-peers.G_Ch_PeersData_Rx:
 			removeAcknowledgedOrder(msg)
 			if newPeersData(msg) {
@@ -92,19 +93,7 @@ func newPeersData(msg peers.PeersData) bool {
 	newOrder := false
 	peers.G_Datamap[msg.ElevatorId] = msg
 	newOrderGlobal := make(types.OrdersHall, config.NumFloors)
-	newOrderSingle := make(types.OrdersHall, config.NumFloors)
 	if msg.ElevatorId == peers.G_PeersElevator.ElevatorId {
-		for i := range peers.G_PeersElevator.SingleOrdersHall {
-			for j := 0; j < 2; j++ {
-				if msg.SingleOrdersHall[i][j] {
-					newOrderSingle[i][j] = true
-					fmt.Println("actually setting single order")
-				} else {
-					newOrderSingle[i][j] = peers.G_PeersElevator.SingleOrdersHall[i][j]
-				}
-			}
-		}
-		peers.G_PeersElevator.SingleOrdersHall = newOrderSingle
 		return newOrder
 	}
 
@@ -113,7 +102,7 @@ func newPeersData(msg peers.PeersData) bool {
 			if msg.GlobalOrderHall[i][j] {
 				newOrderGlobal[i][j] = true
 				if !peers.G_PeersElevator.GlobalOrderHall[i][j] {
-					newOrder = true //Kan vel strengt tatt bare returne true her
+					newOrder = true
 				}
 			} else {
 				newOrderGlobal[i][j] = peers.G_PeersElevator.GlobalOrderHall[i][j]
@@ -128,12 +117,11 @@ func btnEventHandler(btnEvent types.ButtonEvent) {
 	if btnEvent.Button == types.BT_Cab {
 		peers.G_PeersElevator.Elevator.Requests.CabFloor[btnEvent.Floor] = true
 		elevator.G_Ch_requests <- peers.G_PeersElevator.Elevator.Requests
-		peers.G_Ch_PeersData_Tx <- peers.G_PeersElevator //new
+		peers.G_Ch_PeersData_Tx <- peers.G_PeersElevator
 	} else {
 		peers.G_PeersElevator.GlobalOrderHall[btnEvent.Floor][btnEvent.Button] = true
 		peers.G_PeersElevator.SingleOrdersHall[btnEvent.Floor][btnEvent.Button] = true
 		updateOrders()
-		peers.G_Ch_PeersData_Tx <- peers.G_PeersElevator //new
 	}
 }
 
@@ -143,7 +131,6 @@ func orderCompleteHandler(orderComplete []types.ButtonEvent) {
 	for _, order := range orderComplete {
 		if order.Button == types.BT_Cab {
 			peers.G_PeersElevator.Elevator.Requests.CabFloor[order.Floor] = false
-			//skrive til fil
 		} else {
 			peers.G_PeersElevator.SingleOrdersHall[order.Floor][order.Button] = false
 			peers.G_PeersElevator.GlobalOrderHall[order.Floor][order.Button] = false

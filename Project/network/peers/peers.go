@@ -5,6 +5,7 @@ import (
 	"ProjectHeis/drivers/elevator"
 	"ProjectHeis/network/bcast"
 	"ProjectHeis/network/conn"
+	"ProjectHeis/network/localip"
 	"fmt"
 	"net"
 	"sort"
@@ -17,8 +18,7 @@ var G_Ch_PeersData_Tx = make(chan PeersData)
 var G_Ch_PeersData_Rx = make(chan PeersData)
 var G_PeersUpdate PeerUpdate
 var G_Datamap = make(map[int]PeersData)
-var G_PeersElevator PeersData //Keeps track of itself, it's ID, it's assigned orders and all global orders
-var G_isMaster bool
+var G_PeersElevator PeersData
 
 type PeerUpdate struct {
 	Peers []string
