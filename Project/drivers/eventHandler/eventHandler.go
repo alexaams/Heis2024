@@ -48,16 +48,28 @@ func EventHandling() {
 }
 
 func updateOrders(someElevator peers.PeersData) {
-	if peers.G_isMaster {
-		someElevator.SingleOrdersHall = cost.CostFunc(someElevator)
-		fmt.Print(someElevator.SingleOrdersHall)
-		peers.G_Ch_PeersData_Tx <- someElevator
-		fmt.Println("runs cost as master")
+	if requests.IsThisOurStop(someElevator.Elevator) {
+		if peers.G_isMaster {
+			select {
+			case someElevator.SingleOrdersHall = <-cost.CostFuncChan(someElevator):
+
+			case <-time.After(100 * time.Millisecond):
+				fmt.Println("Cost timeout")
+				return
+			}
+		}
 	}
 	orderToRequest := OrdersHallToRequest(peers.G_PeersElevator.SingleOrdersHall)
-	elevator.G_Ch_requests <- orderToRequest
-	peers.G_Ch_PeersData_Tx <- someElevator
-	fmt.Println("sent request to fsm")
+	select {
+	case elevator.G_Ch_requests <- orderToRequest:
+	default:
+		fmt.Print("Channel requests full")
+	}
+	select {
+	case peers.G_Ch_PeersData_Tx <- someElevator:
+	default:
+		fmt.Println("Channel transmit full")
+	}
 }
 
 func OrdersHallToRequest(order types.OrdersHall) types.Requests {

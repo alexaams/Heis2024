@@ -13,8 +13,13 @@ import (
 func requestUpdates() {
 	BevAndDir := requests.RequestToElevatorMovement(elevator.G_this_Elevator)
 	if elevator.G_this_Elevator.Behavior != types.BehaviorOpen && elevator.G_this_Elevator.Behavior != types.BehaviorObst {
-		elevio.SetMotorDirection(BevAndDir.Direction)
-		elevator.G_this_Elevator.SetElevatorBehaviour(BevAndDir.Behavior)
+		if requests.IsThisOurStop(elevator.G_this_Elevator) {
+			elevator.G_this_Elevator.Stop()
+			elevator.G_this_Elevator.SetElevatorBehaviour(types.BehaviorOpen)
+		} else {
+			elevio.SetMotorDirection(BevAndDir.Direction)
+			elevator.G_this_Elevator.SetElevatorBehaviour(BevAndDir.Behavior)
+		}
 	} else {
 		elevio.SetMotorDirection(types.MD_Stop)
 	}
@@ -142,7 +147,9 @@ func StateMachineBehavior() { //Hold the door (3 seconds)
 	for {
 		switch elevator.G_this_Elevator.Behavior {
 		case types.BehaviorOpen:
+			elevio.SetDoorOpenLamp(true)
 			if clearOrderFlag {
+				elevator.G_door_open_counter = 0
 				requests.ClearOrders(elevator.G_this_Elevator)
 				clearOrderFlag = false
 			}

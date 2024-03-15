@@ -23,7 +23,8 @@ var (
 
 // --------------------------------VALUES--------------------------------
 
-// --------------------------------TYPES--------------------------------
+// --------------------------------TYPES------------------
+
 
 type Elevator struct {
 	Floor        int
@@ -61,9 +62,7 @@ func (elev *Elevator) ElevatorBehaviorToString() string {
 	case types.BehaviorMoving:
 		return "moving"
 	case types.BehaviorOpen:
-		return "open"
-	case types.BehaviorObst:
-		return "obst"
+		return "doorOpen"
 	default:
 		return "undefined"
 	}

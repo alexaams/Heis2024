@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"runtime"
 	"strconv"
+	"time"
 )
 
 // Struct members must be public in order to be accessible by json.Marshal/.Unmarshal
@@ -103,4 +104,13 @@ func elevatorToHRAState(elev elevator.Elevator) HRAElevState {
 		Direction:   elev.ElevatorDirectionToString(),
 		CabRequests: elev.Requests.CabFloor,
 	}
+}
+
+func CostFuncChan(someElevator peers.PeersData) <-chan types.OrdersHall {
+	ch := make(chan types.OrdersHall, 1)
+	go func() {
+		time.Sleep(50 * time.Millisecond)
+		ch <- CostFunc(someElevator)
+	}()
+	return ch
 }
