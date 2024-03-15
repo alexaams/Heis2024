@@ -28,7 +28,7 @@ type PeerUpdate struct {
 
 type PeersData struct {
 	Elevator         elevator.Elevator
-	Id               int
+	ElevatorId       int
 	SingleOrdersHall types.OrdersHall
 	GlobalOrderHall  types.OrdersHall
 	GlobalAckOrders  types.OrdersHall
@@ -110,7 +110,7 @@ func Receiver(port int, peerUpdateCh chan<- PeerUpdate) {
 func InitPeers() PeersData {
 	return PeersData{
 		Elevator:         elevator.InitElevator(),
-		Id:               57,
+		ElevatorId:       localip.CreateID(),
 		SingleOrdersHall: types.InitEmptyOrder(),
 		GlobalOrderHall:  types.InitEmptyOrder(),
 		GlobalAckOrders:  types.InitEmptyOrder(),
@@ -124,12 +124,12 @@ func SendPeersData_init() {
 
 func PeersHeartBeat() {
 
-	fmt.Printf("Our ID is: %d\n", G_PeersElevator.Id)
+	fmt.Printf("Our ID is: %d\n", G_PeersElevator.ElevatorId)
 
 	peerUpdateCh := make(chan PeerUpdate)
 	peerTxEnable := make(chan bool)
 
-	go Transmitter(15659, strconv.Itoa(G_PeersElevator.Id), peerTxEnable)
+	go Transmitter(15659, strconv.Itoa(G_PeersElevator.ElevatorId), peerTxEnable)
 	go Receiver(15659, peerUpdateCh)
 
 	fmt.Println("Heartbeat-sequency initiated")

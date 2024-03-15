@@ -78,7 +78,7 @@ func initFloorReading(drv_floors chan int) {
 
 func Fsm(ch_requests chan types.Requests) {
 
-	elevio.Init("localhost:15657", config.NumFloors) //Kan vi legge inn portnumber som en variabel fra config i stedet? God kodeskikk
+	elevio.Init("localhost:15659", config.NumFloors) //Kan vi legge inn portnumber som en variabel fra config i stedet? God kodeskikk
 	fmt.Print("Initiating FSM...")
 	drv_floors := make(chan int)
 	drv_obstr := make(chan bool)
