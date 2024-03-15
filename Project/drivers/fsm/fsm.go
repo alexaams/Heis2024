@@ -104,7 +104,6 @@ func Fsm(ch_requests chan types.Requests) {
 			if elevator.G_this_Elevator.Behavior != types.BehaviorOpen && elevator.G_this_Elevator.Behavior != types.BehaviorMoving {
 				requestUpdates()
 			}
-			lampChange()
 		case a := <-drv_floors:
 			CheckFloorCurrent(a)
 
@@ -143,7 +142,7 @@ func StateMachineBehavior() { //Hold the door (3 seconds)
 	//Close the door
 	elevator.G_door_open_counter = 0
 	clearOrderFlag := true
-//testpush
+	//testpush
 	for {
 		switch elevator.G_this_Elevator.Behavior {
 		case types.BehaviorOpen:

@@ -24,6 +24,8 @@ func EventHandling() {
 	for {
 		select {
 		case <-timer.C:
+			lampChangeHall()
+			lampChangeCab()
 			if len(peers.G_PeersUpdate.Lost) > 0 {
 				updateOrders(peers.G_PeersElevator) //må lage logikk
 			}
@@ -141,5 +143,18 @@ func orderCompleteHandler(orderComplete []types.ButtonEvent) {
 			peers.G_Ch_PeersData_Tx <- peers.G_PeersElevator
 			peers.G_PeersElevator.GlobalAckOrders[order.Floor][order.Button] = false
 		}
+	}
+}
+
+func lampChangeHall() {
+	for floor := range config.NumFloors {
+		elevio.SetButtonLamp(types.BT_HallUp, floor, peers.G_PeersElevator.GlobalOrderHall[floor][types.BT_HallUp])
+		elevio.SetButtonLamp(types.BT_HallDown, floor, peers.G_PeersElevator.GlobalOrderHall[floor][types.BT_HallDown])
+	}
+}
+
+func lampChangeCab() {
+	for floor := range config.NumFloors {
+		elevio.SetButtonLamp(types.BT_Cab, floor, elevator.G_this_Elevator.Requests.CabFloor[floor])
 	}
 }
