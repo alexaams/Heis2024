@@ -27,13 +27,13 @@ func EventHandling() {
 			lampChangeHall()
 			lampChangeCab()
 			if len(peers.G_PeersUpdate.Lost) > 0 {
-				updateOrders(peers.G_PeersElevator) //må lage logikk
+				updateOrders()
 			}
 			peers.G_Ch_PeersData_Tx <- peers.G_PeersElevator
 		case msg := <-peers.G_Ch_PeersData_Rx:
 			removeAcknowledgedOrder(msg)
 			if newPeersData(msg) {
-				updateOrders(msg)
+				updateOrders()
 			}
 
 			time.Sleep(10 * time.Millisecond)
@@ -49,17 +49,12 @@ func EventHandling() {
 	}
 }
 
-func updateOrders(someElevator peers.PeersData) {
-	if requests.IsThisOurStop(someElevator.Elevator) {
-		if peers.G_isMaster {
-			select {
-			case someElevator.SingleOrdersHall = <-cost.CostFuncChan(someElevator):
-
-			case <-time.After(100 * time.Millisecond):
-				fmt.Println("Cost timeout")
-				return
-			}
-		}
+func updateOrders() {
+	select {
+	case peers.G_PeersElevator.SingleOrdersHall = <-cost.CostFuncChan(peers.G_PeersElevator):
+	case <-time.After(20 * time.Millisecond):
+		fmt.Println("Cost timeout")
+		return
 	}
 	orderToRequest := OrdersHallToRequest(peers.G_PeersElevator.SingleOrdersHall)
 	select {
@@ -68,7 +63,7 @@ func updateOrders(someElevator peers.PeersData) {
 		fmt.Print("Channel requests full")
 	}
 	select {
-	case peers.G_Ch_PeersData_Tx <- someElevator:
+	case peers.G_Ch_PeersData_Tx <- peers.G_PeersElevator:
 	default:
 		fmt.Println("Channel transmit filled")
 	}
@@ -88,6 +83,7 @@ func removeAcknowledgedOrder(msg peers.PeersData) {
 		for j := 0; j < 2; j++ {
 			if msg.GlobalAckOrders[i][j] == peers.G_PeersElevator.GlobalOrderHall[i][j] {
 				peers.G_PeersElevator.GlobalOrderHall[i][j] = false
+				peers.G_PeersElevator.GlobalAckOrders[i][j] = false
 			}
 		}
 	}
@@ -124,7 +120,7 @@ func btnEventHandler(btnEvent types.ButtonEvent) {
 	} else {
 		peers.G_PeersElevator.GlobalOrderHall[btnEvent.Floor][btnEvent.Button] = true
 		peers.G_PeersElevator.SingleOrdersHall[btnEvent.Floor][btnEvent.Button] = true
-		updateOrders(peers.G_PeersElevator)
+		updateOrders()
 		peers.G_Ch_PeersData_Tx <- peers.G_PeersElevator //new
 	}
 }
@@ -141,7 +137,6 @@ func orderCompleteHandler(orderComplete []types.ButtonEvent) {
 			peers.G_PeersElevator.GlobalOrderHall[order.Floor][order.Button] = false
 			peers.G_PeersElevator.GlobalAckOrders[order.Floor][order.Button] = true
 			peers.G_Ch_PeersData_Tx <- peers.G_PeersElevator
-			peers.G_PeersElevator.GlobalAckOrders[order.Floor][order.Button] = false
 		}
 	}
 }

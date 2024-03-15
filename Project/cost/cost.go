@@ -109,7 +109,7 @@ func elevatorToHRAState(elev elevator.Elevator) HRAElevState {
 func CostFuncChan(someElevator peers.PeersData) <-chan types.OrdersHall {
 	ch := make(chan types.OrdersHall, 1)
 	go func() {
-		time.Sleep(50 * time.Millisecond)
+		time.Sleep(5 * time.Millisecond)
 		ch <- CostFunc(someElevator)
 	}()
 	return ch

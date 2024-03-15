@@ -5,7 +5,6 @@ import (
 	"ProjectHeis/drivers/elevator"
 	"ProjectHeis/network/bcast"
 	"ProjectHeis/network/conn"
-	"ProjectHeis/network/localip"
 	"fmt"
 	"net"
 	"sort"
@@ -111,7 +110,7 @@ func Receiver(port int, peerUpdateCh chan<- PeerUpdate) {
 func InitPeers() PeersData {
 	return PeersData{
 		Elevator:         elevator.InitElevator(),
-		Id:               localip.CreateID(),
+		Id:               57,
 		SingleOrdersHall: types.InitEmptyOrder(),
 		GlobalOrderHall:  types.InitEmptyOrder(),
 		GlobalAckOrders:  types.InitEmptyOrder(),
@@ -139,20 +138,6 @@ func PeersHeartBeat() {
 		case p := <-peerUpdateCh:
 			G_PeersUpdate = p
 			p.PrintPeersUpdate()
-			lowestID := 256 //må være større en største mulige id før løkka kjøres
-			for i := range G_PeersUpdate.Peers {
-				iDs, _ := strconv.Atoi(G_PeersUpdate.Peers[i])
-				if iDs < lowestID {
-					lowestID = iDs
-				}
-			}
-			if lowestID == G_PeersElevator.Id {
-				G_isMaster = true
-				fmt.Println("This elevator is now master")
-			} else {
-				G_isMaster = false
-				fmt.Println("This elevator is a slave")
-			}
 			//Sende data videre til kostfunksjon
 		}
 	}
