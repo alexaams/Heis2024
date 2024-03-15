@@ -68,7 +68,7 @@ func updateOrders(someElevator peers.PeersData) {
 	select {
 	case peers.G_Ch_PeersData_Tx <- someElevator:
 	default:
-		fmt.Println("Channel transmit full")
+		fmt.Println("Channel transmit filled")
 	}
 }
 
