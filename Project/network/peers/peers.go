@@ -5,7 +5,6 @@ import (
 	"ProjectHeis/drivers/elevator"
 	"ProjectHeis/network/bcast"
 	"ProjectHeis/network/conn"
-	"ProjectHeis/network/localip"
 	"fmt"
 	"net"
 	"sort"
@@ -111,7 +110,7 @@ func Receiver(port int, peerUpdateCh chan<- PeerUpdate) {
 func InitPeers() PeersData {
 	return PeersData{
 		Elevator:         elevator.InitElevator(),
-		Id:               localip.CreateID(),
+		Id:               40,
 		SingleOrdersHall: types.InitEmptyOrder(),
 		GlobalOrderHall:  types.InitEmptyOrder(),
 		GlobalAckOrders:  types.InitEmptyOrder(),

@@ -143,7 +143,7 @@ func StateMachineBehavior() { //Hold the door (3 seconds)
 	//Close the door
 	elevator.G_door_open_counter = 0
 	clearOrderFlag := true
-//testpush
+	//testpush
 	for {
 		switch elevator.G_this_Elevator.Behavior {
 		case types.BehaviorOpen:

@@ -14,7 +14,7 @@ import (
 
 func EventHandling() {
 	var (
-		timer = time.NewTicker(300 * time.Millisecond)
+		timer = time.NewTicker(1000 * time.Millisecond)
 	)
 	fmt.Print("Eventhandler starting...\n")
 	defer timer.Stop()
@@ -25,9 +25,8 @@ func EventHandling() {
 		select {
 		case <-timer.C:
 			if len(peers.G_PeersUpdate.Lost) > 0 {
-				updateOrders(peers.G_PeersElevator) //må lage logikk
+				updateOrders(peers.G_PeersElevator)
 			}
-			peers.G_Ch_PeersData_Tx <- peers.G_PeersElevator
 		case msg := <-peers.G_Ch_PeersData_Rx:
 			removeAcknowledgedOrder(msg)
 			if newPeersData(msg) {
@@ -52,8 +51,8 @@ func updateOrders(someElevator peers.PeersData) {
 		if peers.G_isMaster {
 			select {
 			case someElevator.SingleOrdersHall = <-cost.CostFuncChan(someElevator):
-
-			case <-time.After(100 * time.Millisecond):
+				fmt.Println("some elev id", someElevator.Id)
+			case <-time.After(15 * time.Millisecond):
 				fmt.Println("Cost timeout")
 				return
 			}
@@ -92,12 +91,26 @@ func removeAcknowledgedOrder(msg peers.PeersData) {
 }
 
 func newPeersData(msg peers.PeersData) bool {
+	fmt.Println(msg.Id)
 	newOrder := false
 	peers.G_Datamap[msg.Id] = msg
 	newOrderGlobal := make(types.OrdersHall, config.NumFloors)
+	newOrderSingle := make(types.OrdersHall, config.NumFloors)
 	if msg.Id == peers.G_PeersElevator.Id {
+		for i := range peers.G_PeersElevator.SingleOrdersHall {
+			for j := 0; j < 2; j++ {
+				if msg.SingleOrdersHall[i][j] {
+					newOrderSingle[i][j] = true
+					fmt.Println("actually setting single order")
+				} else {
+					newOrderSingle[i][j] = peers.G_PeersElevator.SingleOrdersHall[i][j]
+				}
+			}
+		}
+		peers.G_PeersElevator.SingleOrdersHall = newOrderSingle
 		return newOrder
 	}
+
 	for i := range peers.G_PeersElevator.GlobalOrderHall {
 		for j := 0; j < 2; j++ {
 			if msg.GlobalOrderHall[i][j] {
