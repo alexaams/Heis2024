@@ -10,7 +10,6 @@ import (
 	"os/exec"
 	"runtime"
 	"strconv"
-	"time"
 )
 
 // Struct members must be public in order to be accessible by json.Marshal/.Unmarshal
@@ -57,8 +56,8 @@ func CostFunc(elevatorObject peers.PeersData) types.OrdersHall {
 
 	peersActive := len(peers.G_PeersUpdate.Peers)
 	statesElevators := make(map[string]HRAElevState, peersActive)
-	idstring := strconv.Itoa(elevatorObject.Id)
-	peers.G_Datamap[elevatorObject.Id] = elevatorObject
+	idstring := strconv.Itoa(elevatorObject.ElevatorId)
+	peers.G_Datamap[elevatorObject.ElevatorId] = elevatorObject
 
 	//Mapping all elevators to the algorithm
 	for i := 0; i < peersActive; i++ {
@@ -106,11 +105,11 @@ func elevatorToHRAState(elev elevator.Elevator) HRAElevState {
 	}
 }
 
-func CostFuncChan(someElevator peers.PeersData) <-chan types.OrdersHall {
-	ch := make(chan types.OrdersHall, 1)
-	go func() {
-		time.Sleep(10 * time.Millisecond)
-		ch <- CostFunc(someElevator)
-	}()
-	return ch
-}
+//func CostFuncChan(someElevator peers.PeersData) <-chan types.OrdersHall {
+//	ch := make(chan types.OrdersHall, 1)
+//	go func() {
+//		time.Sleep(10 * time.Millisecond)
+//		ch <- CostFunc(someElevator)
+//	}()
+//	return ch
+//}
