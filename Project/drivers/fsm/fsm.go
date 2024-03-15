@@ -104,7 +104,6 @@ func Fsm(ch_requests chan types.Requests) {
 			if elevator.G_this_Elevator.Behavior != types.BehaviorOpen && elevator.G_this_Elevator.Behavior != types.BehaviorMoving {
 				requestUpdates()
 			}
-			lampChange()
 		case a := <-drv_floors:
 			CheckFloorCurrent(a)
 
