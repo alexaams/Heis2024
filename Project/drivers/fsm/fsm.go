@@ -31,6 +31,7 @@ func CheckFloorCurrent(a int) {
 	elevio.SetFloorIndicator(elevator.G_this_Elevator.Floor)
 	if requests.IsThisOurStop(elevator.G_this_Elevator) {
 		elevator.G_this_Elevator.Stop()
+		elevio.SetDoorOpenLamp(true)
 		elevator.G_this_Elevator.SetElevatorBehaviour(types.BehaviorOpen)
 	}
 }

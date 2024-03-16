@@ -25,7 +25,6 @@ func EventHandling() {
 	for {
 		select {
 		case <-timer.C:
-			lampChange()
 			if len(peers.G_PeersUpdate.Lost) > 0 {
 				lost, _ := strconv.Atoi(peers.G_PeersUpdate.Lost[0])
 				delete(peers.G_Datamap, lost)
@@ -42,6 +41,7 @@ func EventHandling() {
 
 		case elevData := <-elevator.G_Ch_elevator_update:
 			peers.G_PeersElevator.Elevator = elevData
+			lampChange()
 
 		case orderComplete := <-elevator.G_Ch_clear_orders:
 			orderCompleteHandler(orderComplete)
