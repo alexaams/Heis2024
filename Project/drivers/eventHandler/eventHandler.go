@@ -38,7 +38,6 @@ func EventHandling() {
 			if newPeersData(msg) {
 				updateOrders()
 			}
-			peers.G_Ch_PeersData_Tx <- peers.G_PeersElevator
 		case btnEvent := <-elevator.G_Ch_drv_buttons:
 			btnEventHandler(btnEvent)
 
