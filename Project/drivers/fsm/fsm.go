@@ -86,7 +86,7 @@ func Fsm(ch_requests chan types.Requests) {
 
 	go StateMachineBehavior()
 
-	var timer = time.NewTicker(600 * time.Millisecond)
+	var timer = time.NewTicker(300 * time.Millisecond)
 	defer timer.Stop()
 
 	for {
