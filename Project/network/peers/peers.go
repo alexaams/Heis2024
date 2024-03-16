@@ -15,7 +15,7 @@ import (
 
 // ___________Global variables___________
 var G_Ch_PeersData_Tx = make(chan PeersData)
-var G_Ch_PeersData_Rx = make(chan PeersData, 9)
+var G_Ch_PeersData_Rx = make(chan PeersData, 6)
 var G_PeersUpdate PeerUpdate
 var G_Datamap = make(map[int]PeersData)
 var G_PeersElevator PeersData
