@@ -33,14 +33,11 @@ func EventHandling() {
 				peers.G_PeersUpdate.Lost = peers.G_PeersUpdate.Lost[:0]
 				updateOrders()
 			}
-			peers.G_Ch_PeersData_Tx <- peers.G_PeersElevator
 		case msg := <-peers.G_Ch_PeersData_Rx:
 			removeAcknowledgedOrder(msg)
 			if newPeersData(msg) {
 				updateOrders()
 			}
-
-			time.Sleep(10 * time.Millisecond)
 		case btnEvent := <-elevator.G_Ch_drv_buttons:
 			btnEventHandler(btnEvent)
 
