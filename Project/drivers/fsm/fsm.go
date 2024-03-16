@@ -154,11 +154,8 @@ func StateMachineBehavior() {
 				elevator.G_door_open_counter = 0
 				clearOrderFlag = true
 			}
-			time.Sleep(10 * time.Millisecond)
 		case types.BehaviorIdle:
-			time.Sleep(10 * time.Millisecond)
 		case types.BehaviorMoving:
-			time.Sleep(10 * time.Millisecond)
 		case types.BehaviorObst:
 			fmt.Print("obstruction - state machine!")
 		}
