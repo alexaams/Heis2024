@@ -45,14 +45,6 @@ func mapNewRequests(reqs types.Requests) {
 	}
 }
 
-func lampChange() {
-	for floor := range config.NumFloors {
-		elevio.SetButtonLamp(types.BT_Cab, floor, elevator.G_this_Elevator.Requests.CabFloor[floor])
-		elevio.SetButtonLamp(types.BT_HallUp, floor, elevator.G_this_Elevator.Requests.HallUp[floor])
-		elevio.SetButtonLamp(types.BT_HallDown, floor, elevator.G_this_Elevator.Requests.HallDown[floor])
-	}
-}
-
 func initFloorReading(drv_floors chan int) {
 	firstFloorReading := elevio.GetFloor()
 	if firstFloorReading == -1 {
