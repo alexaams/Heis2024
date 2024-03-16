@@ -15,7 +15,7 @@ import (
 
 func EventHandling() {
 	var (
-		timer = time.NewTicker(500 * time.Millisecond)
+		timer = time.NewTicker(1000 * time.Millisecond)
 	)
 	fmt.Print("Eventhandler starting...\n")
 	defer timer.Stop()
