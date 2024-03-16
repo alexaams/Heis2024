@@ -118,7 +118,6 @@ func btnEventHandler(btnEvent types.ButtonEvent) {
 	if btnEvent.Button == types.BT_Cab {
 		peers.G_PeersElevator.Elevator.Requests.CabFloor[btnEvent.Floor] = true
 		elevator.G_Ch_requests <- peers.G_PeersElevator.Elevator.Requests
-		updateOrders()
 	} else {
 		peers.G_PeersElevator.GlobalOrderHall[btnEvent.Floor][btnEvent.Button] = true
 		updateOrders()
