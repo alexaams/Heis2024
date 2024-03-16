@@ -15,7 +15,7 @@ import (
 
 func EventHandling() {
 	var (
-		timer = time.NewTicker(500 * time.Millisecond)
+		timer = time.NewTicker(1000 * time.Millisecond)
 	)
 	fmt.Print("Eventhandler starting...\n")
 	defer timer.Stop()
@@ -25,6 +25,7 @@ func EventHandling() {
 	for {
 		select {
 		case <-timer.C:
+			lampChange()
 			if len(peers.G_PeersUpdate.Lost) > 0 {
 				lost, _ := strconv.Atoi(peers.G_PeersUpdate.Lost[0])
 				delete(peers.G_Datamap, lost)
@@ -145,5 +146,3 @@ func lampChange() {
 		elevio.SetButtonLamp(types.BT_Cab, floor, elevator.G_this_Elevator.Requests.CabFloor[floor])
 	}
 }
-
-
