@@ -77,6 +77,7 @@ func OrdersHallToRequest(order types.OrdersHall) types.Requests {
 		req.HallUp[i] = ord[0]
 		req.HallDown[i] = ord[1]
 	}
+	req.CabFloor = peers.G_PeersElevator.Elevator.Requests.CabFloor
 	return req
 }
 
@@ -119,6 +120,7 @@ func btnEventHandler(btnEvent types.ButtonEvent) {
 	if btnEvent.Button == types.BT_Cab {
 		peers.G_PeersElevator.Elevator.Requests.CabFloor[btnEvent.Floor] = true
 		elevator.G_Ch_requests <- peers.G_PeersElevator.Elevator.Requests
+		peers.G_Ch_PeersData_Tx <- peers.G_PeersElevator
 	} else {
 		peers.G_PeersElevator.GlobalOrderHall[btnEvent.Floor][btnEvent.Button] = true
 		updateOrders()
