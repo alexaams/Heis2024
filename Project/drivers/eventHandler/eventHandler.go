@@ -9,6 +9,7 @@ import (
 	"ProjectHeis/network/peers"
 	"ProjectHeis/requests"
 	"fmt"
+	"strconv"
 	"time"
 )
 
@@ -27,7 +28,9 @@ func EventHandling() {
 			lampChangeHall()
 			lampChangeCab()
 			if len(peers.G_PeersUpdate.Lost) > 0 {
-				fmt.Println("1 lost")
+				lost, _ := strconv.Atoi(peers.G_PeersUpdate.Lost[0])
+				delete(peers.G_Datamap, lost)
+				peers.G_PeersUpdate.Lost = peers.G_PeersUpdate.Lost[:0]
 				updateOrders()
 			}
 			peers.G_Ch_PeersData_Tx <- peers.G_PeersElevator
