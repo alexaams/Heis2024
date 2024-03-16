@@ -25,8 +25,7 @@ func EventHandling() {
 	for {
 		select {
 		case <-timer.C:
-			lampChangeHall()
-			lampChangeCab()
+			lampChange()
 			if len(peers.G_PeersUpdate.Lost) > 0 {
 				lost, _ := strconv.Atoi(peers.G_PeersUpdate.Lost[0])
 				delete(peers.G_Datamap, lost)
@@ -139,15 +138,12 @@ func orderCompleteHandler(orderComplete []types.ButtonEvent) {
 	}
 }
 
-func lampChangeHall() {
+func lampChange() {
 	for floor := range config.NumFloors {
 		elevio.SetButtonLamp(types.BT_HallUp, floor, peers.G_PeersElevator.GlobalOrderHall[floor][types.BT_HallUp])
 		elevio.SetButtonLamp(types.BT_HallDown, floor, peers.G_PeersElevator.GlobalOrderHall[floor][types.BT_HallDown])
-	}
-}
-
-func lampChangeCab() {
-	for floor := range config.NumFloors {
 		elevio.SetButtonLamp(types.BT_Cab, floor, elevator.G_this_Elevator.Requests.CabFloor[floor])
 	}
 }
+
+

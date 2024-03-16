@@ -44,14 +44,6 @@ func mapNewRequests(reqs types.Requests) {
 	}
 }
 
-func lampChange() {
-	for floor := range config.NumFloors {
-		elevio.SetButtonLamp(types.BT_Cab, floor, elevator.G_this_Elevator.Requests.CabFloor[floor])
-		elevio.SetButtonLamp(types.BT_HallUp, floor, elevator.G_this_Elevator.Requests.HallUp[floor])
-		elevio.SetButtonLamp(types.BT_HallDown, floor, elevator.G_this_Elevator.Requests.HallDown[floor])
-	}
-}
-
 func initFloorReading(drv_floors chan int) {
 	firstFloorReading := elevio.GetFloor()
 	if firstFloorReading == -1 {
@@ -64,6 +56,8 @@ func initFloorReading(drv_floors chan int) {
 				elevio.SetMotorDirection(types.MD_Stop)
 				elevator.G_this_Elevator.Floor = a
 				return
+			case <-time.After(time.Second * 5):
+				panic("Elevator Stuck, shiiit!")
 			default:
 				fmt.Print(".")
 				time.Sleep(30 * time.Millisecond)
@@ -77,23 +71,21 @@ func initFloorReading(drv_floors chan int) {
 
 func Fsm(ch_requests chan types.Requests) {
 
-	elevio.Init("localhost:15657", config.NumFloors) //Kan vi legge inn portnumber som en variabel fra config i stedet? God kodeskikk
+	elevio.Init("localhost:15657", config.NumFloors)
 	fmt.Print("Initiating FSM...")
 	drv_floors := make(chan int)
 	drv_obstr := make(chan bool)
 	drv_stop := make(chan bool)
-	//Initiate elevator IO (buttons are read in the event-handler)
+
 	go elevio.PollFloorSensor(drv_floors)
 	go elevio.PollObstructionSwitch(drv_obstr)
 	go elevio.PollStopButton(drv_stop)
 
 	initFloorReading(drv_floors)
 
-	//State-machine for elevator-behavior
 	go StateMachineBehavior()
 
-	//Ticker for frequent update of elevator-states
-	var timer = time.NewTicker(300 * time.Millisecond)
+	var timer = time.NewTicker(600 * time.Millisecond)
 	defer timer.Stop()
 
 	for {
@@ -153,8 +145,6 @@ func StateMachineBehavior() {
 				elevator.G_door_open_counter = 0
 				clearOrderFlag = true
 			}
-		case types.BehaviorIdle:
-		case types.BehaviorMoving:
 		case types.BehaviorObst:
 			fmt.Print("obstruction - state machine!")
 		}
