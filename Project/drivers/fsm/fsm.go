@@ -45,31 +45,6 @@ func mapNewRequests(reqs types.Requests) {
 	}
 }
 
-// func initFloorReading(drv_floors chan int) {
-// 	firstFloorReading := elevio.GetFloor()
-// 	if firstFloorReading == -1 {
-// 		fmt.Println("Undefined floor")
-// 		elevio.SetMotorDirection(types.MD_Up)
-// 		for {
-// 			select {
-// 			case a := <-drv_floors:
-// 				fmt.Printf("\nFound floor: %d\n", a)
-// 				elevio.SetMotorDirection(types.MD_Stop)
-// 				elevator.G_this_Elevator.Floor = a
-// 				return
-// 			case <-time.After(time.Second * 5):
-// 				panic("Elevator Stuck, shiiit!")
-// 			default:
-// 				fmt.Print(".")
-// 				time.Sleep(30 * time.Millisecond)
-// 			}
-// 		}
-// 	} else {
-// 		fmt.Printf("Started at defined floor: %d\n", firstFloorReading)
-// 	}
-
-// }
-
 func FindInitialFloor(drv_floors chan int) {
 	timer := time.NewTimer(4 * time.Second)
 	stuck := false
@@ -80,6 +55,7 @@ func FindInitialFloor(drv_floors chan int) {
 			fmt.Println("Floor found: ", floor)
 			elevator.Stop()
 			elevator.G_this_Elevator.Floor = floor
+			return
 		case <-timer.C:
 			if stuck {
 				elevator.MoveUp()
