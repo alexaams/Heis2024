@@ -14,7 +14,14 @@ In the script found in `config_folder/config`, we have set the parameters that d
 We would also like to mention that all variables with the **G_** prefix function as the global shared variables in this project.
 
 ## How to Run the Code
-From the working directory, run the command:
+From the working directory, run the commands:
+
+    chmod +x elevatorstart.sh 
+    ./elevatorstart.sh
+
+Running this will create a terminal which has to be killed to stop the program.
+
+If you wish to run the code directly, from the working directory, run the command: 
 
     go run main.go
 

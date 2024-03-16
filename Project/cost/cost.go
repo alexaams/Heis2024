@@ -13,9 +13,6 @@ import (
 	"time"
 )
 
-// Struct members must be public in order to be accessible by json.Marshal/.Unmarshal
-// This means they must start with a capital letter, so we need to use field renaming struct tags to make them camelCase
-
 type HRAElevState struct {
 	Behavior    string `json:"behaviour"`
 	Floor       int    `json:"floor"`
@@ -28,7 +25,7 @@ type HRAInput struct {
 	States       map[string]HRAElevState `json:"states"`
 }
 
-func OrderEmpty(order types.OrdersHall) bool {
+func orderEmpty(order types.OrdersHall) bool {
 	for i := 0; i < config.NumFloors; i++ {
 		for j := 0; j < 2; j++ {
 			if order[i][j] {
@@ -40,8 +37,8 @@ func OrderEmpty(order types.OrdersHall) bool {
 
 }
 
-func CostFunc(elevatorObject peers.PeersData) types.OrdersHall {
-	if OrderEmpty(elevatorObject.GlobalOrderHall) {
+func costFunc(elevatorObject peers.PeersData) types.OrdersHall {
+	if orderEmpty(elevatorObject.GlobalOrderHall) {
 		fmt.Println("No orders available in hall request")
 		return elevatorObject.GlobalOrderHall
 	}
@@ -60,7 +57,6 @@ func CostFunc(elevatorObject peers.PeersData) types.OrdersHall {
 	idstring := strconv.Itoa(elevatorObject.ElevatorId)
 	peers.G_Datamap[elevatorObject.ElevatorId] = elevatorObject
 
-	//Mapping all elevators to the algorithm
 	for i := 0; i < peersActive; i++ {
 		id, _ := strconv.Atoi(peers.G_PeersUpdate.Peers[i])
 		data := peers.G_Datamap[id]
@@ -68,7 +64,7 @@ func CostFunc(elevatorObject peers.PeersData) types.OrdersHall {
 	}
 
 	input := HRAInput{
-		HallRequests: elevatorObject.GlobalOrderHall, //Dette skal være en globalt gjeldende liste, så vi må få på plass funksjonalitet for å sikre at denne er oppdatert!
+		HallRequests: elevatorObject.GlobalOrderHall,
 		States:       statesElevators,
 	}
 
@@ -110,7 +106,7 @@ func CostFuncChan(someElevator peers.PeersData) <-chan types.OrdersHall {
 	ch := make(chan types.OrdersHall, 1)
 	go func() {
 		time.Sleep(20 * time.Millisecond)
-		ch <- CostFunc(someElevator)
+		ch <- costFunc(someElevator)
 	}()
 	return ch
 }

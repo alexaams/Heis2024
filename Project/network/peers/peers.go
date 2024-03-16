@@ -19,7 +19,7 @@ var G_Ch_PeersData_Rx = make(chan PeersData, 6)
 var G_PeersUpdate PeerUpdate
 var G_Datamap = make(map[int]PeersData)
 var G_PeersElevator PeersData
-
+//_______________________________________
 type PeerUpdate struct {
 	Peers []string
 	New   string
@@ -55,8 +55,6 @@ func Transmitter(port int, id string, transmitEnable <-chan bool) {
 }
 
 func Receiver(port int, peerUpdateCh chan<- PeerUpdate) {
-	//This code is specifically made for peers and checking if there are new peers/lost peers.
-	//Should not be used for anything else.
 	var buf [1024]byte
 	var p PeerUpdate
 	lastSeen := make(map[string]time.Time)
@@ -71,7 +69,6 @@ func Receiver(port int, peerUpdateCh chan<- PeerUpdate) {
 
 		id := string(buf[:n])
 
-		// Adding new connection
 		p.New = ""
 		if id != "" {
 			if _, idExists := lastSeen[id]; !idExists {
@@ -82,7 +79,6 @@ func Receiver(port int, peerUpdateCh chan<- PeerUpdate) {
 			lastSeen[id] = time.Now()
 		}
 
-		// Removing dead connection
 		p.Lost = make([]string, 0)
 		for k, v := range lastSeen {
 			if time.Now().Sub(v) > timeout {
@@ -92,7 +88,6 @@ func Receiver(port int, peerUpdateCh chan<- PeerUpdate) {
 			}
 		}
 
-		// Sending update
 		if updated {
 			p.Peers = make([]string, 0, len(lastSeen))
 
@@ -138,7 +133,6 @@ func PeersHeartBeat() {
 		case p := <-peerUpdateCh:
 			G_PeersUpdate = p
 			p.PrintPeersUpdate()
-			//Sende data videre til kostfunksjon
 		}
 	}
 }

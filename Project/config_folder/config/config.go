@@ -5,14 +5,5 @@ const (
 	NumElevators     int = 3
 	NumFloors        int = 4
 	NumButtonTypes   int = 3
-	DoorOpenDuration int = 3 // [s] open door duration
-	
-	BackupFile string = "SystemBackup.txt"
-	BackupDir  string = "BackupFiles"
+	DoorOpenDuration int = 3 //[s]
 )
-
-// ------------------ VARIABLES ------------------
-
-// ------------------ CHANNELS ------------------
-
-//VI DEKLARERER EN DEL KANALER HER ETTER HVERT

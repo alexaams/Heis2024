@@ -58,7 +58,7 @@ func updateOrders() {
 		fmt.Println("Cost timeout")
 		return
 	}
-	orderToRequest := OrdersHallToRequest(peers.G_PeersElevator.SingleOrdersHall)
+	orderToRequest := ordersHallToRequest(peers.G_PeersElevator.SingleOrdersHall)
 	select {
 	case elevator.G_Ch_requests <- orderToRequest:
 	default:
@@ -71,7 +71,7 @@ func updateOrders() {
 	}
 }
 
-func OrdersHallToRequest(order types.OrdersHall) types.Requests {
+func ordersHallToRequest(order types.OrdersHall) types.Requests {
 	req := types.InitRequests()
 	for i, ord := range order {
 		req.HallUp[i] = ord[0]

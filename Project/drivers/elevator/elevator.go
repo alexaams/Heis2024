@@ -20,16 +20,14 @@ var (
 	G_door_open_counter  = 0
 )
 
-// --------------------------------VALUES--------------------------------
-
 // --------------------------------TYPES------------------
 
 type Elevator struct {
 	Floor        int
 	Direction    types.MotorDirection
-	Behavior     types.ElevatorBehavior // 0:Idle, 1:Moving, 2:Open, 3: Obst
+	Behavior     types.ElevatorBehavior 
 	OpenDuration int
-	Requests     types.Requests // list default as false
+	Requests     types.Requests 
 }
 
 // --------------------------------FUNCTIONS--------------------------------

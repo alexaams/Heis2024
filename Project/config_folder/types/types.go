@@ -5,11 +5,8 @@ import (
 )
 
 // -------------------------------- TYPES --------------------------------
-type ReqList map[int]bool
-type AckList [config.NumElevators]bool
-type OrdersAckTable []AckList
 type OrdersCab [config.NumFloors]bool
-type OrdersHall [][2]bool // [floor][False]: ned [floor][True]: OPP
+type OrdersHall [][2]bool
 
 // -------------------------------- ENUM --------------------------------
 
@@ -78,8 +75,8 @@ func InitEmptyOrder() OrdersHall {
 
 func InitRequests() Requests {
 	return Requests{
-		HallUp:   make([]bool, config.NumFloors), // Top floor has no up button
-		HallDown: make([]bool, config.NumFloors), // Ground floor has no down button
+		HallUp:   make([]bool, config.NumFloors),
+		HallDown: make([]bool, config.NumFloors),
 		CabFloor: make([]bool, config.NumFloors),
 	}
 }

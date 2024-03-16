@@ -26,7 +26,7 @@ func requestUpdates() {
 
 }
 
-func CheckFloorCurrent(a int) {
+func checkFloorCurrent(a int) {
 	elevator.G_this_Elevator.Floor = a
 	elevio.SetFloorIndicator(elevator.G_this_Elevator.Floor)
 	if requests.IsThisOurStop(elevator.G_this_Elevator) {
@@ -41,11 +41,10 @@ func mapNewRequests(reqs types.Requests) {
 		elevator.G_this_Elevator.Requests.HallUp[i] = reqs.HallUp[i]
 		elevator.G_this_Elevator.Requests.HallDown[i] = reqs.HallDown[i]
 		elevator.G_this_Elevator.Requests.CabFloor[i] = reqs.CabFloor[i]
-
 	}
 }
 
-func FindInitialFloor(drv_floors chan int) {
+func findInitialFloor(drv_floors chan int) {
 	timer := time.NewTimer(4 * time.Second)
 	stuck := false
 	elevator.MoveDown()
@@ -81,9 +80,9 @@ func Fsm(ch_requests chan types.Requests) {
 	go elevio.PollObstructionSwitch(drv_obstr)
 	go elevio.PollStopButton(drv_stop)
 
-	FindInitialFloor(drv_floors)
+	findInitialFloor(drv_floors)
 
-	go StateMachineBehavior()
+	go doorOpen()
 
 	var timer = time.NewTicker(300 * time.Millisecond)
 	defer timer.Stop()
@@ -96,7 +95,7 @@ func Fsm(ch_requests chan types.Requests) {
 				requestUpdates()
 			}
 		case a := <-drv_floors:
-			CheckFloorCurrent(a)
+			checkFloorCurrent(a)
 
 		case a := <-drv_obstr:
 			fmt.Printf("%+v\n", a)
@@ -113,7 +112,7 @@ func Fsm(ch_requests chan types.Requests) {
 
 			if a {
 				elevio.SetStopLamp(true)
-				elevio.SetMotorDirection(types.MD_Stop)
+				elevator.Stop()
 			} else {
 				elevio.SetStopLamp(false)
 			}
@@ -126,7 +125,7 @@ func Fsm(ch_requests chan types.Requests) {
 	}
 }
 
-func StateMachineBehavior() {
+func doorOpen() {
 	elevator.G_door_open_counter = 0
 	clearOrderFlag := true
 	for {
@@ -147,7 +146,6 @@ func StateMachineBehavior() {
 			}
 			time.Sleep(10 * time.Millisecond)
 		case types.BehaviorObst:
-			fmt.Print("obstruction - state machine!")
 		}
 	}
 }
