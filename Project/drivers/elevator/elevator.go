@@ -4,7 +4,6 @@ import (
 	"ProjectHeis/config_folder/config"
 	"ProjectHeis/config_folder/types"
 	"ProjectHeis/drivers/elevio"
-	"time"
 )
 
 // --------------------------------Globals--------------------------------
@@ -14,8 +13,8 @@ var (
 	G_Ch_drv_floors      = make(chan int)
 	G_Ch_drv_obstr       = make(chan bool)
 	G_Ch_stop            = make(chan bool)
-	G_Ch_requests        = make(chan types.Requests)
-	G_Ch_elevator_update = make(chan Elevator)
+	G_Ch_requests        = make(chan types.Requests, 1024)
+	G_Ch_elevator_update = make(chan Elevator, 1024)
 	G_this_Elevator      = InitElevator()
 	G_ticks              = config.DoorOpenDuration * 100
 	G_door_open_counter  = 0
@@ -24,7 +23,6 @@ var (
 // --------------------------------VALUES--------------------------------
 
 // --------------------------------TYPES------------------
-
 
 type Elevator struct {
 	Floor        int
@@ -103,28 +101,4 @@ func (elev *Elevator) SetElevatorDir(dir types.MotorDirection) {
 
 func (elev *Elevator) SetElevatorBehaviour(behavior types.ElevatorBehavior) {
 	elev.Behavior = behavior
-}
-
-func (elev *Elevator) OpenDoor(doorOpenCh, obstCh chan bool) {
-	timer := time.NewTicker(500 * time.Millisecond)
-	timerCounter := 0
-	elevio.SetDoorOpenLamp(true)
-	for {
-		select {
-		case obst := <-obstCh:
-			if obst {
-
-				timer.Stop()
-			} else {
-				timer.Reset(1 * time.Second)
-			}
-		case <-timer.C:
-			timerCounter++
-			if timerCounter >= 6 {
-				elevio.SetDoorOpenLamp(false)
-				doorOpenCh <- true
-				return
-			}
-		}
-	}
 }

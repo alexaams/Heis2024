@@ -32,7 +32,6 @@ func EventHandling() {
 				peers.G_PeersUpdate.Lost = peers.G_PeersUpdate.Lost[:0]
 				updateOrders()
 			}
-			peers.G_Ch_PeersData_Tx <- peers.G_PeersElevator
 		case msg := <-peers.G_Ch_PeersData_Rx:
 			removeAcknowledgedOrder(msg)
 			if newPeersData(msg) {
@@ -43,6 +42,7 @@ func EventHandling() {
 
 		case elevData := <-elevator.G_Ch_elevator_update:
 			peers.G_PeersElevator.Elevator = elevData
+			lampChange()
 
 		case orderComplete := <-elevator.G_Ch_clear_orders:
 			orderCompleteHandler(orderComplete)
@@ -53,7 +53,7 @@ func EventHandling() {
 func updateOrders() {
 	select {
 	case peers.G_PeersElevator.SingleOrdersHall = <-cost.CostFuncChan(peers.G_PeersElevator):
-	case <-time.After(20 * time.Millisecond):
+	case <-time.After(30 * time.Millisecond):
 		fmt.Println("Cost timeout")
 		return
 	}
