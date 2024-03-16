@@ -79,15 +79,15 @@ func (elev *Elevator) ElevatorDirectionToString() string {
 	}
 }
 
-func (elev *Elevator) MoveUp() {
+func MoveUp() {
 	elevio.SetMotorDirection(types.MD_Up)
 }
 
-func (elev *Elevator) MoveDown() {
+func MoveDown() {
 	elevio.SetMotorDirection(types.MD_Down)
 }
 
-func (elev *Elevator) Stop() {
+func Stop() {
 	elevio.SetMotorDirection(types.MD_Stop)
 }
 
