@@ -53,7 +53,7 @@ func EventHandling() {
 func updateOrders() {
 	select {
 	case peers.G_PeersElevator.SingleOrdersHall = <-cost.CostFuncChan(peers.G_PeersElevator):
-	case <-time.After(20 * time.Millisecond):
+	case <-time.After(30 * time.Millisecond):
 		fmt.Println("Cost timeout")
 		return
 	}
@@ -118,7 +118,6 @@ func btnEventHandler(btnEvent types.ButtonEvent) {
 	if btnEvent.Button == types.BT_Cab {
 		peers.G_PeersElevator.Elevator.Requests.CabFloor[btnEvent.Floor] = true
 		elevator.G_Ch_requests <- peers.G_PeersElevator.Elevator.Requests
-		updateOrders()
 	} else {
 		peers.G_PeersElevator.GlobalOrderHall[btnEvent.Floor][btnEvent.Button] = true
 		updateOrders()
